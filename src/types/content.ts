@@ -42,6 +42,42 @@ export type DocumentItem = {
   tone: StatusTone;
 };
 
+export type SharePointResourceScope = 'team' | 'projects';
+
+export type SharePointResource = {
+  id: string;
+  title: string;
+  description: string;
+  repository: string;
+  scope: SharePointResourceScope;
+  category: string;
+  itemType: 'folder' | 'file';
+  itemCount?: number;
+  updatedAt: string;
+  href: string;
+  status: string;
+  tone: StatusTone;
+  tags: string[];
+};
+
+export type SharePointRepository = {
+  id: string;
+  title: string;
+  description: string;
+  owner: string;
+  href: string;
+  updatedAt: string;
+  status: string;
+  tone: StatusTone;
+  resourceCount: number;
+  tags: string[];
+};
+
+export type SharePointCatalog = {
+  repositories: SharePointRepository[];
+  resources: SharePointResource[];
+};
+
 export type InternalApp = {
   id: string;
   title: string;

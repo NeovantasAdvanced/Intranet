@@ -25,7 +25,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           value={searchValue}
           onChange={setSearchValue}
           className="max-w-2xl flex-1"
-          placeholder="Buscar accesos, documentos, asistentes y noticias"
+          placeholder="Buscar accesos, documentos, repositorios y noticias"
         />
 
         <div className="hidden items-center gap-2 md:flex">

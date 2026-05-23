@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ArrowRight,
   Bot,
@@ -6,7 +6,11 @@ import {
   CalendarDays,
   Clock3,
   Database,
+  ExternalLink,
   FileText,
+  FileSpreadsheet,
+  Files,
+  FolderOpen,
   LifeBuoy,
   Newspaper,
   Rocket,
@@ -19,6 +23,7 @@ import quickLinksData from '../data/quickLinks.json';
 import assistantsData from '../data/assistants.json';
 import newsData from '../data/news.json';
 import documentsData from '../data/documents.json';
+import sharePointCatalogData from '../data/sharepointCatalog.json';
 import appsData from '../data/apps.json';
 import roadmapData from '../data/roadmap.json';
 import { Badge } from '../components/ui/Badge';
@@ -32,14 +37,28 @@ import type {
   NewsItem,
   QuickLink,
   RoadmapItem,
+  SharePointCatalog,
+  SharePointResourceScope,
 } from '../types/content';
 
 const quickLinks = quickLinksData as QuickLink[];
 const assistants = assistantsData as Assistant[];
 const news = newsData as NewsItem[];
 const documents = documentsData as DocumentItem[];
+const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
+const sharePointRepositories = sharePointCatalog.repositories;
+const sharePointResources = sharePointCatalog.resources;
 const apps = appsData as InternalApp[];
 const roadmap = roadmapData as RoadmapItem[];
+
+type RepositoryFilterId = 'all' | SharePointResourceScope | 'files';
+
+const repositoryFilters: { id: RepositoryFilterId; label: string }[] = [
+  { id: 'all', label: 'Todos' },
+  { id: 'team', label: 'Equipo' },
+  { id: 'projects', label: 'Proyectos' },
+  { id: 'files', label: 'Ficheros' },
+];
 
 const iconMap = {
   users: Users,
@@ -85,6 +104,7 @@ function formatDate(value: string) {
 
 export function HomeDashboard() {
   const { searchValue, setSearchValue } = usePortalSearch();
+  const [repositoryFilter, setRepositoryFilter] = useState<RepositoryFilterId>('all');
 
   const searchQuery = normalizeSearch(searchValue);
   const isSearching = searchQuery.length > 0;
@@ -109,6 +129,16 @@ export function HomeDashboard() {
       documents: documents.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.description, item.area, item.status]),
       ),
+      sharePointResources: sharePointResources.filter((item) =>
+        matchesQuery(searchQuery, [
+          item.title,
+          item.description,
+          item.repository,
+          item.category,
+          item.status,
+          item.tags,
+        ]),
+      ),
       apps: apps.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status]),
       ),
@@ -119,11 +149,24 @@ export function HomeDashboard() {
     [searchQuery],
   );
 
+  const visibleSharePointResources = useMemo(() => {
+    if (repositoryFilter === 'all') {
+      return filteredContent.sharePointResources;
+    }
+
+    if (repositoryFilter === 'files') {
+      return filteredContent.sharePointResources.filter((item) => item.itemType === 'file');
+    }
+
+    return filteredContent.sharePointResources.filter((item) => item.scope === repositoryFilter);
+  }, [filteredContent.sharePointResources, repositoryFilter]);
+
   const totalResults =
     filteredContent.quickLinks.length +
     filteredContent.assistants.length +
     filteredContent.news.length +
     filteredContent.documents.length +
+    filteredContent.sharePointResources.length +
     filteredContent.apps.length +
     filteredContent.roadmap.length;
 
@@ -163,7 +206,7 @@ export function HomeDashboard() {
             </div>
             <Badge tone="success">Operativo</Badge>
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-3">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-lg bg-slate-50 p-3">
               <p className="text-2xl font-semibold text-slate-950">{quickLinks.length}</p>
               <p className="mt-1 text-xs text-slate-500">Accesos</p>
@@ -171,6 +214,10 @@ export function HomeDashboard() {
             <div className="rounded-lg bg-slate-50 p-3">
               <p className="text-2xl font-semibold text-slate-950">{assistants.length}</p>
               <p className="mt-1 text-xs text-slate-500">GPTs</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-3">
+              <p className="text-2xl font-semibold text-slate-950">{sharePointRepositories.length}</p>
+              <p className="mt-1 text-xs text-slate-500">Repos</p>
             </div>
             <div className="rounded-lg bg-slate-50 p-3">
               <p className="text-2xl font-semibold text-slate-950">{apps.length}</p>
@@ -323,6 +370,149 @@ export function HomeDashboard() {
           </div>
         </Card>
         ) : null}
+      </section>
+      ) : null}
+
+      {(!isSearching || filteredContent.sharePointResources.length > 0) ? (
+      <section id="repositorios">
+        <SectionHeader
+          title="Repositorios SharePoint"
+          description="Acceso centralizado a documentacion del equipo y repositorio de proyectos realizados."
+        />
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          {sharePointRepositories.map((repository) => (
+            <Card key={repository.id} className="flex flex-col p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-sky-50 text-neovantas-blue">
+                  <Files className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <Badge tone={repository.tone}>{repository.status}</Badge>
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-slate-950">{repository.title}</h3>
+              <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{repository.description}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {repository.tags.map((tag) => (
+                  <span key={tag} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-4 text-sm">
+                <div>
+                  <p className="font-semibold text-slate-950">{repository.resourceCount}</p>
+                  <p className="mt-1 text-xs text-slate-500">Recursos</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-950">{repository.owner}</p>
+                  <p className="mt-1 text-xs text-slate-500">Owner</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-950">{formatDate(repository.updatedAt)}</p>
+                  <p className="mt-1 text-xs text-slate-500">Revision</p>
+                </div>
+              </div>
+              <a
+                href={repository.href}
+                target="_blank"
+                rel="noreferrer"
+                className="focus-ring mt-5 inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700"
+              >
+                Abrir repositorio
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              </a>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="mt-4 overflow-hidden">
+          <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-neovantas-teal" aria-hidden="true" />
+                <h3 className="text-base font-semibold text-slate-950">Catalogo de recursos</h3>
+              </div>
+              <p className="mt-1 text-sm text-slate-600">
+                {visibleSharePointResources.length === 1
+                  ? '1 recurso visible'
+                  : `${visibleSharePointResources.length} recursos visibles`}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtros de repositorio">
+              {repositoryFilters.map((filter) => {
+                const isActive = repositoryFilter === filter.id;
+
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    aria-pressed={isActive}
+                    className={`focus-ring h-9 rounded-lg border px-3 text-sm font-semibold transition ${
+                      isActive
+                        ? 'border-neovantas-blue bg-neovantas-blue text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                    }`}
+                    onClick={() => setRepositoryFilter(filter.id)}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {visibleSharePointResources.length > 0 ? (
+            <div className="max-h-[560px] divide-y divide-slate-200 overflow-y-auto">
+              {visibleSharePointResources.map((item) => {
+                const ResourceIcon = item.itemType === 'file' ? FileSpreadsheet : FolderOpen;
+
+                return (
+                  <a
+                    key={item.id}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="focus-ring flex flex-col gap-3 px-4 py-4 transition hover:bg-slate-50 md:flex-row md:items-start"
+                  >
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-emerald-50 text-neovantas-teal">
+                      <ResourceIcon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge tone={item.tone}>{item.status}</Badge>
+                        <span className="text-xs font-medium text-slate-500">{item.category}</span>
+                        <span className="text-xs text-slate-400">{item.repository}</span>
+                      </div>
+                      <h4 className="mt-2 text-sm font-semibold text-slate-950">{item.title}</h4>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center justify-between gap-4 text-sm text-slate-500 md:w-44 md:justify-end">
+                      <span>
+                        {item.itemType === 'file'
+                          ? 'Archivo'
+                          : item.itemCount === 1
+                            ? '1 elemento'
+                            : `${item.itemCount ?? 0} elementos`}
+                      </span>
+                      <ExternalLink className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-100 text-slate-500">
+                <SearchX className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-slate-950">Sin recursos visibles</h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Cambia el filtro de repositorio o limpia la busqueda activa.
+              </p>
+            </div>
+          )}
+        </Card>
       </section>
       ) : null}
 

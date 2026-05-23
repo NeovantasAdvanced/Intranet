@@ -32,6 +32,7 @@ src/
     news.json
     quickLinks.json
     roadmap.json
+    sharepointCatalog.json
   pages/
     HomeDashboard.tsx
   types/
@@ -47,6 +48,7 @@ src/
 npm install
 npm run dev
 npm run build
+npm run sync:sharepoint
 ```
 
 ## Contenidos
@@ -57,8 +59,32 @@ Los contenidos iniciales viven en `src/data`. Cada JSON representa una seccion d
 - `assistants.json`: GPTs y asistentes internos.
 - `news.json`: comunicaciones y novedades.
 - `documents.json`: documentacion corporativa.
+- `sharepointCatalog.json`: accesos a repositorios SharePoint y recursos filtrables.
 - `apps.json`: aplicaciones internas.
 - `roadmap.json`: evolucion prevista, incluida Mesa IA y autenticacion futura.
+
+## Sincronizacion SharePoint
+
+El catalogo `src/data/sharepointCatalog.json` se puede regenerar desde SharePoint con:
+
+```bash
+npm run sync:sharepoint
+```
+
+El script consulta Microsoft Graph y guarda solo metadatos y enlaces. No copia documentos al repositorio. Los usuarios siguen accediendo a los archivos con sus permisos normales de SharePoint/Microsoft 365.
+
+El workflow `.github/workflows/sync-sharepoint-catalog.yml` se ejecuta todos los dias a las 05:15 UTC y tambien permite ejecucion manual desde GitHub Actions. Si detecta cambios en SharePoint, hace commit de `sharepointCatalog.json`; ese push dispara el despliegue existente de Azure Static Web Apps.
+
+Configurar estos secrets en GitHub:
+
+- `SHAREPOINT_TENANT_ID`
+- `SHAREPOINT_CLIENT_ID`
+- `SHAREPOINT_CLIENT_SECRET`
+- `SHAREPOINT_SITE_ID`
+
+La app de Entra ID usada por esos secrets necesita permiso de Microsoft Graph para leer el sitio de SharePoint, por ejemplo `Sites.Read.All` con consentimiento de administrador, o `Sites.Selected` si se prefiere limitar el acceso solo al sitio `AdvancedAnalytics`.
+
+Guia operativa: `docs/sharepoint-sync-access.md`.
 
 ## Autenticacion futura
 
@@ -86,4 +112,4 @@ El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, nece
 - Tailwind CSS para iteracion visual rapida y consistente.
 - JSON versionado como fuente inicial de contenido.
 - Sidebar y header pensados para evolucionar a navegacion real con rutas.
-- Buscador visual preparado; la logica de filtrado global queda para una iteracion posterior.
+- Buscador global con filtrado por contenidos versionados y catalogo SharePoint sincronizable.
