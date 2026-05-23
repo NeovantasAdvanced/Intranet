@@ -351,6 +351,10 @@ async function listFolderItems(accessToken, siteId, folderPath) {
   return graphCollection(accessToken, `/sites/${siteId}/drive/root:/${encodedPath}:/children?$top=200`);
 }
 
+async function listDriveItemChildren(accessToken, siteId, itemId) {
+  return graphCollection(accessToken, `/sites/${siteId}/drive/items/${itemId}/children?$top=200`);
+}
+
 async function listNestedFileResources(accessToken, siteId, repository, folders) {
   if (!repository.includeChildFiles) {
     return [];
@@ -359,7 +363,7 @@ async function listNestedFileResources(accessToken, siteId, repository, folders)
   const nestedResources = [];
 
   for (const folder of folders.filter((item) => item.folder)) {
-    const childItems = (await listFolderItems(accessToken, siteId, `${repository.folderPath}/${folder.name}`))
+    const childItems = (await listDriveItemChildren(accessToken, siteId, folder.id))
       .filter((item) => item.file)
       .filter((item) => shouldIncludeItem(item, repository))
       .sort((left, right) => left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }));
@@ -384,6 +388,10 @@ async function buildCatalog() {
     const folderResources = items.map((item) => toResource(item, repository));
     const nestedFileResources = await listNestedFileResources(accessToken, site.id, repository, items);
     const repositoryResources = [...folderResources, ...nestedFileResources];
+
+    console.log(
+      `${repository.title}: ${folderResources.length} top-level resources, ${nestedFileResources.length} nested files.`,
+    );
 
     repositories.push({
       id: repository.id,
