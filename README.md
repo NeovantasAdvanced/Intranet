@@ -49,6 +49,7 @@ npm install
 npm run dev
 npm run build
 npm run sync:sharepoint
+npm run sync:news
 ```
 
 ## Contenidos
@@ -87,6 +88,14 @@ Configurar estos secrets en GitHub:
 La app de Entra ID usada por esos secrets necesita permiso de Microsoft Graph para leer el sitio de SharePoint, por ejemplo `Sites.Read.All` con consentimiento de administrador, o `Sites.Selected` si se prefiere limitar el acceso solo al sitio `AdvancedAnalytics`.
 
 Guia operativa: `docs/sharepoint-sync-access.md`.
+
+## Sincronizacion de noticias Outlook
+
+El workflow `.github/workflows/sync-outlook-news.yml` puede actualizar `src/data/news.json` leyendo correos de Outlook con Microsoft Graph. Esta integracion esta pensada para el correo diario de noticias que ya recibe el equipo.
+
+El script guarda solo asunto, resumen, fecha, enlace a Outlook y metadatos. No copia adjuntos ni cuerpos completos de correo.
+
+Guia operativa: `docs/outlook-news-sync.md`.
 
 ## Autenticacion futura
 

@@ -1,0 +1,81 @@
+name: Sync Outlook news
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/sync-outlook-news.yml
+      - scripts/sync-outlook-news.mjs
+      - src/data/news.json
+  schedule:
+    - cron: '35 6 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    name: Sync news JSON
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check news configuration
+        id: news-config
+        env:
+          NEWS_MAILBOX_USER_ID: ${{ secrets.NEWS_MAILBOX_USER_ID }}
+        run: |
+          if [ -z "$NEWS_MAILBOX_USER_ID" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::NEWS_MAILBOX_USER_ID is not configured. Skipping Outlook news sync."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync Outlook news
+        if: steps.news-config.outputs.configured == 'true'
+        run: npm run sync:news
+        env:
+          NEWS_TENANT_ID: ${{ secrets.NEWS_TENANT_ID || secrets.SHAREPOINT_TENANT_ID }}
+          NEWS_CLIENT_ID: ${{ secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
+          NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
+          NEWS_MAILBOX_USER_ID: ${{ secrets.NEWS_MAILBOX_USER_ID }}
+          NEWS_MAIL_FOLDER_ID: ${{ vars.NEWS_MAIL_FOLDER_ID || 'inbox' }}
+          NEWS_SENDER: ${{ vars.NEWS_SENDER }}
+          NEWS_SUBJECT_CONTAINS: ${{ vars.NEWS_SUBJECT_CONTAINS }}
+          NEWS_CATEGORY: ${{ vars.NEWS_CATEGORY || 'Comunicacion' }}
+          NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
+          NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Outlook' }}
+          NEWS_ALLOW_UNFILTERED_INBOX: ${{ vars.NEWS_ALLOW_UNFILTERED_INBOX || 'false' }}
+          NEWS_LOOKBACK_DAYS: ${{ vars.NEWS_LOOKBACK_DAYS || '14' }}
+          NEWS_MAX_ITEMS: ${{ vars.NEWS_MAX_ITEMS || '10' }}
+
+      - name: Validate build
+        if: steps.news-config.outputs.configured == 'true'
+        run: npm run build
+
+      - name: Commit news changes
+        if: steps.news-config.outputs.configured == 'true'
+        run: |
+          if git diff --quiet -- src/data/news.json; then
+            echo "News already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/news.json
+          git commit -m "chore: sync Outlook news"
+          git push

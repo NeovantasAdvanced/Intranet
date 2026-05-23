@@ -159,7 +159,7 @@ export function HomeDashboard() {
         ]),
       ),
       news: news.filter((item) =>
-        matchesQuery(searchQuery, [item.title, item.excerpt, item.category, item.status]),
+        matchesQuery(searchQuery, [item.title, item.excerpt, item.category, item.status, item.source]),
       ),
       documents: documents.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.description, item.area, item.status]),
@@ -632,14 +632,26 @@ export function HomeDashboard() {
             {filteredContent.news.map((item) => (
               <Card key={item.id} className="p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge tone={item.tone}>{item.status}</Badge>
                       <span className="text-xs font-medium text-slate-500">{item.category}</span>
+                      {item.source ? <span className="text-xs text-slate-400">{item.source}</span> : null}
                       <span className="text-xs text-slate-400">{formatDate(item.date)}</span>
                     </div>
                     <h3 className="mt-3 text-base font-semibold text-slate-950">{item.title}</h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{item.excerpt}</p>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-neovantas-blue"
+                      >
+                        Abrir correo
+                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                      </a>
+                    ) : null}
                   </div>
                   <Newspaper className="hidden h-5 w-5 shrink-0 text-slate-400 sm:block" aria-hidden="true" />
                 </div>

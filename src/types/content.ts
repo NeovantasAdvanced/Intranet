@@ -29,6 +29,8 @@ export type NewsItem = {
   date: string;
   status: string;
   tone: StatusTone;
+  href?: string;
+  source?: string;
 };
 
 export type DocumentItem = {
