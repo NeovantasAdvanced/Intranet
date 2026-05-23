@@ -72,12 +72,13 @@ No hay login real en este MVP. La integracion recomendada para la siguiente fase
 
 ## Despliegue en Azure Static Web Apps
 
-El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. El flujo esperado es GitHub + Azure Static Web Apps:
+El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. Tambien incluye `.github/workflows/azure-static-web-apps.yml` como workflow base de GitHub Actions.
 
 1. Repositorio en GitHub.
-2. Workflow de Azure Static Web Apps apuntando al build de Vite.
-3. `app_location: "/"`.
-4. `output_location: "dist"`.
+2. Crear la Static Web App en Azure conectada al repositorio.
+3. Configurar el secreto `AZURE_STATIC_WEB_APPS_API_TOKEN` en GitHub si Azure no lo crea automaticamente.
+4. `app_location: "/"`.
+5. `output_location: "dist"`.
 
 ## Notas de diseno tecnico
 

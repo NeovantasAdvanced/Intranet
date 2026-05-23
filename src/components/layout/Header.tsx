@@ -1,12 +1,14 @@
 import { Bell, Menu, ShieldCheck, UserRound } from 'lucide-react';
+import { usePortalSearch } from '../../context/PortalSearchContext';
 import { SearchBar } from '../ui/SearchBar';
 
 type HeaderProps = {
-  searchValue: string;
-  onSearchChange: (value: string) => void;
+  onMenuClick: () => void;
 };
 
-export function Header({ searchValue, onSearchChange }: HeaderProps) {
+export function Header({ onMenuClick }: HeaderProps) {
+  const { searchValue, setSearchValue } = usePortalSearch();
+
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-neovantas-mist/95 px-4 py-4 backdrop-blur md:px-8">
       <div className="flex items-center gap-3">
@@ -14,13 +16,14 @@ export function Header({ searchValue, onSearchChange }: HeaderProps) {
           type="button"
           className="focus-ring grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm lg:hidden"
           aria-label="Abrir menu"
+          onClick={onMenuClick}
         >
           <Menu className="h-5 w-5" aria-hidden="true" />
         </button>
 
         <SearchBar
           value={searchValue}
-          onChange={onSearchChange}
+          onChange={setSearchValue}
           className="max-w-2xl flex-1"
           placeholder="Buscar accesos, documentos, asistentes y noticias"
         />

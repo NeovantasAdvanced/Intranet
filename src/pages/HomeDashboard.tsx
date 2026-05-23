@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   ArrowRight,
   Bot,
@@ -9,8 +10,10 @@ import {
   LifeBuoy,
   Newspaper,
   Rocket,
+  SearchX,
   Sparkles,
   Users,
+  X,
 } from 'lucide-react';
 import quickLinksData from '../data/quickLinks.json';
 import assistantsData from '../data/assistants.json';
@@ -21,6 +24,7 @@ import roadmapData from '../data/roadmap.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
+import { usePortalSearch } from '../context/PortalSearchContext';
 import type {
   Assistant,
   DocumentItem,
@@ -47,6 +51,30 @@ const iconMap = {
   database: Database,
 };
 
+type SearchableValue = string | string[] | undefined;
+
+function normalizeSearch(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function matchesQuery(query: string, values: SearchableValue[]) {
+  if (!query) {
+    return true;
+  }
+
+  const haystack = normalizeSearch(
+    values
+      .flatMap((value) => (Array.isArray(value) ? value : value ? [value] : []))
+      .join(' '),
+  );
+
+  return haystack.includes(query);
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('es-ES', {
     day: '2-digit',
@@ -56,6 +84,49 @@ function formatDate(value: string) {
 }
 
 export function HomeDashboard() {
+  const { searchValue, setSearchValue } = usePortalSearch();
+
+  const searchQuery = normalizeSearch(searchValue);
+  const isSearching = searchQuery.length > 0;
+
+  const filteredContent = useMemo(
+    () => ({
+      quickLinks: quickLinks.filter((item) =>
+        matchesQuery(searchQuery, [item.title, item.description, item.status]),
+      ),
+      assistants: assistants.filter((item) =>
+        matchesQuery(searchQuery, [
+          item.title,
+          item.description,
+          item.owner,
+          item.status,
+          item.tags,
+        ]),
+      ),
+      news: news.filter((item) =>
+        matchesQuery(searchQuery, [item.title, item.excerpt, item.category, item.status]),
+      ),
+      documents: documents.filter((item) =>
+        matchesQuery(searchQuery, [item.title, item.description, item.area, item.status]),
+      ),
+      apps: apps.filter((item) =>
+        matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status]),
+      ),
+      roadmap: roadmap.filter((item) =>
+        matchesQuery(searchQuery, [item.title, item.description, item.quarter, item.status]),
+      ),
+    }),
+    [searchQuery],
+  );
+
+  const totalResults =
+    filteredContent.quickLinks.length +
+    filteredContent.assistants.length +
+    filteredContent.news.length +
+    filteredContent.documents.length +
+    filteredContent.apps.length +
+    filteredContent.roadmap.length;
+
   return (
     <div className="space-y-8">
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -113,13 +184,50 @@ export function HomeDashboard() {
         </Card>
       </section>
 
+      {isSearching ? (
+        <Card className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sky-50 text-neovantas-blue">
+              <SearchX className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-950">
+                {totalResults === 1 ? '1 resultado encontrado' : `${totalResults} resultados encontrados`}
+              </p>
+              <p className="mt-1 truncate text-sm text-slate-500">Busqueda activa: {searchValue}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="focus-ring inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700"
+            onClick={() => setSearchValue('')}
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+            Limpiar
+          </button>
+        </Card>
+      ) : null}
+
+      {isSearching && totalResults === 0 ? (
+        <Card className="p-8 text-center">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-100 text-slate-500">
+            <SearchX className="h-6 w-6" aria-hidden="true" />
+          </div>
+          <h3 className="mt-4 text-base font-semibold text-slate-950">Sin resultados</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Prueba con otro termino o limpia la busqueda para ver todo el portal.
+          </p>
+        </Card>
+      ) : null}
+
+      {(!isSearching || filteredContent.quickLinks.length > 0) ? (
       <section>
         <SectionHeader
           title="Accesos rapidos"
           description="Atajos operativos para las tareas mas frecuentes."
         />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {quickLinks.map((item) => {
+          {filteredContent.quickLinks.map((item) => {
             const Icon = iconMap[item.icon as keyof typeof iconMap] ?? ArrowRight;
 
             return (
@@ -139,8 +247,11 @@ export function HomeDashboard() {
           })}
         </div>
       </section>
+      ) : null}
 
+      {(!isSearching || filteredContent.assistants.length > 0 || filteredContent.roadmap.length > 0) ? (
       <section id="mesa-ia" className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+        {(!isSearching || filteredContent.assistants.length > 0) ? (
         <div>
           <SectionHeader
             title="GPTs y asistentes"
@@ -156,7 +267,7 @@ export function HomeDashboard() {
             }
           />
           <div className="grid gap-4 lg:grid-cols-3">
-            {assistants.map((assistant) => (
+            {filteredContent.assistants.map((assistant) => (
               <Card key={assistant.id} className="flex flex-col p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="grid h-10 w-10 place-items-center rounded-lg bg-sky-50 text-neovantas-blue">
@@ -183,7 +294,9 @@ export function HomeDashboard() {
             ))}
           </div>
         </div>
+        ) : null}
 
+        {(!isSearching || filteredContent.roadmap.length > 0) ? (
         <Card className="overflow-hidden">
           <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
             <div className="flex items-center gap-2">
@@ -195,7 +308,7 @@ export function HomeDashboard() {
             </p>
           </div>
           <div className="divide-y divide-slate-200">
-            {roadmap.map((item) => (
+            {filteredContent.roadmap.map((item) => (
               <div key={item.id} className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -209,13 +322,17 @@ export function HomeDashboard() {
             ))}
           </div>
         </Card>
+        ) : null}
       </section>
+      ) : null}
 
+      {(!isSearching || filteredContent.news.length > 0 || filteredContent.documents.length > 0) ? (
       <section className="grid gap-5 xl:grid-cols-2">
+        {(!isSearching || filteredContent.news.length > 0) ? (
         <div>
           <SectionHeader title="Noticias" description="Comunicaciones relevantes para el equipo." />
           <div className="space-y-3">
-            {news.map((item) => (
+            {filteredContent.news.map((item) => (
               <Card key={item.id} className="p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -233,11 +350,13 @@ export function HomeDashboard() {
             ))}
           </div>
         </div>
+        ) : null}
 
+        {(!isSearching || filteredContent.documents.length > 0) ? (
         <div>
           <SectionHeader title="Documentacion" description="Recursos versionados y listos para enlazar." />
           <div className="space-y-3">
-            {documents.map((item) => (
+            {filteredContent.documents.map((item) => (
               <Card key={item.id} className="p-4">
                 <div className="flex items-start gap-4">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-emerald-50 text-neovantas-teal">
@@ -257,12 +376,15 @@ export function HomeDashboard() {
             ))}
           </div>
         </div>
+        ) : null}
       </section>
+      ) : null}
 
+      {(!isSearching || filteredContent.apps.length > 0) ? (
       <section>
         <SectionHeader title="Aplicaciones internas" description="Servicios conectables en proximas iteraciones." />
         <div className="grid gap-4 md:grid-cols-3">
-          {apps.map((app) => {
+          {filteredContent.apps.map((app) => {
             const Icon = iconMap[app.icon as keyof typeof iconMap] ?? BriefcaseBusiness;
 
             return (
@@ -286,6 +408,7 @@ export function HomeDashboard() {
           })}
         </div>
       </section>
+      ) : null}
     </div>
   );
 }
