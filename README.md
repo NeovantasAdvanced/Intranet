@@ -75,6 +75,8 @@ El script consulta Microsoft Graph y guarda solo metadatos y enlaces. No copia d
 
 El workflow `.github/workflows/sync-sharepoint-catalog.yml` se ejecuta todos los dias a las 05:15 UTC y tambien permite ejecucion manual desde GitHub Actions. Si detecta cambios en SharePoint, hace commit de `sharepointCatalog.json`; ese push dispara el despliegue existente de Azure Static Web Apps.
 
+La sincronizacion indexa las carpetas principales de `Carpetas equipo Neovantas` y `RP`. En `RP` tambien baja un nivel dentro de cada carpeta de cliente/proyecto para exponer fichas de proyecto y documentos finales como recursos filtrables.
+
 Configurar estos secrets en GitHub:
 
 - `SHAREPOINT_TENANT_ID`

@@ -11,6 +11,8 @@ Este portal sincroniza un catalogo de SharePoint mediante Microsoft Graph y guar
   - `Carpetas equipo Neovantas`
   - `RP`
 
+La sincronizacion lista las carpetas principales de ambos repositorios. Para `RP`, tambien lee un nivel adicional dentro de cada carpeta de cliente/proyecto y anade los archivos encontrados como recursos filtrables, por ejemplo fichas de proyecto y documentos finales.
+
 ## Opcion recomendada: Sites.Selected
 
 Usar `Sites.Selected` limita la app de sincronizacion al sitio `AdvancedAnalytics`, en vez de darle lectura a todo SharePoint.

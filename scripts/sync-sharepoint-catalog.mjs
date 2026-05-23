@@ -32,6 +32,7 @@ const sharePointConfig = {
       tone: 'info',
       tags: ['proyectos', 'fichas', 'documentos finales', 'clientes'],
       excludeNames: ['RP'],
+      includeChildFiles: true,
     },
   ],
 };
@@ -56,11 +57,12 @@ function toDateOnly(value) {
   return value ? new Date(value).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
 }
 
-function latestDate(items) {
-  const timestamps = items
-    .map((item) => item.lastModifiedDateTime ?? item.createdDateTime)
-    .filter(Boolean)
-    .map((value) => new Date(value).getTime());
+function latestResourceDate(resources, fallbackItems) {
+  const timestamps = resources
+    .map((item) => item.updatedAt)
+    .concat(fallbackItems.map((item) => item.lastModifiedDateTime ?? item.createdDateTime).filter(Boolean))
+    .map((value) => new Date(value).getTime())
+    .filter((value) => Number.isFinite(value));
 
   if (timestamps.length === 0) {
     return toDateOnly();
@@ -176,18 +178,52 @@ function teamMetadata(item) {
 }
 
 function projectMetadata(item) {
+  const key = normalizeSearch(item.name);
+
   if (item.file) {
     const extension = getFileExtension(item).replace('.', '').toUpperCase();
+    const isProjectSheet = key.includes('ficha proyecto') || key.includes('ficha de proyecto');
+    const isFinalDocument =
+      key.startsWith('doc ') ||
+      key.startsWith('doc -') ||
+      key.includes('documento final') ||
+      key.includes('entregable final');
+    const category = extension === 'XLSX'
+      ? 'Indice'
+      : isProjectSheet
+        ? 'Ficha proyecto'
+        : isFinalDocument
+          ? 'Documento final'
+          : 'Archivo';
+    const status = isProjectSheet ? 'Ficha' : isFinalDocument ? 'Doc final' : extension || 'Archivo';
+    const tone = extension === 'XLSX'
+      ? 'success'
+      : isProjectSheet
+        ? 'info'
+        : isFinalDocument
+          ? 'success'
+          : 'neutral';
 
     return {
-      category: extension === 'XLSX' ? 'Indice' : 'Archivo',
+      category,
       description:
         extension === 'XLSX'
           ? 'Indice maestro de proyectos realizados en el repositorio RP.'
-          : `Archivo del repositorio de proyectos: ${item.name}.`,
-      status: extension || 'Archivo',
-      tone: extension === 'XLSX' ? 'success' : 'info',
-      tags: ['indice', 'proyectos', 'clientes'],
+          : isProjectSheet
+            ? `Ficha del proyecto ${item.parentName ?? ''}.`.trim()
+            : isFinalDocument
+              ? `Documento final del proyecto ${item.parentName ?? ''}.`.trim()
+              : `Archivo del repositorio de proyectos: ${item.name}.`,
+      status,
+      tone,
+      tags: [
+        ...(extension === 'XLSX' ? ['indice'] : []),
+        ...(isProjectSheet ? ['ficha'] : []),
+        ...(isFinalDocument ? ['documento final'] : []),
+        'proyecto',
+        'clientes',
+        ...(item.parentName ? [item.parentName] : []),
+      ],
     };
   }
 
@@ -208,18 +244,21 @@ function slugify(value, prefix) {
   return `${prefix}-${slug || 'item'}`;
 }
 
-function toResource(item, repository) {
+function toResource(item, repository, parentItem) {
   const itemType = item.folder ? 'folder' : 'file';
-  const metadata = repository.scope === 'team' ? teamMetadata(item) : projectMetadata(item);
+  const enrichedItem = parentItem ? { ...item, parentName: parentItem.name } : item;
+  const metadata = repository.scope === 'team' ? teamMetadata(enrichedItem) : projectMetadata(enrichedItem);
+  const parentTitle = parentItem?.name;
 
   return {
-    id: slugify(item.name, repository.scope === 'team' ? 'team' : 'project'),
+    id: slugify(parentTitle ? `${parentTitle}-${item.name}` : item.name, repository.scope === 'team' ? 'team' : 'project'),
     title: item.name,
     description: metadata.description,
     repository: repository.title,
     scope: repository.scope,
     category: metadata.category,
     itemType,
+    ...(parentTitle ? { parentTitle, path: `${parentTitle} / ${item.name}` } : {}),
     ...(item.folder ? { itemCount: item.folder.childCount ?? 0 } : {}),
     updatedAt: toDateOnly(item.lastModifiedDateTime ?? item.createdDateTime),
     href: item.webUrl,
@@ -312,6 +351,25 @@ async function listFolderItems(accessToken, siteId, folderPath) {
   return graphCollection(accessToken, `/sites/${siteId}/drive/root:/${encodedPath}:/children?$top=200`);
 }
 
+async function listNestedFileResources(accessToken, siteId, repository, folders) {
+  if (!repository.includeChildFiles) {
+    return [];
+  }
+
+  const nestedResources = [];
+
+  for (const folder of folders.filter((item) => item.folder)) {
+    const childItems = (await listFolderItems(accessToken, siteId, `${repository.folderPath}/${folder.name}`))
+      .filter((item) => item.file)
+      .filter((item) => shouldIncludeItem(item, repository))
+      .sort((left, right) => left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }));
+
+    nestedResources.push(...childItems.map((item) => toResource(item, repository, folder)));
+  }
+
+  return nestedResources;
+}
+
 async function buildCatalog() {
   const accessToken = await getAccessToken();
   const site = await getSite(accessToken);
@@ -323,20 +381,24 @@ async function buildCatalog() {
       .filter((item) => shouldIncludeItem(item, repository))
       .sort((left, right) => left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }));
 
+    const folderResources = items.map((item) => toResource(item, repository));
+    const nestedFileResources = await listNestedFileResources(accessToken, site.id, repository, items);
+    const repositoryResources = [...folderResources, ...nestedFileResources];
+
     repositories.push({
       id: repository.id,
       title: repository.title,
       description: repository.description,
       owner: repository.owner,
       href: `https://${sharePointConfig.hostname}${sharePointConfig.sitePath}/Documentos%20compartidos/${encodeDrivePath(repository.folderPath)}`,
-      updatedAt: latestDate(items),
+      updatedAt: latestResourceDate(repositoryResources, items),
       status: repository.status,
       tone: repository.tone,
-      resourceCount: items.length,
+      resourceCount: repositoryResources.length,
       tags: repository.tags,
     });
 
-    resources.push(...items.map((item) => toResource(item, repository)));
+    resources.push(...repositoryResources);
   }
 
   return { repositories, resources };

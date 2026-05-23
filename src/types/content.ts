@@ -52,6 +52,8 @@ export type SharePointResource = {
   scope: SharePointResourceScope;
   category: string;
   itemType: 'folder' | 'file';
+  parentTitle?: string;
+  path?: string;
   itemCount?: number;
   updatedAt: string;
   href: string;

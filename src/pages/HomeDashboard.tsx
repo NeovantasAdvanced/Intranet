@@ -51,13 +51,22 @@ const sharePointResources = sharePointCatalog.resources;
 const apps = appsData as InternalApp[];
 const roadmap = roadmapData as RoadmapItem[];
 
-type RepositoryFilterId = 'all' | SharePointResourceScope | 'files';
+type RepositoryFilterId =
+  | 'all'
+  | SharePointResourceScope
+  | 'files'
+  | 'folders'
+  | 'projectSheets'
+  | 'finalDocs';
 
 const repositoryFilters: { id: RepositoryFilterId; label: string }[] = [
   { id: 'all', label: 'Todos' },
   { id: 'team', label: 'Equipo' },
   { id: 'projects', label: 'Proyectos' },
   { id: 'files', label: 'Ficheros' },
+  { id: 'projectSheets', label: 'Fichas' },
+  { id: 'finalDocs', label: 'Docs finales' },
+  { id: 'folders', label: 'Carpetas' },
 ];
 
 const iconMap = {
@@ -92,6 +101,30 @@ function matchesQuery(query: string, values: SearchableValue[]) {
   );
 
   return haystack.includes(query);
+}
+
+function matchesRepositoryFilter(filterId: RepositoryFilterId, item: (typeof sharePointResources)[number]) {
+  if (filterId === 'all') {
+    return true;
+  }
+
+  if (filterId === 'files') {
+    return item.itemType === 'file';
+  }
+
+  if (filterId === 'folders') {
+    return item.itemType === 'folder';
+  }
+
+  if (filterId === 'projectSheets') {
+    return normalizeSearch(item.category).includes('ficha');
+  }
+
+  if (filterId === 'finalDocs') {
+    return normalizeSearch(item.category).includes('documento final');
+  }
+
+  return item.scope === filterId;
 }
 
 function formatDate(value: string) {
@@ -135,6 +168,8 @@ export function HomeDashboard() {
           item.description,
           item.repository,
           item.category,
+          item.parentTitle,
+          item.path,
           item.status,
           item.tags,
         ]),
@@ -150,15 +185,7 @@ export function HomeDashboard() {
   );
 
   const visibleSharePointResources = useMemo(() => {
-    if (repositoryFilter === 'all') {
-      return filteredContent.sharePointResources;
-    }
-
-    if (repositoryFilter === 'files') {
-      return filteredContent.sharePointResources.filter((item) => item.itemType === 'file');
-    }
-
-    return filteredContent.sharePointResources.filter((item) => item.scope === repositoryFilter);
+    return filteredContent.sharePointResources.filter((item) => matchesRepositoryFilter(repositoryFilter, item));
   }, [filteredContent.sharePointResources, repositoryFilter]);
 
   const totalResults =
@@ -172,7 +199,7 @@ export function HomeDashboard() {
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <section id="inicio" className="grid scroll-mt-24 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="rounded-lg bg-neovantas-navy p-6 text-white shadow-panel md:p-7">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
@@ -268,7 +295,7 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.quickLinks.length > 0) ? (
-      <section>
+      <section id="accesos" className="scroll-mt-24">
         <SectionHeader
           title="Accesos rapidos"
           description="Atajos operativos para las tareas mas frecuentes."
@@ -297,9 +324,9 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.assistants.length > 0 || filteredContent.roadmap.length > 0) ? (
-      <section id="mesa-ia" className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <section id="mesa-ia" className="grid scroll-mt-24 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
         {(!isSearching || filteredContent.assistants.length > 0) ? (
-        <div>
+        <div id="asistentes" className="scroll-mt-24">
           <SectionHeader
             title="GPTs y asistentes"
             description="Herramientas internas para acelerar conocimiento, delivery y soporte."
@@ -344,6 +371,7 @@ export function HomeDashboard() {
         ) : null}
 
         {(!isSearching || filteredContent.roadmap.length > 0) ? (
+        <div id="roadmap" className="scroll-mt-24">
         <Card className="overflow-hidden">
           <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
             <div className="flex items-center gap-2">
@@ -369,12 +397,13 @@ export function HomeDashboard() {
             ))}
           </div>
         </Card>
+        </div>
         ) : null}
       </section>
       ) : null}
 
       {(!isSearching || filteredContent.sharePointResources.length > 0) ? (
-      <section id="repositorios">
+      <section id="repositorios" className="scroll-mt-24">
         <SectionHeader
           title="Repositorios SharePoint"
           description="Acceso centralizado a documentacion del equipo y repositorio de proyectos realizados."
@@ -482,7 +511,9 @@ export function HomeDashboard() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={item.tone}>{item.status}</Badge>
                         <span className="text-xs font-medium text-slate-500">{item.category}</span>
-                        <span className="text-xs text-slate-400">{item.repository}</span>
+                        <span className="text-xs text-slate-400">
+                          {item.parentTitle ? `${item.repository} / ${item.parentTitle}` : item.repository}
+                        </span>
                       </div>
                       <h4 className="mt-2 text-sm font-semibold text-slate-950">{item.title}</h4>
                       <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
@@ -519,7 +550,7 @@ export function HomeDashboard() {
       {(!isSearching || filteredContent.news.length > 0 || filteredContent.documents.length > 0) ? (
       <section className="grid gap-5 xl:grid-cols-2">
         {(!isSearching || filteredContent.news.length > 0) ? (
-        <div>
+        <div id="noticias" className="scroll-mt-24">
           <SectionHeader title="Noticias" description="Comunicaciones relevantes para el equipo." />
           <div className="space-y-3">
             {filteredContent.news.map((item) => (
@@ -543,7 +574,7 @@ export function HomeDashboard() {
         ) : null}
 
         {(!isSearching || filteredContent.documents.length > 0) ? (
-        <div>
+        <div id="documentacion" className="scroll-mt-24">
           <SectionHeader title="Documentacion" description="Recursos versionados y listos para enlazar." />
           <div className="space-y-3">
             {filteredContent.documents.map((item) => (
@@ -571,7 +602,7 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.apps.length > 0) ? (
-      <section>
+      <section id="aplicaciones" className="scroll-mt-24">
         <SectionHeader title="Aplicaciones internas" description="Servicios conectables en proximas iteraciones." />
         <div className="grid gap-4 md:grid-cols-3">
           {filteredContent.apps.map((app) => {

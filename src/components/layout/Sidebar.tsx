@@ -10,17 +10,18 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import neovantasLogo from '../../assets/neovantas-logo-mark.svg';
 
 const navigation = [
-  { label: 'Inicio', icon: Home, active: true },
-  { label: 'Asistentes GPT', icon: Bot },
-  { label: 'Mesa IA', icon: Sparkles },
-  { label: 'Documentacion', icon: FileText },
-  { label: 'Repositorios', icon: Files },
-  { label: 'Aplicaciones', icon: BriefcaseBusiness },
-  { label: 'Noticias', icon: Newspaper },
-  { label: 'Roadmap', icon: Lightbulb },
+  { label: 'Inicio', icon: Home, href: '#inicio' },
+  { label: 'Asistentes GPT', icon: Bot, href: '#asistentes' },
+  { label: 'Mesa IA', icon: Sparkles, href: '#mesa-ia' },
+  { label: 'Documentacion', icon: FileText, href: '#documentacion' },
+  { label: 'Repositorios', icon: Files, href: '#repositorios' },
+  { label: 'Aplicaciones', icon: BriefcaseBusiness, href: '#aplicaciones' },
+  { label: 'Noticias', icon: Newspaper, href: '#noticias' },
+  { label: 'Roadmap', icon: Lightbulb, href: '#roadmap' },
 ];
 
 type SidebarProps = {
@@ -30,6 +31,19 @@ type SidebarProps = {
 };
 
 export function Sidebar({ className = '', onClose, onNavigate }: SidebarProps) {
+  const [activeHash, setActiveHash] = useState(() =>
+    typeof window === 'undefined' ? '#inicio' : window.location.hash || '#inicio',
+  );
+
+  useEffect(() => {
+    const handleHashChange = () => setActiveHash(window.location.hash || '#inicio');
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   return (
     <aside className={`min-h-screen w-72 shrink-0 flex-col bg-neovantas-navy px-5 py-6 text-white ${className}`}>
       <div className="flex items-center justify-between gap-3 px-2">
@@ -58,21 +72,25 @@ export function Sidebar({ className = '', onClose, onNavigate }: SidebarProps) {
       <nav className="mt-9 flex flex-1 flex-col gap-1" aria-label="Navegacion principal">
         {navigation.map((item) => {
           const Icon = item.icon;
+          const isActive = activeHash === item.href;
 
           return (
-            <button
+            <a
               key={item.label}
-              type="button"
-              onClick={onNavigate}
+              href={item.href}
+              onClick={() => {
+                setActiveHash(item.href);
+                onNavigate?.();
+              }}
               className={`focus-ring flex h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium transition ${
-                item.active
+                isActive
                   ? 'bg-white text-neovantas-navy shadow-sm'
                   : 'text-slate-300 hover:bg-white/10 hover:text-white'
               }`}
             >
               <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="truncate">{item.label}</span>
-            </button>
+            </a>
           );
         })}
       </nav>
