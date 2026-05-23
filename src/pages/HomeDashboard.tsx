@@ -15,6 +15,7 @@ import {
   Newspaper,
   Rocket,
   SearchX,
+  SlidersHorizontal,
   Sparkles,
   Users,
   X,
@@ -138,6 +139,7 @@ function formatDate(value: string) {
 export function HomeDashboard() {
   const { searchValue, setSearchValue } = usePortalSearch();
   const [repositoryFilter, setRepositoryFilter] = useState<RepositoryFilterId>('all');
+  const [projectFilter, setProjectFilter] = useState('all');
 
   const searchQuery = normalizeSearch(searchValue);
   const isSearching = searchQuery.length > 0;
@@ -185,8 +187,44 @@ export function HomeDashboard() {
   );
 
   const visibleSharePointResources = useMemo(() => {
-    return filteredContent.sharePointResources.filter((item) => matchesRepositoryFilter(repositoryFilter, item));
-  }, [filteredContent.sharePointResources, repositoryFilter]);
+    return filteredContent.sharePointResources.filter((item) => {
+      const projectName = item.parentTitle ?? (item.scope === 'projects' && item.itemType === 'folder' ? item.title : '');
+
+      return (
+        matchesRepositoryFilter(repositoryFilter, item) &&
+        (projectFilter === 'all' || projectName === projectFilter)
+      );
+    });
+  }, [filteredContent.sharePointResources, projectFilter, repositoryFilter]);
+
+  const projectFilterOptions = useMemo(() => {
+    const projectNames = new Set<string>();
+
+    sharePointResources.forEach((item) => {
+      if (item.scope !== 'projects') {
+        return;
+      }
+
+      const projectName = item.parentTitle ?? (item.itemType === 'folder' ? item.title : undefined);
+
+      if (projectName) {
+        projectNames.add(projectName);
+      }
+    });
+
+    return Array.from(projectNames).sort((left, right) => left.localeCompare(right, 'es', { sensitivity: 'base' }));
+  }, []);
+
+  const sharePointStats = useMemo(() => {
+    const projectResources = sharePointResources.filter((item) => item.scope === 'projects');
+
+    return {
+      total: sharePointResources.length,
+      projects: projectResources.filter((item) => item.itemType === 'folder').length,
+      projectSheets: projectResources.filter((item) => normalizeSearch(item.category).includes('ficha')).length,
+      finalDocs: projectResources.filter((item) => normalizeSearch(item.category).includes('documento final')).length,
+    };
+  }, []);
 
   const totalResults =
     filteredContent.quickLinks.length +
@@ -455,7 +493,7 @@ export function HomeDashboard() {
         </div>
 
         <Card className="mt-4 overflow-hidden">
-          <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-4 py-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <Database className="h-5 w-5 text-neovantas-teal" aria-hidden="true" />
@@ -468,26 +506,64 @@ export function HomeDashboard() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtros de repositorio">
-              {repositoryFilters.map((filter) => {
-                const isActive = repositoryFilter === filter.id;
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <label className="flex h-9 min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600">
+                <SlidersHorizontal className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                <span className="sr-only">Filtrar por cliente o proyecto</span>
+                <select
+                  value={projectFilter}
+                  onChange={(event) => setProjectFilter(event.target.value)}
+                  className="min-w-0 border-0 bg-transparent text-sm font-semibold text-slate-700 outline-none"
+                >
+                  <option value="all">Todos los clientes</option>
+                  {projectFilterOptions.map((projectName) => (
+                    <option key={projectName} value={projectName}>
+                      {projectName}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    aria-pressed={isActive}
-                    className={`focus-ring h-9 rounded-lg border px-3 text-sm font-semibold transition ${
-                      isActive
-                        ? 'border-neovantas-blue bg-neovantas-blue text-white'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                    }`}
-                    onClick={() => setRepositoryFilter(filter.id)}
-                  >
-                    {filter.label}
-                  </button>
-                );
-              })}
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filtros de repositorio">
+                {repositoryFilters.map((filter) => {
+                  const isActive = repositoryFilter === filter.id;
+
+                  return (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      aria-pressed={isActive}
+                      className={`focus-ring h-9 rounded-lg border px-3 text-sm font-semibold transition ${
+                        isActive
+                          ? 'border-neovantas-blue bg-neovantas-blue text-white'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                      }`}
+                      onClick={() => setRepositoryFilter(filter.id)}
+                    >
+                      {filter.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 border-b border-slate-200 bg-white px-4 py-4 sm:grid-cols-4">
+            <div className="rounded-lg bg-slate-50 p-3">
+              <p className="text-lg font-semibold text-slate-950">{sharePointStats.total}</p>
+              <p className="mt-1 text-xs text-slate-500">Recursos</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-3">
+              <p className="text-lg font-semibold text-slate-950">{sharePointStats.projects}</p>
+              <p className="mt-1 text-xs text-slate-500">Proyectos</p>
+            </div>
+            <div className="rounded-lg bg-sky-50 p-3">
+              <p className="text-lg font-semibold text-sky-900">{sharePointStats.projectSheets}</p>
+              <p className="mt-1 text-xs text-sky-700">Fichas</p>
+            </div>
+            <div className="rounded-lg bg-emerald-50 p-3">
+              <p className="text-lg font-semibold text-emerald-900">{sharePointStats.finalDocs}</p>
+              <p className="mt-1 text-xs text-emerald-700">Docs finales</p>
             </div>
           </div>
 
