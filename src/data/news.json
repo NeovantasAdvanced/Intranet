@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ia-guidelines",
+    "title": "Nueva guia de uso responsable de IA",
+    "excerpt": "Ya esta disponible el primer marco interno para usar asistentes generativos en proyectos.",
+    "category": "Mesa IA",
+    "date": "2026-05-20",
+    "status": "Destacado",
+    "tone": "info"
+  },
+  {
+    "id": "office-day",
+    "title": "Proxima jornada presencial en Madrid",
+    "excerpt": "Agenda de sesiones, retrospectiva comercial y espacio de demos internas.",
+    "category": "Comunicacion",
+    "date": "2026-05-17",
+    "status": "Evento",
+    "tone": "warning"
+  },
+  {
+    "id": "benefits",
+    "title": "Actualizacion de beneficios empleados",
+    "excerpt": "Recopilacion de novedades en bienestar, formacion y conciliacion.",
+    "category": "Personas",
+    "date": "2026-05-09",
+    "status": "Nuevo",
+    "tone": "success"
+  }
+]

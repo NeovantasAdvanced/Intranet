@@ -1,0 +1,32 @@
+[
+  {
+    "id": "manual-empleado",
+    "title": "Manual del empleado",
+    "description": "Politicas corporativas, procedimientos internos y recursos basicos.",
+    "area": "Personas",
+    "updatedAt": "2026-05-12",
+    "href": "#manual-empleado",
+    "status": "Vigente",
+    "tone": "success"
+  },
+  {
+    "id": "kit-proyecto",
+    "title": "Kit de arranque de proyecto",
+    "description": "Plantillas, rituales y checklist para equipos de delivery.",
+    "area": "Delivery",
+    "updatedAt": "2026-04-28",
+    "href": "#kit-proyecto",
+    "status": "Revisado",
+    "tone": "info"
+  },
+  {
+    "id": "seguridad",
+    "title": "Politica de seguridad y datos",
+    "description": "Buenas practicas para manejo de informacion, clientes y herramientas.",
+    "area": "IT",
+    "updatedAt": "2026-04-18",
+    "href": "#seguridad",
+    "status": "Critico",
+    "tone": "critical"
+  }
+]

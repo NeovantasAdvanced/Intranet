@@ -1,0 +1,26 @@
+[
+  {
+    "id": "entra-id",
+    "title": "Autenticacion Microsoft 365",
+    "description": "Integracion con Entra ID y proteccion de rutas mediante Azure Static Web Apps.",
+    "quarter": "Q2 2026",
+    "status": "Preparado",
+    "tone": "info"
+  },
+  {
+    "id": "cms-json",
+    "title": "Edicion de contenidos",
+    "description": "Evolucion desde JSON versionado hacia flujo editorial con aprobacion.",
+    "quarter": "Q3 2026",
+    "status": "Pendiente",
+    "tone": "neutral"
+  },
+  {
+    "id": "metrics",
+    "title": "Analitica de uso",
+    "description": "Medicion de busquedas, accesos y adopcion de asistentes internos.",
+    "quarter": "Q3 2026",
+    "status": "Backlog",
+    "tone": "warning"
+  }
+]

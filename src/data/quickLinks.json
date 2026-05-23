@@ -1,0 +1,38 @@
+[
+  {
+    "id": "personas",
+    "title": "Personas",
+    "description": "Vacaciones, ausencias, nominas y tramites habituales.",
+    "href": "#personas",
+    "icon": "users",
+    "status": "Operativo",
+    "tone": "success"
+  },
+  {
+    "id": "soporte",
+    "title": "Soporte IT",
+    "description": "Alta de incidencias, solicitudes y seguimiento.",
+    "href": "#soporte-it",
+    "icon": "life-buoy",
+    "status": "SLA 24h",
+    "tone": "info"
+  },
+  {
+    "id": "calendario",
+    "title": "Calendario",
+    "description": "Eventos internos, formacion y fechas clave.",
+    "href": "#calendario",
+    "icon": "calendar",
+    "status": "Actualizado",
+    "tone": "success"
+  },
+  {
+    "id": "onboarding",
+    "title": "Onboarding",
+    "description": "Guias para nuevas incorporaciones y managers.",
+    "href": "#onboarding",
+    "icon": "rocket",
+    "status": "Nuevo",
+    "tone": "warning"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "mesa-ia",
+    "title": "Mesa IA",
+    "description": "Punto de entrada para casos de uso, buenas practicas y soporte en IA generativa.",
+    "owner": "AI Office",
+    "status": "Piloto",
+    "tone": "warning",
+    "tags": ["IA", "Gobierno", "Soporte"],
+    "href": "#mesa-ia"
+  },
+  {
+    "id": "consultor-neovantas",
+    "title": "Consultor Neovantas",
+    "description": "Asistente para preparar entregables, estructurar workshops y acelerar research.",
+    "owner": "Knowledge",
+    "status": "Activo",
+    "tone": "success",
+    "tags": ["Consultoria", "Productividad"],
+    "href": "#consultor"
+  },
+  {
+    "id": "legal-compliance",
+    "title": "Compliance Helper",
+    "description": "Consulta rapida de politicas internas y checklists de cumplimiento.",
+    "owner": "Legal",
+    "status": "Beta",
+    "tone": "info",
+    "tags": ["Politicas", "Riesgo"],
+    "href": "#compliance"
+  }
+]

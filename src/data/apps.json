@@ -1,0 +1,32 @@
+[
+  {
+    "id": "crm",
+    "title": "CRM Comercial",
+    "description": "Pipeline, oportunidades, cuentas y seguimiento comercial.",
+    "owner": "Ventas",
+    "href": "#crm",
+    "status": "Operativo",
+    "tone": "success",
+    "icon": "briefcase"
+  },
+  {
+    "id": "timesheets",
+    "title": "Timesheets",
+    "description": "Registro de horas, imputaciones y aprobaciones.",
+    "owner": "Operaciones",
+    "href": "#timesheets",
+    "status": "Mantenimiento",
+    "tone": "warning",
+    "icon": "clock"
+  },
+  {
+    "id": "knowledge-base",
+    "title": "Knowledge Base",
+    "description": "Repositorio de propuestas, benchmarks y entregables reutilizables.",
+    "owner": "Knowledge",
+    "href": "#knowledge",
+    "status": "Beta",
+    "tone": "info",
+    "icon": "database"
+  }
+]
