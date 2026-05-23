@@ -10,7 +10,12 @@
       "status": "Equipo",
       "tone": "success",
       "resourceCount": 11,
-      "tags": ["documentacion", "equipo", "politicas", "seguridad"]
+      "tags": [
+        "documentacion",
+        "equipo",
+        "politicas",
+        "seguridad"
+      ]
     },
     {
       "id": "rp-proyectos",
@@ -18,18 +23,23 @@
       "description": "Documentos finales, fichas y carpetas de proyectos realizados para consulta del equipo.",
       "owner": "Knowledge",
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP",
-      "updatedAt": "2026-05-23",
+      "updatedAt": "2026-02-09",
       "status": "Proyectos",
       "tone": "info",
       "resourceCount": 34,
-      "tags": ["proyectos", "fichas", "documentos finales", "clientes"]
+      "tags": [
+        "proyectos",
+        "fichas",
+        "documentos finales",
+        "clientes"
+      ]
     }
   ],
   "resources": [
     {
       "id": "team-adeslas",
       "title": "ADESLAS",
-      "description": "Carpeta compartida del equipo para documentacion del cliente ADESLAS.",
+      "description": "Carpeta compartida del equipo para documentacion de ADESLAS.",
       "repository": "Carpetas equipo Neovantas",
       "scope": "team",
       "category": "Cliente",
@@ -39,7 +49,10 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/ADESLAS",
       "status": "Carpeta",
       "tone": "neutral",
-      "tags": ["cliente", "documentacion", "equipo"]
+      "tags": [
+        "documentacion",
+        "equipo"
+      ]
     },
     {
       "id": "team-calendario",
@@ -54,11 +67,15 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Calendario",
       "status": "Carpeta",
       "tone": "neutral",
-      "tags": ["calendario", "planificacion", "equipo"]
+      "tags": [
+        "calendario",
+        "planificacion",
+        "equipo"
+      ]
     },
     {
-      "id": "team-codigo-interno",
-      "title": "Codigo interno de uso",
+      "id": "team-codigo-interno-de-uso",
+      "title": "Código interno de uso",
       "description": "Normas y pautas internas de uso para el equipo.",
       "repository": "Carpetas equipo Neovantas",
       "scope": "team",
@@ -69,11 +86,15 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/C%C3%B3digo%20interno%20de%20uso",
       "status": "Carpeta",
       "tone": "neutral",
-      "tags": ["normativa", "uso interno", "equipo"]
+      "tags": [
+        "normativa",
+        "uso interno",
+        "equipo"
+      ]
     },
     {
-      "id": "team-reporting-irecursos",
-      "title": "Herramienta de Reporting iRecursos",
+      "id": "team-herramienta-de-reporting-irecursos",
+      "title": "Herramienta de Reporting  iRecursos",
       "description": "Materiales de reporting y recursos asociados a iRecursos.",
       "repository": "Carpetas equipo Neovantas",
       "scope": "team",
@@ -84,11 +105,15 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Herramienta%20de%20Reporting%20%20iRecursos",
       "status": "Carpeta",
       "tone": "neutral",
-      "tags": ["reporting", "irecursos", "herramientas"]
+      "tags": [
+        "reporting",
+        "irecursos",
+        "herramientas"
+      ]
     },
     {
       "id": "team-politicas",
-      "title": "Politicas",
+      "title": "Políticas",
       "description": "Politicas corporativas disponibles para consulta del equipo.",
       "repository": "Carpetas equipo Neovantas",
       "scope": "team",
@@ -99,11 +124,15 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Pol%C3%ADticas",
       "status": "Carpeta",
       "tone": "critical",
-      "tags": ["politicas", "rrhh", "cumplimiento"]
+      "tags": [
+        "politicas",
+        "rrhh",
+        "cumplimiento"
+      ]
     },
     {
-      "id": "team-prl",
-      "title": "Prevencion de Riesgos Laborales",
+      "id": "team-prevencion-de-riesgos-laborales",
+      "title": "Prevención de Riesgos Laborales",
       "description": "Documentacion de prevencion, seguridad y salud laboral.",
       "repository": "Carpetas equipo Neovantas",
       "scope": "team",
@@ -114,10 +143,14 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Prevenci%C3%B3n%20de%20Riesgos%20Laborales",
       "status": "Carpeta",
       "tone": "warning",
-      "tags": ["prl", "prevencion", "personas"]
+      "tags": [
+        "prl",
+        "prevencion",
+        "personas"
+      ]
     },
     {
-      "id": "team-retorno",
+      "id": "team-retorno-gradual-a-los-puestos-de-trabajo",
       "title": "Retorno gradual a los puestos de trabajo",
       "description": "Recursos para retorno, organizacion y trabajo presencial.",
       "repository": "Carpetas equipo Neovantas",
@@ -129,10 +162,14 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Retorno%20gradual%20a%20los%20puestos%20de%20trabajo",
       "status": "Carpeta",
       "tone": "neutral",
-      "tags": ["retorno", "oficina", "personas"]
+      "tags": [
+        "retorno",
+        "oficina",
+        "personas"
+      ]
     },
     {
-      "id": "team-reuniones",
+      "id": "team-reuniones-de-oficina",
       "title": "Reuniones de Oficina",
       "description": "Actas, materiales y contenidos de reuniones de oficina.",
       "repository": "Carpetas equipo Neovantas",
@@ -144,10 +181,14 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Reuniones%20de%20Oficina",
       "status": "Carpeta",
       "tone": "info",
-      "tags": ["reuniones", "oficina", "comunicacion"]
+      "tags": [
+        "reuniones",
+        "oficina",
+        "comunicacion"
+      ]
     },
     {
-      "id": "team-rsc",
+      "id": "team-rsc-voluntariado",
       "title": "RSC-Voluntariado",
       "description": "Iniciativas de responsabilidad social corporativa y voluntariado.",
       "repository": "Carpetas equipo Neovantas",
@@ -159,10 +200,14 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/RSC-Voluntariado",
       "status": "Carpeta",
       "tone": "neutral",
-      "tags": ["rsc", "voluntariado", "cultura"]
+      "tags": [
+        "rsc",
+        "voluntariado",
+        "cultura"
+      ]
     },
     {
-      "id": "team-sgsi",
+      "id": "team-sgsi-public",
       "title": "SGSI-Public",
       "description": "Repositorio publico del SGSI con controles y evidencias de seguridad.",
       "repository": "Carpetas equipo Neovantas",
@@ -174,22 +219,29 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/SGSI-Public",
       "status": "Carpeta",
       "tone": "critical",
-      "tags": ["sgsi", "seguridad", "cumplimiento"]
+      "tags": [
+        "sgsi",
+        "seguridad",
+        "cumplimiento"
+      ]
     },
     {
       "id": "team-wetaca",
       "title": "WETACA",
-      "description": "Documentacion operativa relacionada con WETACA.",
+      "description": "Carpeta compartida del equipo para documentacion de WETACA.",
       "repository": "Carpetas equipo Neovantas",
       "scope": "team",
-      "category": "Operaciones",
+      "category": "Cliente",
       "itemType": "folder",
       "itemCount": 1,
       "updatedAt": "2026-05-23",
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/WETACA",
       "status": "Carpeta",
       "tone": "neutral",
-      "tags": ["operaciones", "equipo"]
+      "tags": [
+        "documentacion",
+        "equipo"
+      ]
     },
     {
       "id": "project-atento",
@@ -204,12 +256,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Atento",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-axa",
       "title": "AXA",
-      "description": "Carpeta con documento final y ficha de proyecto para AXA.",
+      "description": "Carpeta con fichas y entregables del proyecto para AXA.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -219,12 +276,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/AXA",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
-      "id": "project-banamex",
-      "title": "Banamex (Munoz)",
-      "description": "Carpeta con fichas y entregables del proyecto para Banamex.",
+      "id": "project-banamex-munoz",
+      "title": "Banamex (Muñoz)",
+      "description": "Carpeta con fichas y entregables del proyecto para Banamex (Muñoz).",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -234,12 +296,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Banamex%20(Mu%C3%B1oz)",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-bbva",
       "title": "BBVA",
-      "description": "Carpeta con entregables del proyecto para BBVA.",
+      "description": "Carpeta con fichas y entregables del proyecto para BBVA.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -249,7 +316,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/BBVA",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-bcp",
@@ -264,12 +336,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/BCP",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-caixabank",
       "title": "Caixabank",
-      "description": "Carpeta con entregables del proyecto para Caixabank.",
+      "description": "Carpeta con fichas y entregables del proyecto para Caixabank.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -279,12 +356,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Caixabank",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
-      "id": "project-caja-rural-sur",
+      "id": "project-caja-rural-del-sur-crs",
       "title": "Caja Rural del Sur (CRS)",
-      "description": "Carpeta con fichas y entregables del proyecto para Caja Rural del Sur.",
+      "description": "Carpeta con fichas y entregables del proyecto para Caja Rural del Sur (CRS).",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -294,12 +376,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Caja%20Rural%20del%20Sur%20(CRS)",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-cajamar",
       "title": "Cajamar",
-      "description": "Carpeta con entregables del proyecto para Cajamar.",
+      "description": "Carpeta con fichas y entregables del proyecto para Cajamar.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -309,7 +396,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Cajamar",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-dec",
@@ -324,12 +416,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/DEC",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-el-corte-ingles",
-      "title": "El Corte Ingles",
-      "description": "Carpeta con fichas y entregables del proyecto para El Corte Ingles.",
+      "title": "El Corte Inglés",
+      "description": "Carpeta con fichas y entregables del proyecto para El Corte Inglés.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -339,12 +436,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/El%20Corte%20Ingl%C3%A9s",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-espana-mejor",
-      "title": "Espana Mejor",
-      "description": "Carpeta con fichas y entregables del proyecto para Espana Mejor.",
+      "title": "España Mejor",
+      "description": "Carpeta con fichas y entregables del proyecto para España Mejor.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -354,12 +456,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Espa%C3%B1a%20Mejor",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-falabella",
       "title": "Falabella",
-      "description": "Carpeta con entregables del proyecto para Falabella.",
+      "description": "Carpeta con fichas y entregables del proyecto para Falabella.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -369,12 +476,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Falabella",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-ibercaja",
       "title": "Ibercaja",
-      "description": "Carpeta con entregables del proyecto para Ibercaja.",
+      "description": "Carpeta con fichas y entregables del proyecto para Ibercaja.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -384,12 +496,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Ibercaja",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-iberia",
       "title": "Iberia",
-      "description": "Carpeta con entregables del proyecto para Iberia.",
+      "description": "Carpeta con fichas y entregables del proyecto para Iberia.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -399,7 +516,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Iberia",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-imagin",
@@ -414,12 +536,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Imagin",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-inicia",
       "title": "Inicia",
-      "description": "Carpeta con entregables del proyecto para Inicia.",
+      "description": "Carpeta con fichas y entregables del proyecto para Inicia.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -429,12 +556,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Inicia",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-itau",
-      "title": "Itau",
-      "description": "Carpeta con entregables del proyecto para Itau.",
+      "title": "Itaú",
+      "description": "Carpeta con fichas y entregables del proyecto para Itaú.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -444,12 +576,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Ita%C3%BA",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-kruk",
       "title": "Kruk",
-      "description": "Carpeta con entregables del proyecto para Kruk.",
+      "description": "Carpeta con fichas y entregables del proyecto para Kruk.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -459,12 +596,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Kruk",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-linea-directa",
-      "title": "Linea Directa",
-      "description": "Carpeta con fichas y entregables del proyecto para Linea Directa.",
+      "title": "Línea Directa",
+      "description": "Carpeta con fichas y entregables del proyecto para Línea Directa.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -474,12 +616,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/L%C3%ADnea%20Directa",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-mapfre",
       "title": "Mapfre",
-      "description": "Carpeta con entregables del proyecto para Mapfre.",
+      "description": "Carpeta con fichas y entregables del proyecto para Mapfre.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -489,12 +636,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Mapfre",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-milleniumbcp",
       "title": "Milleniumbcp",
-      "description": "Carpeta con entregables del proyecto para Milleniumbcp.",
+      "description": "Carpeta con fichas y entregables del proyecto para Milleniumbcp.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -504,10 +656,15 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Milleniumbcp",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
-      "id": "project-movistar-prosegur",
+      "id": "project-movistar-prosegur-alarmas",
       "title": "Movistar Prosegur Alarmas",
       "description": "Carpeta con fichas y entregables del proyecto para Movistar Prosegur Alarmas.",
       "repository": "Repositorio de proyectos (RP)",
@@ -519,7 +676,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Movistar%20Prosegur%20Alarmas",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-repsol",
@@ -534,7 +696,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Repsol",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-sabadell",
@@ -549,7 +716,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Sabadell",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-santalucia",
@@ -564,7 +736,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Santalucia",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-santander",
@@ -579,12 +756,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Santander",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-scf",
       "title": "SCF",
-      "description": "Carpeta con entregables del proyecto para SCF.",
+      "description": "Carpeta con fichas y entregables del proyecto para SCF.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -594,7 +776,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/SCF",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-segurcaixa-adeslas",
@@ -609,12 +796,35 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/SegurCaixa%20Adeslas",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
+    },
+    {
+      "id": "project-tabla-proyectos-xlsx",
+      "title": "Tabla proyectos.xlsx",
+      "description": "Indice maestro de proyectos realizados en el repositorio RP.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Indice",
+      "itemType": "file",
+      "updatedAt": "2026-02-09",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/_layouts/15/Doc.aspx?sourcedoc=%7B5009272B-28B0-4B03-8C08-A9FB8580F4C8%7D&file=Tabla%20proyectos.xlsx&action=default&mobileredirect=true",
+      "status": "XLSX",
+      "tone": "success",
+      "tags": [
+        "indice",
+        "proyectos",
+        "clientes"
+      ]
     },
     {
       "id": "project-telefonica",
-      "title": "Telefonica",
-      "description": "Carpeta con fichas y entregables del proyecto para Telefonica.",
+      "title": "Telefónica",
+      "description": "Carpeta con fichas y entregables del proyecto para Telefónica.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -624,12 +834,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Telef%C3%B3nica",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-varios",
       "title": "Varios",
-      "description": "Carpeta con entregables de proyectos y casos varios.",
+      "description": "Carpeta con fichas y entregables del proyecto para Varios.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -639,7 +854,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Varios",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-verifica",
@@ -654,7 +874,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Verifica",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-verti",
@@ -669,12 +894,17 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Verti",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     },
     {
       "id": "project-vidacaixa",
       "title": "VidaCaixa",
-      "description": "Carpeta con entregables del proyecto para VidaCaixa.",
+      "description": "Carpeta con fichas y entregables del proyecto para VidaCaixa.",
       "repository": "Repositorio de proyectos (RP)",
       "scope": "projects",
       "category": "Proyecto realizado",
@@ -684,21 +914,12 @@
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/VidaCaixa",
       "status": "Proyecto",
       "tone": "neutral",
-      "tags": ["proyecto", "ficha", "documento final", "cliente"]
-    },
-    {
-      "id": "project-index",
-      "title": "Tabla proyectos.xlsx",
-      "description": "Indice maestro de proyectos realizados en el repositorio RP.",
-      "repository": "Repositorio de proyectos (RP)",
-      "scope": "projects",
-      "category": "Indice",
-      "itemType": "file",
-      "updatedAt": "2026-02-09",
-      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/_layouts/15/Doc.aspx?sourcedoc=%7B5009272B-28B0-4B03-8C08-A9FB8580F4C8%7D&file=Tabla%20proyectos.xlsx&action=default&mobileredirect=true",
-      "status": "Excel",
-      "tone": "success",
-      "tags": ["indice", "excel", "proyectos", "clientes"]
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
     }
   ]
 }
