@@ -90,9 +90,11 @@ Guia operativa: `docs/sharepoint-sync-access.md`.
 
 ## Autenticacion futura
 
-No hay login real en este MVP. La integracion recomendada para la siguiente fase es:
+El portal incluye rutas de acceso `/login` y `/logout` para usar la autenticacion integrada de Azure Static Web Apps con Microsoft Entra ID. El header consulta `/.auth/me` cuando la aplicacion esta desplegada en Azure para mostrar la sesion Microsoft 365 si existe.
 
-- Usar autenticacion integrada de Azure Static Web Apps con proveedor Microsoft Entra ID.
+La siguiente fase recomendada es restringir el acceso completo al portal a usuarios Neovantas:
+
+- Configurar proveedor Microsoft Entra ID ligado al tenant Neovantas si se quiere evitar que cualquier cuenta Microsoft autenticada acceda al portal.
 - Proteger rutas mediante `staticwebapp.config.json` y roles.
 - Leer identidad de usuario desde `/.auth/me` cuando la aplicacion se ejecute en Azure.
 - Crear una capa `src/auth` en la siguiente iteracion para encapsular usuario, roles y estados de sesion.
