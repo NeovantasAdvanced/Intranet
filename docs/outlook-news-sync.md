@@ -13,7 +13,16 @@ La intranet puede regenerar `src/data/news.json` leyendo correos de Outlook con 
 
 ## Configuracion recomendada
 
-Lo mas seguro es crear una carpeta o buzon dedicado, por ejemplo:
+Para los briefings actuales de Neovantas, la configuracion recomendada es leer el buzon que genera los correos y no los buzones personales de destinatarios:
+
+- Buzon: `AdvancedAnalytics@neovantas.com`
+- Carpeta: `sentitems`
+- Remitente: `advanced.analytics@neovantas.com`
+- Asunto contiene: `Noticias`
+
+Asi se publican los envios originales y se evitan respuestas, reenvios o conversaciones personales.
+
+Si mas adelante se prefiere aislarlo aun mas, lo mas seguro es crear una carpeta o buzon dedicado, por ejemplo:
 
 - Buzon compartido: `intranet.news@neovantas.com`
 - Carpeta: `Intranet`
@@ -63,9 +72,9 @@ Si no se definen estos tres, el workflow intenta reutilizar:
 
 Configurar en `Settings > Secrets and variables > Actions > Variables`:
 
-- `NEWS_MAIL_FOLDER_ID`: carpeta a leer. Por defecto `inbox`.
-- `NEWS_SENDER`: remitente permitido, por ejemplo `comunicacion@neovantas.com`.
-- `NEWS_SUBJECT_CONTAINS`: texto que debe contener el asunto, por ejemplo `Noticias`.
+- `NEWS_MAIL_FOLDER_ID`: carpeta a leer. Por defecto `sentitems`.
+- `NEWS_SENDER`: remitente permitido. Por defecto `advanced.analytics@neovantas.com`.
+- `NEWS_SUBJECT_CONTAINS`: texto que debe contener el asunto. Por defecto `Noticias`.
 - `NEWS_CATEGORY`: categoria visible en intranet. Por defecto `Comunicacion`.
 - `NEWS_STATUS`: badge visible. Por defecto `Nuevo`.
 - `NEWS_SOURCE`: origen visible. Por defecto `Outlook`.
@@ -84,6 +93,13 @@ Para probar sin dejar todas las variables creadas:
 3. Rellenar `mailbox_user_id`, `mail_folder_id`, `sender` y/o `subject_contains`.
 4. Revisar el log `Outlook news synced`.
 5. Si hay cambios, revisar el commit `chore: sync Outlook news`.
+
+Ejemplo de prueba recomendado:
+
+- `mailbox_user_id`: `AdvancedAnalytics@neovantas.com`
+- `mail_folder_id`: `sentitems`
+- `sender`: `advanced.analytics@neovantas.com`
+- `subject_contains`: `Noticias`
 
 Ejemplo de prueba con la carpeta candidata:
 

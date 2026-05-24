@@ -19,14 +19,17 @@ on:
       mail_folder_id:
         description: 'Mail folder id or well-known folder, for example inbox'
         required: false
+        default: 'sentitems'
         type: string
       sender:
         description: 'Optional exact sender email to import'
         required: false
+        default: 'advanced.analytics@neovantas.com'
         type: string
       subject_contains:
         description: 'Optional text that the subject must contain'
         required: false
+        default: 'Noticias'
         type: string
       lookback_days:
         description: 'How many days back to search'
@@ -79,9 +82,9 @@ jobs:
           NEWS_CLIENT_ID: ${{ secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
           NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
           NEWS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.NEWS_MAILBOX_USER_ID }}
-          NEWS_MAIL_FOLDER_ID: ${{ inputs.mail_folder_id || vars.NEWS_MAIL_FOLDER_ID || 'inbox' }}
-          NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER }}
-          NEWS_SUBJECT_CONTAINS: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_CONTAINS }}
+          NEWS_MAIL_FOLDER_ID: ${{ inputs.mail_folder_id || vars.NEWS_MAIL_FOLDER_ID || 'sentitems' }}
+          NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER || 'advanced.analytics@neovantas.com' }}
+          NEWS_SUBJECT_CONTAINS: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_CONTAINS || 'Noticias' }}
           NEWS_CATEGORY: ${{ vars.NEWS_CATEGORY || 'Comunicacion' }}
           NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Outlook' }}
