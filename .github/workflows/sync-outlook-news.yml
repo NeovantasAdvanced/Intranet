@@ -11,6 +11,33 @@ on:
   schedule:
     - cron: '35 6 * * 1-5'
   workflow_dispatch:
+    inputs:
+      mailbox_user_id:
+        description: 'Mailbox UPN or Graph id, for example info@neovantas.com'
+        required: false
+        type: string
+      mail_folder_id:
+        description: 'Mail folder id or well-known folder, for example inbox'
+        required: false
+        type: string
+      sender:
+        description: 'Optional exact sender email to import'
+        required: false
+        type: string
+      subject_contains:
+        description: 'Optional text that the subject must contain'
+        required: false
+        type: string
+      lookback_days:
+        description: 'How many days back to search'
+        required: false
+        default: '14'
+        type: string
+      max_items:
+        description: 'Maximum Outlook news items to publish'
+        required: false
+        default: '10'
+        type: string
 
 permissions:
   contents: write
@@ -35,11 +62,11 @@ jobs:
       - name: Check news configuration
         id: news-config
         env:
-          NEWS_MAILBOX_USER_ID: ${{ secrets.NEWS_MAILBOX_USER_ID }}
+          NEWS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.NEWS_MAILBOX_USER_ID }}
         run: |
           if [ -z "$NEWS_MAILBOX_USER_ID" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::NEWS_MAILBOX_USER_ID is not configured. Skipping Outlook news sync."
+            echo "::notice::NEWS_MAILBOX_USER_ID is not configured. Set the secret or pass mailbox_user_id when running manually. Skipping Outlook news sync."
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
@@ -51,16 +78,16 @@ jobs:
           NEWS_TENANT_ID: ${{ secrets.NEWS_TENANT_ID || secrets.SHAREPOINT_TENANT_ID }}
           NEWS_CLIENT_ID: ${{ secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
           NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
-          NEWS_MAILBOX_USER_ID: ${{ secrets.NEWS_MAILBOX_USER_ID }}
-          NEWS_MAIL_FOLDER_ID: ${{ vars.NEWS_MAIL_FOLDER_ID || 'inbox' }}
-          NEWS_SENDER: ${{ vars.NEWS_SENDER }}
-          NEWS_SUBJECT_CONTAINS: ${{ vars.NEWS_SUBJECT_CONTAINS }}
+          NEWS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.NEWS_MAILBOX_USER_ID }}
+          NEWS_MAIL_FOLDER_ID: ${{ inputs.mail_folder_id || vars.NEWS_MAIL_FOLDER_ID || 'inbox' }}
+          NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER }}
+          NEWS_SUBJECT_CONTAINS: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_CONTAINS }}
           NEWS_CATEGORY: ${{ vars.NEWS_CATEGORY || 'Comunicacion' }}
           NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Outlook' }}
           NEWS_ALLOW_UNFILTERED_INBOX: ${{ vars.NEWS_ALLOW_UNFILTERED_INBOX || 'false' }}
-          NEWS_LOOKBACK_DAYS: ${{ vars.NEWS_LOOKBACK_DAYS || '14' }}
-          NEWS_MAX_ITEMS: ${{ vars.NEWS_MAX_ITEMS || '10' }}
+          NEWS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.NEWS_LOOKBACK_DAYS || '14' }}
+          NEWS_MAX_ITEMS: ${{ inputs.max_items || vars.NEWS_MAX_ITEMS || '10' }}
 
       - name: Validate build
         if: steps.news-config.outputs.configured == 'true'
