@@ -12,6 +12,8 @@ La intranet usa la autenticacion integrada de Azure Static Web Apps con Microsof
 
 Esta configuracion esta en `staticwebapp.config.json`.
 
+El build copia `staticwebapp.config.json` dentro de `dist/` antes de desplegar. Esto es necesario porque Azure Static Web Apps sirve el contenido de `output_location`; si el archivo no llega al artefacto publicado, las reglas de login no se aplican.
+
 ## Prueba en Azure
 
 1. Desplegar `main` en Azure Static Web Apps.
