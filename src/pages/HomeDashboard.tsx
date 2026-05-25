@@ -6,11 +6,13 @@ import {
   CalendarDays,
   Clock3,
   Database,
+  Download,
   ExternalLink,
   FileText,
   FileSpreadsheet,
   Files,
   FolderOpen,
+  KeyRound,
   LifeBuoy,
   Newspaper,
   Rocket,
@@ -78,6 +80,7 @@ const iconMap = {
   briefcase: BriefcaseBusiness,
   clock: Clock3,
   database: Database,
+  key: KeyRound,
 };
 
 type SearchableValue = string | string[] | undefined;
@@ -126,6 +129,14 @@ function matchesRepositoryFilter(filterId: RepositoryFilterId, item: (typeof sha
   }
 
   return item.scope === filterId;
+}
+
+function withDownloadParam(href: string) {
+  if (href.includes('download=1')) {
+    return href;
+  }
+
+  return `${href}${href.includes('?') ? '&' : '?'}download=1`;
 }
 
 function formatDate(value: string) {
@@ -570,14 +581,17 @@ export function HomeDashboard() {
           {visibleSharePointResources.length > 0 ? (
             <div className="max-h-[560px] divide-y divide-slate-200 overflow-y-auto">
               {visibleSharePointResources.map((item) => {
-                const ResourceIcon = item.itemType === 'file' ? FileSpreadsheet : FolderOpen;
+                const isCredentialResource = normalizeSearch(item.category).includes('credencial');
+                const ResourceIcon = isCredentialResource ? KeyRound : item.itemType === 'file' ? FileSpreadsheet : FolderOpen;
+                const href = isCredentialResource ? withDownloadParam(item.href) : item.href;
 
                 return (
                   <a
                     key={item.id}
-                    href={item.href}
+                    href={href}
                     target="_blank"
                     rel="noreferrer"
+                    download={isCredentialResource ? true : undefined}
                     className="focus-ring flex flex-col gap-3 px-4 py-4 transition hover:bg-slate-50 md:flex-row md:items-start"
                   >
                     <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-emerald-50 text-neovantas-teal">
@@ -596,7 +610,9 @@ export function HomeDashboard() {
                     </div>
                     <div className="flex shrink-0 items-center justify-between gap-4 text-sm text-slate-500 md:w-44 md:justify-end">
                       <span>
-                        {item.itemType === 'file'
+                        {isCredentialResource
+                          ? 'Descarga'
+                          : item.itemType === 'file'
                           ? 'Archivo'
                           : item.itemCount === 1
                             ? '1 elemento'
@@ -695,6 +711,7 @@ export function HomeDashboard() {
         <div className="grid gap-4 md:grid-cols-3">
           {filteredContent.apps.map((app) => {
             const Icon = iconMap[app.icon as keyof typeof iconMap] ?? BriefcaseBusiness;
+            const isDownloadLink = app.href.includes('.kdbx') || normalizeSearch(app.status).includes('keepass');
 
             return (
               <Card key={app.id} className="p-5">
@@ -708,8 +725,15 @@ export function HomeDashboard() {
                 <p className="mt-2 text-sm leading-6 text-slate-600">{app.description}</p>
                 <div className="mt-5 flex items-center justify-between text-sm">
                   <span className="font-medium text-slate-500">{app.owner}</span>
-                  <a href={app.href} className="font-semibold text-neovantas-blue">
-                    Acceder
+                  <a
+                    href={isDownloadLink ? withDownloadParam(app.href) : app.href}
+                    target={app.href.startsWith('#') ? undefined : '_blank'}
+                    rel={app.href.startsWith('#') ? undefined : 'noreferrer'}
+                    download={isDownloadLink ? true : undefined}
+                    className="inline-flex items-center gap-1.5 font-semibold text-neovantas-blue"
+                  >
+                    {isDownloadLink ? 'Descargar' : 'Acceder'}
+                    {isDownloadLink ? <Download className="h-4 w-4" aria-hidden="true" /> : null}
                   </a>
                 </div>
               </Card>

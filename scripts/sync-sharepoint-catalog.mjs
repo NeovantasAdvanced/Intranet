@@ -19,7 +19,6 @@ const sharePointConfig = {
       status: 'Equipo',
       tone: 'success',
       tags: ['documentacion', 'equipo', 'politicas', 'seguridad'],
-      excludeExtensions: ['.kdbx'],
     },
     {
       id: 'rp-proyectos',
@@ -85,6 +84,33 @@ function shouldIncludeItem(item, repository) {
 
 function teamMetadata(item) {
   const key = normalizeSearch(item.name);
+  const extension = getFileExtension(item).toLowerCase();
+
+  if (key.includes('herramientas-neovantas') || key.includes('herramientas_neovantas') || extension === '.kdbx') {
+    return {
+      category: 'Credenciales',
+      description:
+        'Base KeePass con el acceso a contrasenas de herramientas disponibles para empleados: Freepik, Flaticon, Magnific/Magnifict, DeepL, Genially, ChatGPT, iSpring, Canva y Built for Mars.',
+      status: 'Descarga',
+      tone: 'critical',
+      tags: [
+        'credenciales',
+        'contrasenas',
+        'keepass',
+        'herramientas',
+        'freepik',
+        'flaticon',
+        'magnific',
+        'magnifict',
+        'deepl',
+        'genially',
+        'chatgpt',
+        'ispring',
+        'canva',
+        'built for mars',
+      ],
+    };
+  }
 
   if (key.includes('politica')) {
     return {

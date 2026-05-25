@@ -9,7 +9,7 @@
       "updatedAt": "2026-05-23",
       "status": "Equipo",
       "tone": "success",
-      "resourceCount": 11,
+      "resourceCount": 12,
       "tags": [
         "documentacion",
         "equipo",
@@ -109,6 +109,35 @@
         "reporting",
         "irecursos",
         "herramientas"
+      ]
+    },
+    {
+      "id": "team-herramientas-neovantas-kdbx",
+      "title": "Herramientas_Neovantas.kdbx",
+      "description": "Base KeePass con el acceso a contrasenas de herramientas disponibles para empleados: Freepik, Flaticon, Magnific/Magnifict, DeepL, Genially, ChatGPT, iSpring, Canva y Built for Mars.",
+      "repository": "Carpetas equipo Neovantas",
+      "scope": "team",
+      "category": "Credenciales",
+      "itemType": "file",
+      "updatedAt": "2026-05-25",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Herramientas_Neovantas.kdbx?download=1",
+      "status": "Descarga",
+      "tone": "critical",
+      "tags": [
+        "credenciales",
+        "contrasenas",
+        "keepass",
+        "herramientas",
+        "freepik",
+        "flaticon",
+        "magnific",
+        "magnifict",
+        "deepl",
+        "genially",
+        "chatgpt",
+        "ispring",
+        "canva",
+        "built for mars"
       ]
     },
     {

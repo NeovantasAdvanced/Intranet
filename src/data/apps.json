@@ -1,5 +1,15 @@
 [
   {
+    "id": "herramientas-passwords",
+    "title": "Contraseñas de herramientas",
+    "description": "Base KeePass con accesos de Freepik, Flaticon, Magnific/Magnifict, DeepL, Genially, ChatGPT, iSpring, Canva y Built for Mars.",
+    "owner": "Advanced Analytics",
+    "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Herramientas_Neovantas.kdbx?download=1",
+    "status": "KeePass",
+    "tone": "critical",
+    "icon": "key"
+  },
+  {
     "id": "crm",
     "title": "CRM Comercial",
     "description": "Pipeline, oportunidades, cuentas y seguimiento comercial.",
