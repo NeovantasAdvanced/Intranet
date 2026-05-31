@@ -34,5 +34,50 @@
     "icon": "rocket",
     "status": "Nuevo",
     "tone": "warning"
+  },
+  {
+    "id": "herramientas-passwords",
+    "title": "KeyPass",
+    "description": "Acceso al archivo con claves de herramientas compartidas.",
+    "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Herramientas_Neovantas.kdbx?download=1",
+    "icon": "key",
+    "status": "KeePass",
+    "tone": "critical"
+  },
+  {
+    "id": "factorial",
+    "title": "Factorial",
+    "description": "Gestion de personas, ausencias y solicitudes internas.",
+    "href": "https://app.factorialhr.com/",
+    "icon": "users",
+    "status": "Operativo",
+    "tone": "success"
+  },
+  {
+    "id": "chatgpt",
+    "title": "ChatGPT",
+    "description": "Asistente de trabajo para redaccion, analisis y apoyo diario.",
+    "href": "https://chatgpt.com/",
+    "icon": "briefcase",
+    "status": "Operativo",
+    "tone": "info"
+  },
+  {
+    "id": "deepl",
+    "title": "DeepL",
+    "description": "Traduccion de documentos y mensajes de trabajo.",
+    "href": "https://www.deepl.com/",
+    "icon": "database",
+    "status": "Operativo",
+    "tone": "success"
+  },
+  {
+    "id": "canva",
+    "title": "Canva",
+    "description": "Plantillas y material visual para propuestas y presentaciones.",
+    "href": "https://www.canva.com/",
+    "icon": "calendar",
+    "status": "Operativo",
+    "tone": "info"
   }
 ]

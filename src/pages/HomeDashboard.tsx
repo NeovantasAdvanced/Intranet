@@ -224,7 +224,17 @@ export function HomeDashboard() {
     filteredContent.sharePointResources.length +
     filteredContent.apps.length;
 
-  const priorityLinks = ['herramientas-passwords', 'personas', 'soporte', 'calendario', 'onboarding'];
+  const priorityLinks = [
+    'herramientas-passwords',
+    'factorial',
+    'chatgpt',
+    'deepl',
+    'canva',
+    'personas',
+    'soporte',
+    'calendario',
+    'onboarding',
+  ];
   const orderedQuickLinks = [...filteredContent.quickLinks].sort((left, right) => {
     const leftRank = priorityLinks.indexOf(left.id);
     const rightRank = priorityLinks.indexOf(right.id);
@@ -257,7 +267,7 @@ export function HomeDashboard() {
         id="inicio"
         className="scroll-mt-40 overflow-hidden rounded-[20px] bg-gradient-to-br from-neovantas-navy via-neovantas-blue to-[#123D74] p-6 text-white shadow-elevated md:p-8 lg:p-10"
       >
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:items-stretch">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:items-stretch">
           <div className="flex h-full flex-col justify-between gap-8">
             <div className="max-w-3xl">
               <Badge tone="info" className="border-white/20 bg-white/10 text-white">
@@ -290,17 +300,8 @@ export function HomeDashboard() {
           </div>
 
           <div className="grid gap-4">
-            <div className="rounded-[14px] border border-white/15 bg-white/10 p-5 backdrop-blur">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                <p className="text-sm font-semibold text-white/60">Estado del portal</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Operativo</h2>
-              </div>
-              <Badge tone="success" className="border-emerald-300/30 bg-emerald-300/10 text-emerald-100">
-                En linea
-              </Badge>
-            </div>
-            <div className="mt-6 border-t border-white/10 pt-5">
+              <div className="rounded-[14px] border border-white/15 bg-white/10 p-5 backdrop-blur">
+            <div className="border-t border-white/10 pt-0">
               <p className="text-sm font-medium text-white/60">Autenticacion Microsoft 365</p>
               <p className="mt-2 text-sm leading-6 text-white/80">
                 El portal entra por Entra ID en Azure Static Web Apps y protege las rutas internas.

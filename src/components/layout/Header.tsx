@@ -64,7 +64,7 @@ export function Header() {
     <header className="bg-neovantas-navy px-4 text-white md:px-8">
       <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-4 py-3">
         <a href="#inicio" className="focus-ring flex shrink-0 items-center gap-3 rounded-lg">
-          <span className="grid h-10 place-items-center rounded-[10px] bg-white px-2">
+          <span className="flex h-10 items-center">
             <img src={neovantasLogo} alt="Neovantas" className="h-7 w-auto max-w-[9rem] object-contain" />
           </span>
           <span className="hidden min-w-0 sm:block">
