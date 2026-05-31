@@ -7,8 +7,8 @@ import {
   Newspaper,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
-import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { APP_VERSION } from '../../config/appVersion';
+import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { Header } from './Header';
 
 type AppLayoutProps = {
@@ -86,8 +86,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         <footer className="px-4 pb-4 md:px-8">
           <div className="mx-auto flex w-full max-w-[1200px] justify-end">
-            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-neovantas-muted">
-              Versión {APP_VERSION}
+            <span className="rounded-full border border-neovantas-line bg-white px-3 py-1 text-sm font-semibold text-neovantas-navy shadow-sm">
+              Version {APP_VERSION}
             </span>
           </div>
         </footer>

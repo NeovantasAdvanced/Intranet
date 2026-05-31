@@ -304,16 +304,6 @@ export function HomeDashboard() {
           </div>
 
           <div className="grid gap-4">
-              <div className="rounded-[14px] border border-white/15 bg-white/10 p-5 backdrop-blur">
-            <div className="border-t border-white/10 pt-0">
-              <p className="text-sm font-medium text-white/60">Autenticacion Microsoft 365</p>
-              <p className="mt-2 text-sm leading-6 text-white/80">
-                El portal entra por Entra ID en Azure Static Web Apps y protege las rutas internas.
-                El contenido se sincroniza desde SharePoint y correo corporativo.
-              </p>
-            </div>
-          </div>
-
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
                 <p className="text-3xl font-semibold text-white">{quickLinks.length}</p>

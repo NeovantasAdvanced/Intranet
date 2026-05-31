@@ -1,11 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import packageJson from './package.json';
 
-const buildSha =
-  (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.GITHUB_SHA?.slice(0, 7) ??
-  'local';
-const appVersion = `${packageJson.version}+${buildSha}`;
+const appVersion =
+  (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.GITHUB_RUN_NUMBER ?? '0';
 
 export default defineConfig({
   plugins: [react()],
