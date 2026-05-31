@@ -1,6 +1,6 @@
 import { Bell, LogIn, LogOut, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import neovantasLogo from '../../assets/neovantas-logo-mark.svg';
+import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
 import { usePortalSearch } from '../../context/PortalSearchContext';
 import { SearchBar } from '../ui/SearchBar';
 
@@ -64,8 +64,8 @@ export function Header() {
     <header className="bg-neovantas-navy px-4 text-white md:px-8">
       <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-4 py-3">
         <a href="#inicio" className="focus-ring flex shrink-0 items-center gap-3 rounded-lg">
-          <span className="grid h-10 w-10 place-items-center rounded-[10px] bg-white">
-            <img src={neovantasLogo} alt="Neovantas" className="h-7 w-7 object-contain" />
+          <span className="grid h-10 place-items-center rounded-[10px] bg-white px-2">
+            <img src={neovantasLogo} alt="Neovantas" className="h-7 w-auto max-w-[9rem] object-contain" />
           </span>
           <span className="hidden min-w-0 sm:block">
             <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
