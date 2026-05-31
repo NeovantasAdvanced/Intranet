@@ -6,10 +6,10 @@ Repositorio GitHub: https://github.com/NeovantasAdvanced/Intranet
 
 ## Objetivo del MVP
 
-- Centralizar accesos rapidos, GPTs/asistentes, noticias, documentacion, aplicaciones internas y roadmap de Mesa IA.
-- Validar una experiencia visual moderna y corporativa con sidebar oscuro, fondo claro, tarjetas, buscador y badges de estado.
+- Centralizar accesos rapidos, documentacion SharePoint, noticias, aplicaciones internas y un bloque de gobierno y lanzamiento.
+- Validar una experiencia visual moderna y corporativa con cabecera oscura, hero ejecutivo, tarjetas, buscador y badges de estado.
 - Mantener el contenido desacoplado de la UI mediante JSON versionado en GitHub.
-- Dejar preparada la evolucion a autenticacion Microsoft 365 / Entra ID sin implementar login real en esta fase.
+- Dejar preparada y protegida la autenticacion Microsoft 365 / Entra ID en Azure Static Web Apps.
 
 ## Estructura inicial
 
@@ -19,7 +19,6 @@ src/
     layout/
       AppLayout.tsx
       Header.tsx
-      Sidebar.tsx
     ui/
       Badge.tsx
       Card.tsx
@@ -27,7 +26,6 @@ src/
       SectionHeader.tsx
   data/
     apps.json
-    assistants.json
     documents.json
     news.json
     quickLinks.json
@@ -57,12 +55,11 @@ npm run sync:news
 Los contenidos iniciales viven en `src/data`. Cada JSON representa una seccion del portal:
 
 - `quickLinks.json`: accesos frecuentes.
-- `assistants.json`: GPTs y asistentes internos.
 - `news.json`: comunicaciones y novedades.
 - `documents.json`: documentacion corporativa.
 - `sharepointCatalog.json`: accesos a repositorios SharePoint y recursos filtrables.
 - `apps.json`: aplicaciones internas.
-- `roadmap.json`: evolucion prevista, incluida Mesa IA y autenticacion futura.
+- `roadmap.json`: bloque de gobierno minimo y lanzamiento.
 
 ## Sincronizacion SharePoint
 
@@ -77,6 +74,8 @@ El script consulta Microsoft Graph y guarda solo metadatos y enlaces. No copia d
 El workflow `.github/workflows/sync-sharepoint-catalog.yml` se ejecuta todos los dias a las 05:15 UTC y tambien permite ejecucion manual desde GitHub Actions. Si detecta cambios en SharePoint, hace commit de `sharepointCatalog.json`; ese push dispara el despliegue existente de Azure Static Web Apps.
 
 La sincronizacion indexa las carpetas principales de `Carpetas equipo Neovantas` y `RP`. En `RP` tambien baja un nivel dentro de cada carpeta de cliente/proyecto para exponer fichas de proyecto y documentos finales como recursos filtrables.
+
+El catalogo tambien expone `Herramientas_Neovantas.kdbx` como recurso descargable dentro de `Carpetas equipo Neovantas`, para que el acceso a contrasenas de herramientas quede visible en la intranet sin intentar abrir el archivo en el navegador.
 
 Configurar estos secrets en GitHub:
 
@@ -97,17 +96,10 @@ El script guarda solo asunto, resumen, fecha, enlace a Outlook y metadatos. No c
 
 Guia operativa: `docs/outlook-news-sync.md`.
 
-## Autenticacion futura
+## Autenticacion Microsoft
 
 El portal incluye rutas de acceso `/login` y `/logout` para usar la autenticacion integrada de Azure Static Web Apps con Microsoft Entra ID. El header consulta `/.auth/me` cuando la aplicacion esta desplegada en Azure para mostrar la sesion Microsoft 365 si existe.
-
-La siguiente fase recomendada es restringir el acceso completo al portal a usuarios Neovantas:
-
-- Configurar proveedor Microsoft Entra ID ligado al tenant Neovantas si se quiere evitar que cualquier cuenta Microsoft autenticada acceda al portal.
-- Proteger rutas mediante `staticwebapp.config.json` y roles.
-- Leer identidad de usuario desde `/.auth/me` cuando la aplicacion se ejecute en Azure.
-- Crear una capa `src/auth` en la siguiente iteracion para encapsular usuario, roles y estados de sesion.
-- Mantener este MVP funcionando localmente sin dependencia de Microsoft 365.
+En Azure, el acceso queda restringido por `staticwebapp.config.json`. En local, Vite sigue permitiendo probar la UI sin bloquear el login.
 
 ## Despliegue en Azure Static Web Apps
 
@@ -115,14 +107,13 @@ El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, nece
 
 1. Repositorio en GitHub.
 2. Crear la Static Web App en Azure conectada al repositorio.
-3. Configurar el secreto `AZURE_STATIC_WEB_APPS_API_TOKEN` en GitHub si Azure no lo crea automaticamente.
-4. `app_location: "/"`.
-5. `output_location: "dist"`.
+3. Configurar `AZURE_STATIC_WEB_APPS_API_TOKEN` como secreto en GitHub si Azure no lo crea automaticamente.
+4. El workflow construye `dist` antes de desplegar.
 
 ## Notas de diseno tecnico
 
 - React y componentes reutilizables para acelerar nuevas secciones.
 - Tailwind CSS para iteracion visual rapida y consistente.
 - JSON versionado como fuente inicial de contenido.
-- Sidebar y header pensados para evolucionar a navegacion real con rutas.
+- Header y navegacion superior pensados para evolucionar a rutas reales.
 - Buscador global con filtrado por contenidos versionados y catalogo SharePoint sincronizable.

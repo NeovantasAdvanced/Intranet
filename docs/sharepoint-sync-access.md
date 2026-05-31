@@ -2,6 +2,13 @@
 
 Este portal sincroniza un catalogo de SharePoint mediante Microsoft Graph y guarda solo metadatos en `src/data/sharepointCatalog.json`. Los documentos siguen viviendo en SharePoint y los usuarios acceden con sus permisos normales de Microsoft 365.
 
+La intranet usa ese catalogo para mostrar:
+
+- `Carpetas equipo Neovantas`
+- `RP`
+- recursos filtrables por carpeta, fichero, ficha de proyecto y documento final
+- `Herramientas_Neovantas.kdbx` como descarga visible para los empleados
+
 ## Datos del sitio
 
 - Tenant SharePoint: `neovantas.sharepoint.com`
@@ -12,6 +19,7 @@ Este portal sincroniza un catalogo de SharePoint mediante Microsoft Graph y guar
   - `RP`
 
 La sincronizacion lista las carpetas principales de ambos repositorios. Para `RP`, tambien lee un nivel adicional dentro de cada carpeta de cliente/proyecto y anade los archivos encontrados como recursos filtrables, por ejemplo fichas de proyecto y documentos finales.
+En `Carpetas equipo Neovantas` tambien expone la base KeePass `Herramientas_Neovantas.kdbx` para que aparezca en la portada como acceso descargable.
 
 ## Opcion recomendada: Sites.Selected
 
@@ -74,6 +82,17 @@ Configurar en `NeovantasAdvanced/Intranet` > Settings > Secrets and variables > 
 3. Confirmar que el job termina correctamente.
 4. Si SharePoint ha cambiado, el workflow hace commit de `src/data/sharepointCatalog.json`.
 5. Ese commit dispara el workflow de despliegue de Azure Static Web Apps.
+
+## Comprobacion rapida
+
+Si la sincronizacion esta bien, en la portada de la intranet deberian verse:
+
+- el bloque `Repositorios SharePoint`
+- el filtro de `Equipo` y `Proyectos`
+- la descarga `Herramientas_Neovantas.kdbx` dentro de `Carpetas equipo Neovantas`
+- fichas y documentos finales visibles dentro de `RP`
+
+Si falta algun elemento, revisar primero el `sharepointCatalog.json` y despues el log del workflow para ver si el `siteId` y los permisos Graph siguen siendo correctos.
 
 ## Opcion alternativa: Sites.Read.All
 
