@@ -4,6 +4,7 @@ import {
   Files,
   Home,
   LayoutGrid,
+  Rocket,
   Newspaper,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -21,6 +22,7 @@ const navigation = [
   { label: 'Noticias', icon: Newspaper, href: '#noticias' },
   { label: 'Documentacion', icon: FileText, href: '#documentacion' },
   { label: 'Aplicaciones', icon: BriefcaseBusiness, href: '#aplicaciones' },
+  { label: 'Lanzamiento', icon: Rocket, href: '#lanzamiento' },
 ];
 
 function PortalNavigation() {

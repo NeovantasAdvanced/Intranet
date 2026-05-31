@@ -1,26 +1,26 @@
 [
   {
-    "id": "entra-id",
-    "title": "Autenticacion Microsoft 365",
-    "description": "Integracion con Entra ID y proteccion de rutas mediante Azure Static Web Apps.",
-    "quarter": "Q2 2026",
-    "status": "Preparado",
+    "id": "gobierno-minimo",
+    "title": "Gobierno mínimo",
+    "description": "Definir responsables, cadencia de revisión y un criterio claro de priorización para la intranet.",
+    "quarter": "Paso 1",
+    "status": "En marcha",
     "tone": "info"
   },
   {
-    "id": "cms-json",
-    "title": "Edicion de contenidos",
-    "description": "Evolucion desde JSON versionado hacia flujo editorial con aprobacion.",
-    "quarter": "Q3 2026",
-    "status": "Pendiente",
-    "tone": "neutral"
+    "id": "lanzamiento",
+    "title": "Lanzamiento",
+    "description": "Publicar el portal con accesos esenciales, contenido curado y sincronización automática de noticias.",
+    "quarter": "Paso 2",
+    "status": "Listo",
+    "tone": "success"
   },
   {
-    "id": "metrics",
-    "title": "Analitica de uso",
-    "description": "Medicion de busquedas, accesos y adopcion de asistentes internos.",
-    "quarter": "Q3 2026",
-    "status": "Backlog",
+    "id": "operacion-inicial",
+    "title": "Operación inicial",
+    "description": "Revisar uso real, recoger feedback y ajustar el orden de accesos y contenidos más consultados.",
+    "quarter": "Paso 3",
+    "status": "Seguimiento",
     "tone": "warning"
   }
 ]

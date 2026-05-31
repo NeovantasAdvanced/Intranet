@@ -25,6 +25,7 @@ import newsData from '../data/news.json';
 import documentsData from '../data/documents.json';
 import sharePointCatalogData from '../data/sharepointCatalog.json';
 import appsData from '../data/apps.json';
+import launchPlanData from '../data/roadmap.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
@@ -36,6 +37,7 @@ import type {
   QuickLink,
   SharePointCatalog,
   SharePointResourceScope,
+  RoadmapItem,
 } from '../types/content';
 
 const quickLinks = quickLinksData as QuickLink[];
@@ -45,6 +47,7 @@ const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
 const sharePointRepositories = sharePointCatalog.repositories;
 const sharePointResources = sharePointCatalog.resources;
 const apps = appsData as InternalApp[];
+const launchPlan = launchPlanData as RoadmapItem[];
 
 type RepositoryFilterId =
   | 'all'
@@ -248,6 +251,7 @@ export function HomeDashboard() {
   const secondaryQuickLinks = orderedQuickLinks.slice(2);
   const newsItems = filteredContent.news.slice(0, 3);
   const documentItems = filteredContent.documents.slice(0, 4);
+  const launchItems = launchPlan;
 
   return (
     <div className="space-y-8">
@@ -729,6 +733,32 @@ export function HomeDashboard() {
           })}
         </div>
       </section>
+      ) : null}
+
+      {launchItems.length > 0 ? (
+        <section id="lanzamiento" className="scroll-mt-40">
+          <SectionHeader
+            title="Gobierno mínimo y lanzamiento"
+            description="Bloque de control para lanzar con orden, criterio y seguimiento visible."
+          />
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {launchItems.map((item) => (
+              <Card key={item.id} className="p-5 transition hover:-translate-y-0.5 hover:border-neovantas-line">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neovantas-muted">
+                      {item.quarter}
+                    </p>
+                    <h3 className="mt-2 text-base font-semibold text-neovantas-navy">{item.title}</h3>
+                  </div>
+                  <Badge tone={item.tone}>{item.status}</Badge>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-neovantas-muted">{item.description}</p>
+              </Card>
+            ))}
+          </div>
+        </section>
       ) : null}
     </div>
   );
