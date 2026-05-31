@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
+import { APP_VERSION } from '../../config/appVersion';
 import { Header } from './Header';
 
 type AppLayoutProps = {
@@ -82,6 +83,14 @@ export function AppLayout({ children }: AppLayoutProps) {
         <main className="min-w-0 px-4 py-7 md:px-8 md:py-10">
           <div className="mx-auto w-full max-w-[1200px]">{children}</div>
         </main>
+
+        <footer className="px-4 pb-4 md:px-8">
+          <div className="mx-auto flex w-full max-w-[1200px] justify-end">
+            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-neovantas-muted">
+              Versión {APP_VERSION}
+            </span>
+          </div>
+        </footer>
       </div>
     </PortalSearchProvider>
   );
