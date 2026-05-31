@@ -6,7 +6,8 @@ const outputPath = path.resolve('src/data/news.json');
 
 const config = {
   mailboxUserId: process.env.NEWS_MAILBOX_USER_ID,
-  folderId: process.env.NEWS_MAIL_FOLDER_ID ?? 'inbox',
+  folderId: process.env.NEWS_MAIL_FOLDER_ID,
+  folderName: process.env.NEWS_MAIL_FOLDER_NAME,
   sender: process.env.NEWS_SENDER,
   subjectContains: process.env.NEWS_SUBJECT_CONTAINS,
   category: process.env.NEWS_CATEGORY ?? 'Comunicacion',
@@ -128,6 +129,40 @@ async function graphCollection(accessToken, url) {
   return items;
 }
 
+function formatFolderList(folders) {
+  return folders
+    .map((folder) => `- ${folder.displayName ?? '(sin nombre)'} (${folder.id ?? 'sin id'})`)
+    .join('\n');
+}
+
+async function resolveMailFolder(accessToken) {
+  if (config.folderId) {
+    console.log(`[Outlook news] Carpeta seleccionada: NEWS_MAIL_FOLDER_ID=${config.folderId}`);
+    console.log(`[Outlook news] folderId encontrado: ${config.folderId}`);
+    return config.folderId;
+  }
+
+  if (config.folderName) {
+    console.log(`[Outlook news] Carpeta seleccionada: NEWS_MAIL_FOLDER_NAME=${config.folderName}`);
+    const folders = await graphCollection(accessToken, '/users/' + encodeURIComponent(config.mailboxUserId) + '/mailFolders?$top=100');
+    const folder = folders.find((item) => item.displayName === config.folderName);
+
+    if (!folder?.id) {
+      const availableFolders = formatFolderList(folders);
+      throw new Error(
+        `NEWS_MAIL_FOLDER_NAME "${config.folderName}" not found for mailbox ${config.mailboxUserId}.\nAvailable folders:\n${availableFolders || '- (sin carpetas encontradas)'}`,
+      );
+    }
+
+    console.log(`[Outlook news] folderId encontrado: ${folder.id}`);
+    return folder.id;
+  }
+
+  console.log('[Outlook news] Carpeta seleccionada: inbox');
+  console.log('[Outlook news] folderId encontrado: inbox');
+  return 'inbox';
+}
+
 function messageMatches(message) {
   const sender = message.from?.emailAddress?.address ?? '';
   const subject = message.subject ?? '';
@@ -170,8 +205,10 @@ async function listNewsMessages(accessToken) {
     throw new Error('Missing NEWS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the news email.');
   }
 
+  const folderId = await resolveMailFolder(accessToken);
+
   if (
-    normalizeSearch(config.folderId) === 'inbox' &&
+    normalizeSearch(folderId) === 'inbox' &&
     !config.sender &&
     !config.subjectContains &&
     !config.allowUnfilteredInbox
@@ -181,6 +218,7 @@ async function listNewsMessages(accessToken) {
     );
   }
 
+  const folderId = await resolveMailFolder(accessToken);
   const select = [
     'id',
     'internetMessageId',
@@ -192,9 +230,11 @@ async function listNewsMessages(accessToken) {
   ].join(',');
   const filter = encodeURIComponent(`receivedDateTime ge ${getSinceIso()}`);
   const orderBy = encodeURIComponent('receivedDateTime desc');
-  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(config.folderId)}/messages?$select=${select}&$filter=${filter}&$orderby=${orderBy}&$top=50`;
+  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$filter=${filter}&$orderby=${orderBy}&$top=50`;
 
-  return graphCollection(accessToken, url);
+  const messages = await graphCollection(accessToken, url);
+  console.log(`[Outlook news] Número de mensajes recuperados: ${messages.length}`);
+  return messages;
 }
 
 async function main() {
