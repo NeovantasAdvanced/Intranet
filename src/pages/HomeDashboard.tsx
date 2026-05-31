@@ -139,6 +139,10 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function getLinkProps(href: string) {
+  return href.startsWith('#') ? {} : { target: '_blank', rel: 'noreferrer' as const };
+}
+
 export function HomeDashboard() {
   const { searchValue, setSearchValue } = usePortalSearch();
   const [repositoryFilter, setRepositoryFilter] = useState<RepositoryFilterId>('all');
@@ -393,6 +397,7 @@ export function HomeDashboard() {
                     <a
                       key={item.id}
                       href={item.href}
+                      {...getLinkProps(item.href)}
                       className="flex items-center gap-4 px-5 py-4 transition hover:bg-neovantas-mist"
                     >
                       <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-blue">
@@ -425,6 +430,7 @@ export function HomeDashboard() {
                     <a
                       key={item.id}
                       href={item.href}
+                      {...getLinkProps(item.href)}
                       className="flex items-center gap-3 px-5 py-4 transition hover:bg-neovantas-mist"
                     >
                       <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white text-neovantas-blue shadow-sm">
@@ -457,8 +463,7 @@ export function HomeDashboard() {
                     <a
                       key={item.id}
                       href={item.href ?? '#'}
-                      target={item.href ? '_blank' : undefined}
-                      rel={item.href ? 'noreferrer' : undefined}
+                      {...getLinkProps(item.href ?? '#')}
                       className="flex items-start gap-4 px-5 py-4 transition hover:bg-neovantas-mist"
                     >
                       <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#EEF8FF] text-neovantas-blue">
@@ -685,8 +690,7 @@ export function HomeDashboard() {
                   </div>
                   <a
                     href={repository.href}
-                    target="_blank"
-                    rel="noreferrer"
+                    {...getLinkProps(repository.href)}
                     className="focus-ring mt-5 inline-flex h-9 w-fit items-center gap-2 rounded-full border border-neovantas-line bg-white px-3 text-sm font-semibold text-neovantas-muted"
                   >
                     Abrir repositorio
@@ -735,8 +739,7 @@ export function HomeDashboard() {
                       <span className="font-medium text-neovantas-muted">{app.owner}</span>
                       <a
                         href={isDownloadLink ? withDownloadParam(app.href) : app.href}
-                        target={app.href.startsWith('#') ? undefined : '_blank'}
-                        rel={app.href.startsWith('#') ? undefined : 'noreferrer'}
+                        {...getLinkProps(isDownloadLink ? withDownloadParam(app.href) : app.href)}
                         download={isDownloadLink ? true : undefined}
                         className="inline-flex items-center gap-1.5 rounded-full bg-neovantas-blue px-3 py-2 font-semibold text-white"
                       >
@@ -768,8 +771,7 @@ export function HomeDashboard() {
                       <span className="font-medium text-neovantas-muted">{app.owner}</span>
                       <a
                         href={isDownloadLink ? withDownloadParam(app.href) : app.href}
-                        target={app.href.startsWith('#') ? undefined : '_blank'}
-                        rel={app.href.startsWith('#') ? undefined : 'noreferrer'}
+                        {...getLinkProps(isDownloadLink ? withDownloadParam(app.href) : app.href)}
                         download={isDownloadLink ? true : undefined}
                         className="inline-flex items-center gap-1.5 font-semibold text-neovantas-blue"
                       >

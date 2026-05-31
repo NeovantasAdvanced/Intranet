@@ -23,6 +23,10 @@ function getInitials(value: string) {
     .join('');
 }
 
+function getLinkProps(href: string) {
+  return href.startsWith('#') ? {} : { target: '_blank', rel: 'noreferrer' as const };
+}
+
 export function Header() {
   const { searchValue, setSearchValue } = usePortalSearch();
   const [clientPrincipal, setClientPrincipal] = useState<ClientPrincipal | null>(null);
@@ -94,6 +98,7 @@ export function Header() {
           </button>
           <a
             href={authHref}
+            {...getLinkProps(authHref)}
             className="focus-ring flex h-10 max-w-[12rem] items-center gap-2 rounded-full border border-white/10 bg-white/10 px-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-white/15 sm:max-w-60 sm:px-3"
             title={authTitle}
             aria-label={authTitle}
@@ -109,6 +114,7 @@ export function Header() {
           {isAuthenticated ? (
             <a
               href="/logout"
+              {...getLinkProps('/logout')}
               className="focus-ring hidden h-10 w-10 place-items-center rounded-full bg-white text-neovantas-navy shadow-sm md:grid"
               aria-label="Cerrar sesion"
               title="Cerrar sesion"
@@ -118,6 +124,7 @@ export function Header() {
           ) : (
             <a
               href="/login"
+              {...getLinkProps('/login')}
               className="focus-ring hidden h-10 w-10 place-items-center rounded-full bg-white text-neovantas-navy shadow-sm md:grid"
               aria-label="Iniciar sesion"
               title="Iniciar sesion"
