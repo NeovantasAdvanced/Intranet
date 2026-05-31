@@ -252,6 +252,8 @@ export function HomeDashboard() {
   const newsItems = filteredContent.news.slice(0, 3);
   const documentItems = filteredContent.documents.slice(0, 4);
   const launchItems = launchPlan;
+  const featuredApps = apps.slice(0, 1);
+  const secondaryApps = apps.slice(1);
 
   return (
     <div className="space-y-8">
@@ -510,229 +512,280 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.sharePointResources.length > 0) ? (
-      <section id="repositorios" className="scroll-mt-40">
-        <SectionHeader
-          title="Repositorios SharePoint"
-          description="Acceso centralizado a documentacion del equipo y repositorio de proyectos realizados."
-        />
+        <section id="repositorios" className="scroll-mt-40">
+          <SectionHeader
+            title="Repositorios SharePoint"
+            description="Acceso centralizado a la documentación del equipo y al repositorio de proyectos."
+          />
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          {sharePointRepositories.map((repository) => (
-            <Card key={repository.id} className="flex flex-col p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-sky-50 text-neovantas-blue">
-                  <Files className="h-5 w-5" aria-hidden="true" />
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <Card className="overflow-hidden p-0">
+              <div className="border-b border-neovantas-line bg-neovantas-mist px-5 py-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neovantas-muted">
+                      Catálogo SharePoint
+                    </p>
+                    <p className="mt-1 text-sm text-neovantas-muted">
+                      {visibleSharePointResources.length === 1
+                        ? '1 recurso visible'
+                        : `${visibleSharePointResources.length} recursos visibles`}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <label className="flex h-9 min-w-0 items-center gap-2 rounded-full border border-neovantas-line bg-white px-3 text-sm text-neovantas-muted">
+                      <SlidersHorizontal className="h-4 w-4 shrink-0 text-neovantas-muted" aria-hidden="true" />
+                      <span className="sr-only">Filtrar por cliente o proyecto</span>
+                      <select
+                        value={projectFilter}
+                        onChange={(event) => setProjectFilter(event.target.value)}
+                        className="min-w-0 border-0 bg-transparent text-sm font-semibold text-neovantas-ink outline-none"
+                      >
+                        <option value="all">Todos los clientes</option>
+                        {projectFilterOptions.map((projectName) => (
+                          <option key={projectName} value={projectName}>
+                            {projectName}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <div className="flex flex-wrap gap-2" role="group" aria-label="Filtros de repositorio">
+                      {repositoryFilters.map((filter) => {
+                        const isActive = repositoryFilter === filter.id;
+
+                        return (
+                          <button
+                            key={filter.id}
+                            type="button"
+                            aria-pressed={isActive}
+                            className={`focus-ring h-9 rounded-full border px-3 text-sm font-semibold transition ${
+                              isActive
+                                ? 'border-neovantas-blue bg-neovantas-blue text-white'
+                                : 'border-neovantas-line bg-white text-neovantas-muted hover:border-slate-300'
+                            }`}
+                            onClick={() => setRepositoryFilter(filter.id)}
+                          >
+                            {filter.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-                <Badge tone={repository.tone}>{repository.status}</Badge>
               </div>
-              <h3 className="mt-4 text-base font-semibold text-slate-950">{repository.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{repository.description}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {repository.tags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-4 text-sm">
-                <div>
-                  <p className="font-semibold text-slate-950">{repository.resourceCount}</p>
-                  <p className="mt-1 text-xs text-slate-500">Recursos</p>
+
+              <div className="grid gap-3 border-b border-neovantas-line bg-white px-5 py-4 sm:grid-cols-4">
+                <div className="rounded-[12px] bg-neovantas-mist p-3">
+                  <p className="text-lg font-semibold text-neovantas-navy">{sharePointStats.total}</p>
+                  <p className="mt-1 text-xs text-neovantas-muted">Recursos</p>
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-950">{repository.owner}</p>
-                  <p className="mt-1 text-xs text-slate-500">Owner</p>
+                <div className="rounded-[12px] bg-neovantas-mist p-3">
+                  <p className="text-lg font-semibold text-neovantas-navy">{sharePointStats.projects}</p>
+                  <p className="mt-1 text-xs text-neovantas-muted">Proyectos</p>
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-950">{formatDate(repository.updatedAt)}</p>
-                  <p className="mt-1 text-xs text-slate-500">Revision</p>
+                <div className="rounded-[12px] bg-[#EEF8FF] p-3">
+                  <p className="text-lg font-semibold text-neovantas-blue">{sharePointStats.projectSheets}</p>
+                  <p className="mt-1 text-xs text-neovantas-muted">Fichas</p>
+                </div>
+                <div className="rounded-[12px] bg-[#EAFBF2] p-3">
+                  <p className="text-lg font-semibold text-neovantas-teal">{sharePointStats.finalDocs}</p>
+                  <p className="mt-1 text-xs text-neovantas-muted">Docs finales</p>
                 </div>
               </div>
-              <a
-                href={repository.href}
-                target="_blank"
-                rel="noreferrer"
-                className="focus-ring mt-5 inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700"
-              >
-                Abrir repositorio
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              </a>
+
+              {visibleSharePointResources.length > 0 ? (
+                <div className="max-h-[560px] divide-y divide-neovantas-line overflow-y-auto">
+                  {visibleSharePointResources.map((item) => {
+                    const isCredentialResource = normalizeSearch(item.category).includes('credencial');
+                    const ResourceIcon = isCredentialResource ? KeyRound : item.itemType === 'file' ? FileSpreadsheet : FolderOpen;
+                    const href = isCredentialResource ? withDownloadParam(item.href) : item.href;
+
+                    return (
+                      <a
+                        key={item.id}
+                        href={href}
+                        target="_blank"
+                        rel="noreferrer"
+                        download={isCredentialResource ? true : undefined}
+                        className="focus-ring flex flex-col gap-3 px-5 py-4 transition hover:bg-neovantas-mist md:flex-row md:items-start"
+                      >
+                        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-[12px] ${isCredentialResource ? 'bg-[#FFF1E5] text-[#C2410C]' : 'bg-[#EEF8FF] text-neovantas-blue'}`}>
+                          <ResourceIcon className="h-5 w-5" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge tone={item.tone}>{item.status}</Badge>
+                            <span className="text-xs font-medium text-neovantas-muted">{item.category}</span>
+                            <span className="text-xs text-neovantas-muted">
+                              {item.parentTitle ? `${item.repository} / ${item.parentTitle}` : item.repository}
+                            </span>
+                          </div>
+                          <h4 className="mt-2 text-sm font-semibold text-neovantas-navy">{item.title}</h4>
+                          <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.description}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center justify-between gap-4 text-sm text-neovantas-muted md:w-44 md:justify-end">
+                          <span>
+                            {isCredentialResource
+                              ? 'Descarga'
+                              : item.itemType === 'file'
+                              ? 'Archivo'
+                              : item.itemCount === 1
+                                ? '1 elemento'
+                                : `${item.itemCount ?? 0} elementos`}
+                          </span>
+                          <ExternalLink className="h-4 w-4 text-neovantas-muted" aria-hidden="true" />
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-[12px] bg-neovantas-mist text-neovantas-muted">
+                    <SearchX className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="mt-4 text-base font-semibold text-neovantas-navy">Sin recursos visibles</h3>
+                  <p className="mt-2 text-sm text-neovantas-muted">
+                    Cambia el filtro de repositorio o limpia la búsqueda activa.
+                  </p>
+                </div>
+              )}
             </Card>
-          ))}
-        </div>
 
-        <Card className="mt-4 overflow-hidden">
-          <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-4 py-4 xl:flex-row xl:items-center xl:justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-neovantas-teal" aria-hidden="true" />
-                <h3 className="text-base font-semibold text-slate-950">Catalogo de recursos</h3>
-              </div>
-              <p className="mt-1 text-sm text-slate-600">
-                {visibleSharePointResources.length === 1
-                  ? '1 recurso visible'
-                  : `${visibleSharePointResources.length} recursos visibles`}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-              <label className="flex h-9 min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600">
-                <SlidersHorizontal className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
-                <span className="sr-only">Filtrar por cliente o proyecto</span>
-                <select
-                  value={projectFilter}
-                  onChange={(event) => setProjectFilter(event.target.value)}
-                  className="min-w-0 border-0 bg-transparent text-sm font-semibold text-slate-700 outline-none"
-                >
-                  <option value="all">Todos los clientes</option>
-                  {projectFilterOptions.map((projectName) => (
-                    <option key={projectName} value={projectName}>
-                      {projectName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Filtros de repositorio">
-                {repositoryFilters.map((filter) => {
-                  const isActive = repositoryFilter === filter.id;
-
-                  return (
-                    <button
-                      key={filter.id}
-                      type="button"
-                      aria-pressed={isActive}
-                      className={`focus-ring h-9 rounded-lg border px-3 text-sm font-semibold transition ${
-                        isActive
-                          ? 'border-neovantas-blue bg-neovantas-blue text-white'
-                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                      }`}
-                      onClick={() => setRepositoryFilter(filter.id)}
-                    >
-                      {filter.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-3 border-b border-slate-200 bg-white px-4 py-4 sm:grid-cols-4">
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-lg font-semibold text-slate-950">{sharePointStats.total}</p>
-              <p className="mt-1 text-xs text-slate-500">Recursos</p>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-lg font-semibold text-slate-950">{sharePointStats.projects}</p>
-              <p className="mt-1 text-xs text-slate-500">Proyectos</p>
-            </div>
-            <div className="rounded-lg bg-sky-50 p-3">
-              <p className="text-lg font-semibold text-sky-900">{sharePointStats.projectSheets}</p>
-              <p className="mt-1 text-xs text-sky-700">Fichas</p>
-            </div>
-            <div className="rounded-lg bg-emerald-50 p-3">
-              <p className="text-lg font-semibold text-emerald-900">{sharePointStats.finalDocs}</p>
-              <p className="mt-1 text-xs text-emerald-700">Docs finales</p>
-            </div>
-          </div>
-
-          {visibleSharePointResources.length > 0 ? (
-            <div className="max-h-[560px] divide-y divide-slate-200 overflow-y-auto">
-              {visibleSharePointResources.map((item) => {
-                const isCredentialResource = normalizeSearch(item.category).includes('credencial');
-                const ResourceIcon = isCredentialResource ? KeyRound : item.itemType === 'file' ? FileSpreadsheet : FolderOpen;
-                const href = isCredentialResource ? withDownloadParam(item.href) : item.href;
-
-                return (
+            <div className="space-y-4">
+              {sharePointRepositories.map((repository) => (
+                <Card key={repository.id} className="p-5 transition hover:-translate-y-0.5 hover:border-neovantas-line">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[#EEF8FF] text-neovantas-blue">
+                      <Files className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <Badge tone={repository.tone}>{repository.status}</Badge>
+                  </div>
+                  <h3 className="mt-4 text-base font-semibold text-neovantas-navy">{repository.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-neovantas-muted">{repository.description}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {repository.tags.map((tag) => (
+                      <span key={tag} className="rounded-full bg-neovantas-mist px-2.5 py-1 text-xs text-neovantas-muted">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-5 grid grid-cols-3 gap-3 border-t border-neovantas-line pt-4 text-sm">
+                    <div>
+                      <p className="font-semibold text-neovantas-navy">{repository.resourceCount}</p>
+                      <p className="mt-1 text-xs text-neovantas-muted">Recursos</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-neovantas-navy">{repository.owner}</p>
+                      <p className="mt-1 text-xs text-neovantas-muted">Owner</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-neovantas-navy">{formatDate(repository.updatedAt)}</p>
+                      <p className="mt-1 text-xs text-neovantas-muted">Revisión</p>
+                    </div>
+                  </div>
                   <a
-                    key={item.id}
-                    href={href}
+                    href={repository.href}
                     target="_blank"
                     rel="noreferrer"
-                    download={isCredentialResource ? true : undefined}
-                    className="focus-ring flex flex-col gap-3 px-4 py-4 transition hover:bg-slate-50 md:flex-row md:items-start"
+                    className="focus-ring mt-5 inline-flex h-9 w-fit items-center gap-2 rounded-full border border-neovantas-line bg-white px-3 text-sm font-semibold text-neovantas-muted"
                   >
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-emerald-50 text-neovantas-teal">
-                      <ResourceIcon className="h-5 w-5" aria-hidden="true" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge tone={item.tone}>{item.status}</Badge>
-                        <span className="text-xs font-medium text-slate-500">{item.category}</span>
-                        <span className="text-xs text-slate-400">
-                          {item.parentTitle ? `${item.repository} / ${item.parentTitle}` : item.repository}
-                        </span>
-                      </div>
-                      <h4 className="mt-2 text-sm font-semibold text-slate-950">{item.title}</h4>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
-                    </div>
-                    <div className="flex shrink-0 items-center justify-between gap-4 text-sm text-slate-500 md:w-44 md:justify-end">
-                      <span>
-                        {isCredentialResource
-                          ? 'Descarga'
-                          : item.itemType === 'file'
-                          ? 'Archivo'
-                          : item.itemCount === 1
-                            ? '1 elemento'
-                            : `${item.itemCount ?? 0} elementos`}
-                      </span>
-                      <ExternalLink className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                    </div>
+                    Abrir repositorio
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
                   </a>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {(!isSearching || apps.length > 0) ? (
+        <section id="aplicaciones" className="scroll-mt-40">
+          <SectionHeader
+            title="Aplicaciones internas"
+            description="Servicios operativos conectables en la intranet."
+          />
+
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+            <Card className="overflow-hidden p-0">
+              <div className="border-b border-neovantas-line bg-neovantas-mist px-5 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neovantas-muted">
+                  Destacado
+                </p>
+                <p className="mt-1 text-sm text-neovantas-muted">
+                  Acceso prioritario al archivo KeePass y a los recursos más sensibles del equipo.
+                </p>
+              </div>
+
+              {featuredApps.map((app) => {
+                const Icon = iconMap[app.icon as keyof typeof iconMap] ?? BriefcaseBusiness;
+                const isDownloadLink = app.href.includes('.kdbx') || normalizeSearch(app.status).includes('keepass');
+
+                return (
+                  <div key={app.id} className="p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="grid h-12 w-12 place-items-center rounded-[12px] bg-[#FFF1E5] text-[#C2410C]">
+                        <Icon className="h-6 w-6" aria-hidden="true" />
+                      </div>
+                      <Badge tone={app.tone}>{app.status}</Badge>
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold text-neovantas-navy">{app.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-neovantas-muted">{app.description}</p>
+                    <div className="mt-5 flex items-center justify-between gap-3 text-sm">
+                      <span className="font-medium text-neovantas-muted">{app.owner}</span>
+                      <a
+                        href={isDownloadLink ? withDownloadParam(app.href) : app.href}
+                        target={app.href.startsWith('#') ? undefined : '_blank'}
+                        rel={app.href.startsWith('#') ? undefined : 'noreferrer'}
+                        download={isDownloadLink ? true : undefined}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-neovantas-blue px-3 py-2 font-semibold text-white"
+                      >
+                        {isDownloadLink ? 'Descargar' : 'Acceder'}
+                        {isDownloadLink ? <Download className="h-4 w-4" aria-hidden="true" /> : null}
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </Card>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {secondaryApps.map((app) => {
+                const Icon = iconMap[app.icon as keyof typeof iconMap] ?? BriefcaseBusiness;
+                const isDownloadLink = app.href.includes('.kdbx') || normalizeSearch(app.status).includes('keepass');
+
+                return (
+                  <Card key={app.id} className="p-5 transition hover:-translate-y-0.5 hover:border-neovantas-line">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-blue">
+                        <Icon className="h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <Badge tone={app.tone}>{app.status}</Badge>
+                    </div>
+                    <h3 className="mt-4 text-base font-semibold text-neovantas-navy">{app.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-neovantas-muted">{app.description}</p>
+                    <div className="mt-5 flex items-center justify-between gap-3 text-sm">
+                      <span className="font-medium text-neovantas-muted">{app.owner}</span>
+                      <a
+                        href={isDownloadLink ? withDownloadParam(app.href) : app.href}
+                        target={app.href.startsWith('#') ? undefined : '_blank'}
+                        rel={app.href.startsWith('#') ? undefined : 'noreferrer'}
+                        download={isDownloadLink ? true : undefined}
+                        className="inline-flex items-center gap-1.5 font-semibold text-neovantas-blue"
+                      >
+                        {isDownloadLink ? 'Descargar' : 'Acceder'}
+                        {isDownloadLink ? <Download className="h-4 w-4" aria-hidden="true" /> : null}
+                      </a>
+                    </div>
+                  </Card>
                 );
               })}
             </div>
-          ) : (
-            <div className="p-8 text-center">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-100 text-slate-500">
-                <SearchX className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <h3 className="mt-4 text-base font-semibold text-slate-950">Sin recursos visibles</h3>
-              <p className="mt-2 text-sm text-slate-600">
-                Cambia el filtro de repositorio o limpia la busqueda activa.
-              </p>
-            </div>
-          )}
-        </Card>
-      </section>
-      ) : null}
-
-      {(!isSearching || filteredContent.apps.length > 0) ? (
-      <section id="aplicaciones" className="scroll-mt-40">
-        <SectionHeader title="Aplicaciones internas" description="Servicios conectables en proximas iteraciones." />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {filteredContent.apps.map((app) => {
-            const Icon = iconMap[app.icon as keyof typeof iconMap] ?? BriefcaseBusiness;
-            const isDownloadLink = app.href.includes('.kdbx') || normalizeSearch(app.status).includes('keepass');
-
-            return (
-              <Card key={app.id} className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-navy">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <Badge tone={app.tone}>{app.status}</Badge>
-                </div>
-                <h3 className="mt-4 text-base font-semibold text-slate-950">{app.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{app.description}</p>
-                <div className="mt-5 flex items-center justify-between text-sm">
-                  <span className="font-medium text-slate-500">{app.owner}</span>
-                  <a
-                    href={isDownloadLink ? withDownloadParam(app.href) : app.href}
-                    target={app.href.startsWith('#') ? undefined : '_blank'}
-                    rel={app.href.startsWith('#') ? undefined : 'noreferrer'}
-                    download={isDownloadLink ? true : undefined}
-                    className="inline-flex items-center gap-1.5 font-semibold text-neovantas-blue"
-                  >
-                    {isDownloadLink ? 'Descargar' : 'Acceder'}
-                    {isDownloadLink ? <Download className="h-4 w-4" aria-hidden="true" /> : null}
-                  </a>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
+          </div>
+        </section>
       ) : null}
 
       {launchItems.length > 0 ? (
