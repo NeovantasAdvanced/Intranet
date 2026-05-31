@@ -295,21 +295,21 @@ export function HomeDashboard() {
             <div className="rounded-[14px] border border-white/15 bg-white/10 p-5 backdrop-blur">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-white/60">Estado del portal</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-white">Operativo</h2>
-                </div>
-                <Badge tone="success" className="border-emerald-300/30 bg-emerald-300/10 text-emerald-100">
-                  En linea
-                </Badge>
+                <p className="text-sm font-semibold text-white/60">Estado del portal</p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">Operativo</h2>
               </div>
-              <div className="mt-6 border-t border-white/10 pt-5">
-                <p className="text-sm font-medium text-white/60">Acceso protegido</p>
-                <p className="mt-2 text-sm leading-6 text-white/80">
-                  Preparado para Microsoft 365 en Azure Static Web Apps, con contenido sincronizado desde
-                  SharePoint y correo corporativo.
-                </p>
-              </div>
+              <Badge tone="success" className="border-emerald-300/30 bg-emerald-300/10 text-emerald-100">
+                En linea
+              </Badge>
             </div>
+            <div className="mt-6 border-t border-white/10 pt-5">
+              <p className="text-sm font-medium text-white/60">Autenticacion Microsoft 365</p>
+              <p className="mt-2 text-sm leading-6 text-white/80">
+                El portal entra por Entra ID en Azure Static Web Apps y protege las rutas internas.
+                El contenido se sincroniza desde SharePoint y correo corporativo.
+              </p>
+            </div>
+          </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
