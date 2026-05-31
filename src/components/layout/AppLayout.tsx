@@ -4,9 +4,7 @@ import {
   Files,
   Home,
   LayoutGrid,
-  Lightbulb,
   Newspaper,
-  Sparkles,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
@@ -19,12 +17,10 @@ type AppLayoutProps = {
 const navigation = [
   { label: 'Inicio', icon: Home, href: '#inicio' },
   { label: 'Accesos', icon: LayoutGrid, href: '#accesos' },
-  { label: 'Mesa IA', icon: Sparkles, href: '#mesa-ia' },
   { label: 'Repositorios', icon: Files, href: '#repositorios' },
   { label: 'Noticias', icon: Newspaper, href: '#noticias' },
   { label: 'Documentacion', icon: FileText, href: '#documentacion' },
   { label: 'Aplicaciones', icon: BriefcaseBusiness, href: '#aplicaciones' },
-  { label: 'Roadmap', icon: Lightbulb, href: '#roadmap' },
 ];
 
 function PortalNavigation() {

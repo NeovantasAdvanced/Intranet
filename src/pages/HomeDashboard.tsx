@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
   ArrowRight,
-  Bot,
   BriefcaseBusiness,
   CalendarDays,
   Clock3,
@@ -18,41 +17,34 @@ import {
   Rocket,
   SearchX,
   SlidersHorizontal,
-  Sparkles,
   Users,
   X,
 } from 'lucide-react';
 import quickLinksData from '../data/quickLinks.json';
-import assistantsData from '../data/assistants.json';
 import newsData from '../data/news.json';
 import documentsData from '../data/documents.json';
 import sharePointCatalogData from '../data/sharepointCatalog.json';
 import appsData from '../data/apps.json';
-import roadmapData from '../data/roadmap.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { usePortalSearch } from '../context/PortalSearchContext';
 import type {
-  Assistant,
   DocumentItem,
   InternalApp,
   NewsItem,
   QuickLink,
-  RoadmapItem,
   SharePointCatalog,
   SharePointResourceScope,
 } from '../types/content';
 
 const quickLinks = quickLinksData as QuickLink[];
-const assistants = assistantsData as Assistant[];
 const news = newsData as NewsItem[];
 const documents = documentsData as DocumentItem[];
 const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
 const sharePointRepositories = sharePointCatalog.repositories;
 const sharePointResources = sharePointCatalog.resources;
 const apps = appsData as InternalApp[];
-const roadmap = roadmapData as RoadmapItem[];
 
 type RepositoryFilterId =
   | 'all'
@@ -160,15 +152,6 @@ export function HomeDashboard() {
       quickLinks: quickLinks.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.description, item.status]),
       ),
-      assistants: assistants.filter((item) =>
-        matchesQuery(searchQuery, [
-          item.title,
-          item.description,
-          item.owner,
-          item.status,
-          item.tags,
-        ]),
-      ),
       news: news.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.excerpt, item.category, item.status, item.source]),
       ),
@@ -189,9 +172,6 @@ export function HomeDashboard() {
       ),
       apps: apps.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status]),
-      ),
-      roadmap: roadmap.filter((item) =>
-        matchesQuery(searchQuery, [item.title, item.description, item.quarter, item.status]),
       ),
     }),
     [searchQuery],
@@ -239,12 +219,10 @@ export function HomeDashboard() {
 
   const totalResults =
     filteredContent.quickLinks.length +
-    filteredContent.assistants.length +
     filteredContent.news.length +
     filteredContent.documents.length +
     filteredContent.sharePointResources.length +
-    filteredContent.apps.length +
-    filteredContent.roadmap.length;
+    filteredContent.apps.length;
 
   return (
     <div className="space-y-8">
@@ -271,13 +249,6 @@ export function HomeDashboard() {
               >
                 Ver repositorios
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-              <a
-                href="#mesa-ia"
-                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
-              >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Abrir Mesa IA
               </a>
             </div>
           </div>
@@ -384,85 +355,6 @@ export function HomeDashboard() {
             );
           })}
         </div>
-      </section>
-      ) : null}
-
-      {(!isSearching || filteredContent.assistants.length > 0 || filteredContent.roadmap.length > 0) ? (
-      <section id="mesa-ia" className="grid scroll-mt-40 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-        {(!isSearching || filteredContent.assistants.length > 0) ? (
-        <div id="asistentes" className="scroll-mt-40">
-          <SectionHeader
-            title="GPTs y asistentes"
-            description="Herramientas internas para acelerar conocimiento, delivery y soporte."
-            action={
-              <a
-                href="#asistentes"
-                className="focus-ring inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700"
-              >
-                Ver todos
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-            }
-          />
-          <div className="grid gap-4 lg:grid-cols-3">
-            {filteredContent.assistants.map((assistant) => (
-              <Card key={assistant.id} className="flex flex-col p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-sky-50 text-neovantas-blue">
-                    <Bot className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <Badge tone={assistant.tone}>{assistant.status}</Badge>
-                </div>
-                <h3 className="mt-4 text-base font-semibold text-slate-950">{assistant.title}</h3>
-                <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{assistant.description}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {assistant.tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-5 flex items-center justify-between text-sm">
-                  <span className="font-medium text-slate-500">{assistant.owner}</span>
-                  <a href={assistant.href} className="font-semibold text-neovantas-blue">
-                    Abrir
-                  </a>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-        ) : null}
-
-        {(!isSearching || filteredContent.roadmap.length > 0) ? (
-        <div id="roadmap" className="scroll-mt-40">
-        <Card className="overflow-hidden">
-          <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-neovantas-teal" aria-hidden="true" />
-              <h3 className="text-base font-semibold text-slate-950">Mesa IA</h3>
-            </div>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Espacio para gestionar demanda, buenas practicas, riesgos y adopcion de IA generativa.
-            </p>
-          </div>
-          <div className="divide-y divide-slate-200">
-            {filteredContent.roadmap.map((item) => (
-              <div key={item.id} className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase text-slate-500">{item.quarter}</p>
-                    <h4 className="mt-1 text-sm font-semibold text-slate-950">{item.title}</h4>
-                  </div>
-                  <Badge tone={item.tone}>{item.status}</Badge>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-        </div>
-        ) : null}
       </section>
       ) : null}
 
