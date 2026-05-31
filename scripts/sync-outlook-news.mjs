@@ -144,7 +144,10 @@ async function resolveMailFolder(accessToken) {
 
   if (config.folderName) {
     console.log(`[Outlook news] Carpeta seleccionada: NEWS_MAIL_FOLDER_NAME=${config.folderName}`);
-    const folders = await graphCollection(accessToken, '/users/' + encodeURIComponent(config.mailboxUserId) + '/mailFolders?$top=100');
+    const folders = await graphCollection(
+      accessToken,
+      `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders?$top=100`,
+    );
     const folder = folders.find((item) => item.displayName === config.folderName);
 
     if (!folder?.id) {
@@ -214,11 +217,10 @@ async function listNewsMessages(accessToken) {
     !config.allowUnfilteredInbox
   ) {
     throw new Error(
-      'Refusing to import the full inbox. Set NEWS_SENDER, NEWS_SUBJECT_CONTAINS, NEWS_MAIL_FOLDER_ID, or NEWS_ALLOW_UNFILTERED_INBOX=true.',
+      'Refusing to import the full inbox. Set NEWS_SENDER, NEWS_SUBJECT_CONTAINS, NEWS_MAIL_FOLDER_ID, NEWS_MAIL_FOLDER_NAME, or NEWS_ALLOW_UNFILTERED_INBOX=true.',
     );
   }
 
-  const folderId = await resolveMailFolder(accessToken);
   const select = [
     'id',
     'internetMessageId',
@@ -233,7 +235,7 @@ async function listNewsMessages(accessToken) {
   const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$filter=${filter}&$orderby=${orderBy}&$top=50`;
 
   const messages = await graphCollection(accessToken, url);
-  console.log(`[Outlook news] Número de mensajes recuperados: ${messages.length}`);
+  console.log(`[Outlook news] Numero de mensajes recuperados: ${messages.length}`);
   return messages;
 }
 
