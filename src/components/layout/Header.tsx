@@ -1,11 +1,8 @@
-import { Bell, LogIn, LogOut, Menu, ShieldCheck, UserRound } from 'lucide-react';
+import { Bell, LogIn, LogOut, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import neovantasLogo from '../../assets/neovantas-logo-mark.svg';
 import { usePortalSearch } from '../../context/PortalSearchContext';
 import { SearchBar } from '../ui/SearchBar';
-
-type HeaderProps = {
-  onMenuClick: () => void;
-};
 
 type ClientPrincipal = {
   userDetails: string;
@@ -17,7 +14,16 @@ type AuthPayload = {
   clientPrincipal: ClientPrincipal | null;
 };
 
-export function Header({ onMenuClick }: HeaderProps) {
+function getInitials(value: string) {
+  return value
+    .split(/[.\s@_-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
+}
+
+export function Header() {
   const { searchValue, setSearchValue } = usePortalSearch();
   const [clientPrincipal, setClientPrincipal] = useState<ClientPrincipal | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -52,51 +58,58 @@ export function Header({ onMenuClick }: HeaderProps) {
   const authHref = isAuthenticated ? '/logout' : '/login';
   const authLabel = isAuthenticated ? clientPrincipal?.userDetails ?? 'Sesion iniciada' : 'Microsoft 365';
   const authTitle = isAuthenticated ? `Cerrar sesion: ${authLabel}` : 'Iniciar sesion con Microsoft 365';
+  const initials = getInitials(authLabel) || 'N';
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-neovantas-mist/95 px-4 py-4 backdrop-blur md:px-8">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className="focus-ring grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm lg:hidden"
-          aria-label="Abrir menu"
-          onClick={onMenuClick}
-        >
-          <Menu className="h-5 w-5" aria-hidden="true" />
-        </button>
+    <header className="bg-neovantas-navy px-4 text-white md:px-8">
+      <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-4 py-3">
+        <a href="#inicio" className="focus-ring flex shrink-0 items-center gap-3 rounded-lg">
+          <span className="grid h-10 w-10 place-items-center rounded-[10px] bg-white">
+            <img src={neovantasLogo} alt="Neovantas" className="h-7 w-7 object-contain" />
+          </span>
+          <span className="hidden min-w-0 sm:block">
+            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+              Neovantas
+            </span>
+            <span className="block truncate text-base font-semibold leading-tight text-white">
+              Portal corporativo
+            </span>
+          </span>
+        </a>
 
         <SearchBar
           value={searchValue}
           onChange={setSearchValue}
-          className="max-w-2xl flex-1"
+          className="hidden max-w-xl flex-1 md:flex"
           placeholder="Buscar accesos, documentos, repositorios y noticias"
         />
 
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <button
             type="button"
-            className="focus-ring hidden h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm md:grid"
+            className="focus-ring hidden h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/15 hover:text-white lg:grid"
             aria-label="Notificaciones"
           >
             <Bell className="h-4 w-4" aria-hidden="true" />
           </button>
           <a
             href={authHref}
-            className="focus-ring flex h-10 max-w-[11rem] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm sm:max-w-56"
+            className="focus-ring flex h-10 max-w-[12rem] items-center gap-2 rounded-full border border-white/10 bg-white/10 px-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-white/15 sm:max-w-60 sm:px-3"
             title={authTitle}
             aria-label={authTitle}
           >
-            {isAuthenticated ? (
-              <UserRound className="h-4 w-4 shrink-0 text-neovantas-teal" aria-hidden="true" />
-            ) : (
-              <ShieldCheck className="h-4 w-4 shrink-0 text-neovantas-teal" aria-hidden="true" />
-            )}
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white text-[11px] font-bold text-neovantas-navy">
+              {isAuthenticated ? initials : <ShieldCheck className="h-4 w-4" aria-hidden="true" />}
+            </span>
             <span className="hidden truncate sm:block">{authChecked ? authLabel : 'Comprobando...'}</span>
+            {isAuthenticated ? (
+              <UserRound className="hidden h-4 w-4 shrink-0 text-white/60 xl:block" aria-hidden="true" />
+            ) : null}
           </a>
           {isAuthenticated ? (
             <a
               href="/logout"
-              className="focus-ring hidden h-10 w-10 place-items-center rounded-lg bg-neovantas-navy text-white shadow-sm md:grid"
+              className="focus-ring hidden h-10 w-10 place-items-center rounded-full bg-white text-neovantas-navy shadow-sm md:grid"
               aria-label="Cerrar sesion"
               title="Cerrar sesion"
             >
@@ -105,7 +118,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           ) : (
             <a
               href="/login"
-              className="focus-ring hidden h-10 w-10 place-items-center rounded-lg bg-neovantas-navy text-white shadow-sm md:grid"
+              className="focus-ring hidden h-10 w-10 place-items-center rounded-full bg-white text-neovantas-navy shadow-sm md:grid"
               aria-label="Iniciar sesion"
               title="Iniciar sesion"
             >
@@ -113,6 +126,14 @@ export function Header({ onMenuClick }: HeaderProps) {
             </a>
           )}
         </div>
+      </div>
+
+      <div className="mx-auto max-w-[1200px] pb-3 md:hidden">
+        <SearchBar
+          value={searchValue}
+          onChange={setSearchValue}
+          placeholder="Buscar en la intranet"
+        />
       </div>
     </header>
   );

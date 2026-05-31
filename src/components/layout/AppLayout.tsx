@@ -1,52 +1,91 @@
-import { useState, type ReactNode } from 'react';
+import {
+  BriefcaseBusiness,
+  FileText,
+  Files,
+  Home,
+  LayoutGrid,
+  Lightbulb,
+  Newspaper,
+  Sparkles,
+} from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { Header } from './Header';
-import { Sidebar } from './Sidebar';
 
 type AppLayoutProps = {
   children: ReactNode;
 };
 
+const navigation = [
+  { label: 'Inicio', icon: Home, href: '#inicio' },
+  { label: 'Accesos', icon: LayoutGrid, href: '#accesos' },
+  { label: 'Mesa IA', icon: Sparkles, href: '#mesa-ia' },
+  { label: 'Repositorios', icon: Files, href: '#repositorios' },
+  { label: 'Noticias', icon: Newspaper, href: '#noticias' },
+  { label: 'Documentacion', icon: FileText, href: '#documentacion' },
+  { label: 'Aplicaciones', icon: BriefcaseBusiness, href: '#aplicaciones' },
+  { label: 'Roadmap', icon: Lightbulb, href: '#roadmap' },
+];
+
+function PortalNavigation() {
+  const [activeHash, setActiveHash] = useState(() =>
+    typeof window === 'undefined' ? '#inicio' : window.location.hash || '#inicio',
+  );
+
+  useEffect(() => {
+    const handleHashChange = () => setActiveHash(window.location.hash || '#inicio');
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  return (
+    <nav
+      className="border-b border-neovantas-line bg-white/95 px-3 shadow-[0_1px_0_rgba(13,30,61,0.03)] backdrop-blur md:px-8"
+      aria-label="Navegacion principal"
+    >
+      <div className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto py-2">
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeHash === item.href;
+
+          return (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={() => setActiveHash(item.href)}
+              className={`focus-ring flex h-10 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-semibold transition ${
+                isActive
+                  ? 'bg-neovantas-navy text-white shadow-sm'
+                  : 'text-neovantas-muted hover:bg-neovantas-mist hover:text-neovantas-navy'
+              }`}
+            >
+              <Icon className="h-4 w-4" aria-hidden="true" />
+              <span>{item.label}</span>
+            </a>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export function AppLayout({ children }: AppLayoutProps) {
   const [searchValue, setSearchValue] = useState('');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>
-      <div className="min-h-screen bg-neovantas-mist text-slate-950">
-        <div className="flex min-h-screen">
-          <Sidebar className="hidden lg:flex" />
-
-          <div
-            className={`fixed inset-0 z-40 lg:hidden ${
-              mobileMenuOpen ? '' : 'pointer-events-none'
-            }`}
-            aria-hidden={!mobileMenuOpen}
-          >
-            <button
-              type="button"
-              className={`absolute inset-0 bg-slate-950/50 transition-opacity ${
-                mobileMenuOpen ? 'opacity-100' : 'opacity-0'
-              }`}
-              aria-label="Cerrar menu"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <Sidebar
-              className={`relative z-10 flex transition-transform duration-200 ${
-                mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-              }`}
-              onClose={() => setMobileMenuOpen(false)}
-              onNavigate={() => setMobileMenuOpen(false)}
-            />
-          </div>
-
-          <div className="flex min-w-0 flex-1 flex-col">
-            <Header onMenuClick={() => setMobileMenuOpen(true)} />
-            <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">
-              <div className="mx-auto w-full max-w-7xl">{children}</div>
-            </main>
-          </div>
+      <div className="min-h-screen bg-neovantas-mist text-neovantas-ink">
+        <div className="sticky top-0 z-30">
+          <Header />
+          <PortalNavigation />
         </div>
+
+        <main className="min-w-0 px-4 py-7 md:px-8 md:py-10">
+          <div className="mx-auto w-full max-w-[1200px]">{children}</div>
+        </main>
       </div>
     </PortalSearchProvider>
   );

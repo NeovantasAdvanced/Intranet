@@ -248,63 +248,78 @@ export function HomeDashboard() {
 
   return (
     <div className="space-y-8">
-      <section id="inicio" className="grid scroll-mt-24 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-lg bg-neovantas-navy p-6 text-white shadow-panel md:p-7">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <Badge tone="info" className="border-sky-300/30 bg-sky-300/10 text-sky-100">
-                Portal corporativo MVP
+      <section
+        id="inicio"
+        className="scroll-mt-40 overflow-hidden rounded-[20px] bg-gradient-to-br from-neovantas-navy via-neovantas-blue to-[#123D74] p-6 text-white shadow-elevated md:p-8 lg:p-10"
+      >
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+          <div className="max-w-3xl">
+            <Badge tone="info" className="border-white/20 bg-white/10 text-white">
+              Portal ejecutivo
+            </Badge>
+            <h1 className="mt-5 font-display text-4xl font-normal leading-tight md:text-5xl">
+              Portal de Recursos Neovantas
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 md:text-base">
+              Una entrada unica para consultar conocimiento, proyectos, noticias, accesos y herramientas
+              internas con una experiencia clara para directivos y consultores.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a
+                href="#repositorios"
+                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-neovantas-navy shadow-sm"
+              >
+                Ver repositorios
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </a>
+              <a
+                href="#mesa-ia"
+                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
+              >
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                Abrir Mesa IA
+              </a>
+            </div>
+          </div>
+
+          <div className="rounded-[14px] border border-white/15 bg-white/10 p-5 backdrop-blur">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-white/60">Estado del portal</p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">Operativo</h2>
+              </div>
+              <Badge tone="success" className="border-emerald-300/30 bg-emerald-300/10 text-emerald-100">
+                En linea
               </Badge>
-              <h2 className="mt-5 text-3xl font-semibold leading-tight md:text-4xl">
-                Tu hub diario para trabajar mejor en Neovantas
-              </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
-                Accesos rapidos, asistentes internos, documentacion, noticias y estado de aplicaciones en
-                una unica experiencia preparada para Azure Static Web Apps.
+            </div>
+            <div className="mt-6 border-t border-white/10 pt-5">
+              <p className="text-sm font-medium text-white/60">Acceso protegido</p>
+              <p className="mt-2 text-sm leading-6 text-white/80">
+                Preparado para Microsoft 365 en Azure Static Web Apps, con contenido sincronizado desde
+                SharePoint y correo corporativo.
               </p>
             </div>
-
-            <a
-              href="#mesa-ia"
-              className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-neovantas-navy shadow-sm"
-            >
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Abrir Mesa IA
-            </a>
           </div>
         </div>
 
-        <Card className="p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-500">Estado del portal</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-950">MVP listo</h3>
-            </div>
-            <Badge tone="success">Operativo</Badge>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <p className="text-3xl font-semibold text-white">{quickLinks.length}</p>
+            <p className="mt-1 text-sm text-white/60">Accesos clave</p>
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-2xl font-semibold text-slate-950">{quickLinks.length}</p>
-              <p className="mt-1 text-xs text-slate-500">Accesos</p>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-2xl font-semibold text-slate-950">{assistants.length}</p>
-              <p className="mt-1 text-xs text-slate-500">GPTs</p>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-2xl font-semibold text-slate-950">{sharePointRepositories.length}</p>
-              <p className="mt-1 text-xs text-slate-500">Repos</p>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-2xl font-semibold text-slate-950">{apps.length}</p>
-              <p className="mt-1 text-xs text-slate-500">Apps</p>
-            </div>
+          <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <p className="text-3xl font-semibold text-white">{sharePointStats.total}</p>
+            <p className="mt-1 text-sm text-white/60">Recursos SharePoint</p>
           </div>
-          <p className="mt-5 text-sm leading-6 text-slate-600">
-            La autenticacion real no esta conectada todavia. El layout ya reserva el punto de entrada para
-            Microsoft 365 y Entra ID.
-          </p>
-        </Card>
+          <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <p className="text-3xl font-semibold text-white">{sharePointStats.projects}</p>
+            <p className="mt-1 text-sm text-white/60">Proyectos catalogados</p>
+          </div>
+          <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <p className="text-3xl font-semibold text-white">{apps.length}</p>
+            <p className="mt-1 text-sm text-white/60">Aplicaciones internas</p>
+          </div>
+        </div>
       </section>
 
       {isSearching ? (
@@ -344,7 +359,7 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.quickLinks.length > 0) ? (
-      <section id="accesos" className="scroll-mt-24">
+      <section id="accesos" className="scroll-mt-40">
         <SectionHeader
           title="Accesos rapidos"
           description="Atajos operativos para las tareas mas frecuentes."
@@ -373,9 +388,9 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.assistants.length > 0 || filteredContent.roadmap.length > 0) ? (
-      <section id="mesa-ia" className="grid scroll-mt-24 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <section id="mesa-ia" className="grid scroll-mt-40 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
         {(!isSearching || filteredContent.assistants.length > 0) ? (
-        <div id="asistentes" className="scroll-mt-24">
+        <div id="asistentes" className="scroll-mt-40">
           <SectionHeader
             title="GPTs y asistentes"
             description="Herramientas internas para acelerar conocimiento, delivery y soporte."
@@ -420,7 +435,7 @@ export function HomeDashboard() {
         ) : null}
 
         {(!isSearching || filteredContent.roadmap.length > 0) ? (
-        <div id="roadmap" className="scroll-mt-24">
+        <div id="roadmap" className="scroll-mt-40">
         <Card className="overflow-hidden">
           <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
             <div className="flex items-center gap-2">
@@ -452,7 +467,7 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.sharePointResources.length > 0) ? (
-      <section id="repositorios" className="scroll-mt-24">
+      <section id="repositorios" className="scroll-mt-40">
         <SectionHeader
           title="Repositorios SharePoint"
           description="Acceso centralizado a documentacion del equipo y repositorio de proyectos realizados."
@@ -642,7 +657,7 @@ export function HomeDashboard() {
       {(!isSearching || filteredContent.news.length > 0 || filteredContent.documents.length > 0) ? (
       <section className="grid gap-5 xl:grid-cols-2">
         {(!isSearching || filteredContent.news.length > 0) ? (
-        <div id="noticias" className="scroll-mt-24">
+        <div id="noticias" className="scroll-mt-40">
           <SectionHeader title="Noticias" description="Comunicaciones relevantes para el equipo." />
           <div className="space-y-3">
             {filteredContent.news.map((item) => (
@@ -678,7 +693,7 @@ export function HomeDashboard() {
         ) : null}
 
         {(!isSearching || filteredContent.documents.length > 0) ? (
-        <div id="documentacion" className="scroll-mt-24">
+        <div id="documentacion" className="scroll-mt-40">
           <SectionHeader title="Documentacion" description="Recursos versionados y listos para enlazar." />
           <div className="space-y-3">
             {filteredContent.documents.map((item) => (
@@ -706,7 +721,7 @@ export function HomeDashboard() {
       ) : null}
 
       {(!isSearching || filteredContent.apps.length > 0) ? (
-      <section id="aplicaciones" className="scroll-mt-24">
+      <section id="aplicaciones" className="scroll-mt-40">
         <SectionHeader title="Aplicaciones internas" description="Servicios conectables en proximas iteraciones." />
         <div className="grid gap-4 md:grid-cols-3">
           {filteredContent.apps.map((app) => {
