@@ -62,6 +62,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Normalize news folder
+        env:
+          RAW_NEWS_MAIL_FOLDER: ${{ vars.NEWS_MAIL_FOLDER }}
+        run: |
+          raw="${RAW_NEWS_MAIL_FOLDER:-}"
+          normalized="$(printf '%s' "$raw" | tr -d '\r' | sed 's#\\#/#g' | xargs)"
+          case "$(printf '%s' "$normalized" | tr '[:upper:]' '[:lower:]')" in
+            ""|"/mailfolders/inbox/childfolders"|"mailfolders/inbox/childfolders")
+              echo "NEWS_MAIL_FOLDER=inbox/Neovantas" >> "$GITHUB_ENV"
+              echo "::notice::NEWS_MAIL_FOLDER invalid or empty; using inbox/Neovantas."
+              ;;
+            *)
+              echo "NEWS_MAIL_FOLDER=$normalized" >> "$GITHUB_ENV"
+              ;;
+          esac
+          echo "NEWS_SUBJECT_PREFIX=${{ vars.NEWS_SUBJECT_PREFIX }}" >> "$GITHUB_ENV"
+
       - name: Check news configuration
         id: news-config
         env:
@@ -82,11 +99,12 @@ jobs:
           NEWS_CLIENT_ID: ${{ secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
           NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
           NEWS_MAILBOX_USER_ID: ${{ secrets.NEWS_MAILBOX_USER_ID }}
-          NEWS_MAIL_FOLDER: ${{ vars.NEWS_MAIL_FOLDER }}
+          NEWS_MAIL_FOLDER_RAW: ${{ vars.NEWS_MAIL_FOLDER }}
+          NEWS_MAIL_FOLDER: ${{ env.NEWS_MAIL_FOLDER }}
           NEWS_MAIL_FOLDER_ID: ${{ vars.NEWS_MAIL_FOLDER_ID || secrets.NEWS_MAIL_FOLDER_ID }}
           NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER || 'advanced.analytics@neovantas.com' }}
-          NEWS_SUBJECT_PREFIX: ${{ vars.NEWS_SUBJECT_PREFIX }}
-          NEWS_SUBJECT_CONTAINS: ${{ vars.NEWS_SUBJECT_PREFIX }}
+          NEWS_SUBJECT_PREFIX: ${{ env.NEWS_SUBJECT_PREFIX }}
+          NEWS_SUBJECT_CONTAINS: ${{ env.NEWS_SUBJECT_PREFIX }}
           NEWS_CATEGORY: ${{ vars.NEWS_CATEGORY || 'Comunicacion' }}
           NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Noticias relevantes de hoy' }}

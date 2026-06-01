@@ -15,8 +15,9 @@ import {
 
 const outputPath = path.resolve('src/data/events.json');
 
-const rawFolderReference = process.env.EVENTS_MAIL_FOLDER ?? process.env.EVENTS_MAIL_FOLDER_NAME ?? '';
-const effectiveFolderReference = sanitizeFolderReference(rawFolderReference);
+const rawFolderReference =
+  process.env.EVENTS_MAIL_FOLDER_RAW ?? process.env.EVENTS_MAIL_FOLDER ?? process.env.EVENTS_MAIL_FOLDER_NAME ?? '';
+const effectiveFolderReference = sanitizeFolderReference(process.env.EVENTS_MAIL_FOLDER ?? rawFolderReference);
 
 const config = {
   mailboxUserId: process.env.EVENTS_MAILBOX_USER_ID,

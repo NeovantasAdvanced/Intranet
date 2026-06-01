@@ -12,8 +12,9 @@ import {
 
 const outputPath = path.resolve('src/data/news.json');
 
-const rawFolderReference = process.env.NEWS_MAIL_FOLDER ?? process.env.NEWS_MAIL_FOLDER_NAME ?? '';
-const effectiveFolderReference = sanitizeFolderReference(rawFolderReference);
+const rawFolderReference =
+  process.env.NEWS_MAIL_FOLDER_RAW ?? process.env.NEWS_MAIL_FOLDER ?? process.env.NEWS_MAIL_FOLDER_NAME ?? '';
+const effectiveFolderReference = sanitizeFolderReference(process.env.NEWS_MAIL_FOLDER ?? rawFolderReference);
 
 const config = {
   mailboxUserId: process.env.NEWS_MAILBOX_USER_ID,

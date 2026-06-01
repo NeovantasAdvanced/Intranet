@@ -58,6 +58,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Normalize events folder
+        env:
+          RAW_EVENTS_MAIL_FOLDER: ${{ vars.EVENTS_MAIL_FOLDER }}
+        run: |
+          raw="${RAW_EVENTS_MAIL_FOLDER:-}"
+          normalized="$(printf '%s' "$raw" | tr -d '\r' | sed 's#\\#/#g' | xargs)"
+          case "$(printf '%s' "$normalized" | tr '[:upper:]' '[:lower:]')" in
+            ""|"/mailfolders/inbox/childfolders"|"mailfolders/inbox/childfolders")
+              echo "EVENTS_MAIL_FOLDER=inbox/Neovantas" >> "$GITHUB_ENV"
+              echo "::notice::EVENTS_MAIL_FOLDER invalid or empty; using inbox/Neovantas."
+              ;;
+            *)
+              echo "EVENTS_MAIL_FOLDER=$normalized" >> "$GITHUB_ENV"
+              ;;
+          esac
+          echo "EVENTS_SUBJECT_PREFIX=${{ vars.EVENTS_SUBJECT_PREFIX }}" >> "$GITHUB_ENV"
+
       - name: Check events configuration
         id: events-config
         env:
@@ -78,12 +95,13 @@ jobs:
           EVENTS_CLIENT_ID: ${{ secrets.EVENTS_CLIENT_ID || secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
           EVENTS_CLIENT_SECRET: ${{ secrets.EVENTS_CLIENT_SECRET || secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
           EVENTS_MAILBOX_USER_ID: ${{ secrets.EVENTS_MAILBOX_USER_ID }}
-          EVENTS_MAIL_FOLDER: ${{ vars.EVENTS_MAIL_FOLDER }}
+          EVENTS_MAIL_FOLDER_RAW: ${{ vars.EVENTS_MAIL_FOLDER }}
+          EVENTS_MAIL_FOLDER: ${{ env.EVENTS_MAIL_FOLDER }}
           EVENTS_MAIL_FOLDER_ID: ${{ vars.EVENTS_MAIL_FOLDER_ID || secrets.EVENTS_MAIL_FOLDER_ID }}
-          EVENTS_SUBJECT_PREFIX: ${{ vars.EVENTS_SUBJECT_PREFIX }}
+          EVENTS_SUBJECT_PREFIX: ${{ env.EVENTS_SUBJECT_PREFIX }}
           EVENTS_SOURCE: ${{ vars.EVENTS_SOURCE || 'Outlook HTML' }}
           EVENTS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.EVENTS_LOOKBACK_DAYS || '365' }}
-          EVENTS_MAX_MESSAGES: ${{ inputs.max_messages || vars.EVENTS_MAX_MESSAGES || '20' }}
+          EVENTS_MAX_MESSAGES: ${{ inputs.max_messages || vars.EVENTS_MAX_MESSAGES || '100' }}
 
       - name: Validate build
         if: steps.events-config.outputs.configured == 'true'

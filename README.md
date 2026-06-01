@@ -124,7 +124,7 @@ Variables y secrets:
 
 Si ya usas la aplicacion de Graph de noticias o SharePoint, el workflow tambien acepta fallback a `NEWS_*` y `SHAREPOINT_*` para no duplicar secretos.
 
-En ambos sync, el log inicial muestra el valor bruto de la variable de carpeta y la carpeta efectiva despues del fallback. Si la variable falta, el script lo indicara y usara `inbox` solo como ultima opcion.
+En ambos sync, el log inicial muestra el valor bruto de la variable de carpeta y la carpeta efectiva despues del fallback. Si GitHub entrega una ruta interna de Graph como `/mailFolders/inbox/childFolders`, el workflow la normaliza y usa `inbox/Neovantas` como valor operativo.
 
 Para probar el parseo sin Outlook real puedes usar la fixture local:
 
