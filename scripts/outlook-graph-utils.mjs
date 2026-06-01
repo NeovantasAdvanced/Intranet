@@ -162,7 +162,7 @@ export function normalizeMailSubject(value) {
   return normalizeText(String(value ?? '').replace(/^(re|fw|fwd):\s*/i, '').trim());
 }
 
-export async function listRecentMessagesFromFolder(accessToken, mailboxUserId, folderId, limit = 100, selectFields = [
+export async function listRecentMessagesFromFolder(accessToken, mailboxUserId, folderId, limit = 20, selectFields = [
   'id',
   'internetMessageId',
   'subject',

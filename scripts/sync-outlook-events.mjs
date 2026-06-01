@@ -26,7 +26,7 @@ const config = {
   folderId: process.env.EVENTS_MAIL_FOLDER_ID,
   subjectPrefix: process.env.EVENTS_SUBJECT_PREFIX || process.env.EVENTS_SUBJECT_CONTAINS || 'Eventos de',
   lookbackDays: Number(process.env.EVENTS_LOOKBACK_DAYS ?? '365'),
-  maxMessages: Number(process.env.EVENTS_MAX_MESSAGES ?? '100'),
+  maxMessages: Number(process.env.EVENTS_MAX_MESSAGES ?? '20'),
   source: process.env.EVENTS_SOURCE ?? 'Outlook HTML',
   fixturePath: process.env.EVENTS_HTML_FIXTURE_PATH,
 };
@@ -365,7 +365,7 @@ async function loadEventSources() {
     accessToken,
     config.mailboxUserId,
     resolvedFolder.folderId,
-    Math.max(50, config.maxMessages),
+    Math.max(20, config.maxMessages),
     ['id', 'subject', 'receivedDateTime', 'from', 'webLink'],
   );
   console.log(`[Outlook events] ruta final resuelta: ${resolvedFolder.resolvedPath}`);
