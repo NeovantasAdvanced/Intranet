@@ -97,6 +97,14 @@ El workflow `.github/workflows/sync-outlook-news.yml` puede actualizar `src/data
 
 El script guarda solo asunto, resumen, fecha, enlace a Outlook y metadatos. No copia adjuntos ni cuerpos completos de correo.
 
+Configuracion actual:
+
+- `NEWS_MAILBOX_USER_ID` en `secrets`
+- `NEWS_MAIL_FOLDER=Neovantas` en `vars`
+- `NEWS_SUBJECT_PREFIX=Noticias relevantes de hoy` en `vars`
+
+El workflow usa esas variables y filtra en JavaScript para excluir correos como `Noticias People de hoy`.
+
 Guia operativa: `docs/outlook-news-sync.md`.
 
 ## Sincronizacion de eventos Outlook
@@ -107,10 +115,10 @@ El script extrae eventos desde el HTML, normaliza fechas a ISO y deja campos pre
 
 Variables y secrets:
 
-- `EVENTS_MAILBOX_USER_ID`: buzon de correo a consultar. Puede ser UPN o id de Graph.
-- `EVENTS_MAIL_FOLDER`: nombre exacto de la carpeta de Outlook donde llegan los correos de eventos.
-- `EVENTS_MAIL_FOLDER_ID`: alternativa si prefieres fijar el identificador de carpeta.
-- `EVENTS_TENANT_ID`, `EVENTS_CLIENT_ID`, `EVENTS_CLIENT_SECRET`: credenciales de Graph para esta automatizacion.
+- `EVENTS_MAILBOX_USER_ID` en `secrets`: buzon de correo a consultar. Puede ser UPN o id de Graph.
+- `EVENTS_MAIL_FOLDER=Neovantas` en `vars`: nombre exacto de la carpeta de Outlook donde llegan los correos de eventos.
+- `EVENTS_SUBJECT_PREFIX=Eventos de` en `vars`: prefijo que debe tener el asunto del correo.
+- `EVENTS_TENANT_ID`, `EVENTS_CLIENT_ID`, `EVENTS_CLIENT_SECRET` en `secrets`: credenciales de Graph para esta automatizacion.
 
 Si ya usas la aplicacion de Graph de noticias o SharePoint, el workflow tambien acepta fallback a `NEWS_*` y `SHAREPOINT_*` para no duplicar secretos.
 

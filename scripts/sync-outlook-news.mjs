@@ -1,37 +1,30 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  folderListText,
+  getAccessToken,
+  graphCollection,
+  normalizeText,
+  readEnv,
+} from './outlook-graph-utils.mjs';
 
-const graphBaseUrl = 'https://graph.microsoft.com/v1.0';
 const outputPath = path.resolve('src/data/news.json');
 
 const config = {
   mailboxUserId: process.env.NEWS_MAILBOX_USER_ID,
-  folderId: process.env.NEWS_MAIL_FOLDER_ID,
-  folderName: process.env.NEWS_MAIL_FOLDER_NAME,
+  folderName: process.env.NEWS_MAIL_FOLDER || process.env.NEWS_MAIL_FOLDER_NAME,
+  subjectPrefix: process.env.NEWS_SUBJECT_PREFIX || process.env.NEWS_SUBJECT_CONTAINS || 'Noticias relevantes de hoy',
   sender: process.env.NEWS_SENDER,
-  subjectContains: process.env.NEWS_SUBJECT_CONTAINS ?? 'Noticias people de hoy',
   category: process.env.NEWS_CATEGORY ?? 'Comunicacion',
   status: process.env.NEWS_STATUS ?? 'Nuevo',
   source: process.env.NEWS_SOURCE ?? 'Noticias relevantes de hoy',
-  allowUnfilteredInbox: process.env.NEWS_ALLOW_UNFILTERED_INBOX === 'true',
   lookbackDays: Number(process.env.NEWS_LOOKBACK_DAYS ?? '14'),
   maxItems: Number(process.env.NEWS_MAX_ITEMS ?? '10'),
 };
 
-function readEnv(...names) {
-  return names.map((name) => process.env[name]).find(Boolean);
-}
-
-function normalizeSearch(value) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
 function slugify(value) {
-  const slug = normalizeSearch(value)
+  const slug = normalizeText(value)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
@@ -40,7 +33,7 @@ function slugify(value) {
 }
 
 function stripSubjectPrefix(subject) {
-  return subject.replace(/^(re|fw|fwd):\s*/i, '').trim();
+  return String(subject ?? '').replace(/^(re|fw|fwd):\s*/i, '').trim();
 }
 
 function cleanPreview(value) {
@@ -62,98 +55,29 @@ function getSinceIso() {
   return since.toISOString();
 }
 
-async function getAccessToken() {
-  const existingToken = readEnv('GRAPH_ACCESS_TOKEN', 'MS_GRAPH_ACCESS_TOKEN');
-
-  if (existingToken) {
-    return existingToken;
-  }
-
-  const tenantId = readEnv('NEWS_TENANT_ID', 'SHAREPOINT_TENANT_ID', 'AZURE_TENANT_ID', 'TENANT_ID');
-  const clientId = readEnv('NEWS_CLIENT_ID', 'SHAREPOINT_CLIENT_ID', 'AZURE_CLIENT_ID', 'CLIENT_ID');
-  const clientSecret = readEnv('NEWS_CLIENT_SECRET', 'SHAREPOINT_CLIENT_SECRET', 'AZURE_CLIENT_SECRET', 'CLIENT_SECRET');
-
-  if (!tenantId || !clientId || !clientSecret) {
-    throw new Error(
-      'Missing Graph credentials. Set NEWS_TENANT_ID, NEWS_CLIENT_ID and NEWS_CLIENT_SECRET, or reuse SHAREPOINT_* secrets.',
-    );
-  }
-
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: 'client_credentials',
-    scope: 'https://graph.microsoft.com/.default',
-  });
-
-  const response = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Graph auth failed: ${response.status} ${await response.text()}`);
-  }
-
-  const payload = await response.json();
-  return payload.access_token;
+function normalizeSubject(value) {
+  return normalizeText(stripSubjectPrefix(value));
 }
 
-async function graphRequest(accessToken, url) {
-  const requestUrl = url.startsWith('https://') ? url : `${graphBaseUrl}${url}`;
-  const response = await fetch(requestUrl, {
-    headers: {
-      authorization: `Bearer ${accessToken}`,
-      accept: 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Graph request failed: ${response.status} ${await response.text()}`);
-  }
-
-  return response.json();
-}
-
-async function graphCollection(accessToken, url) {
-  const items = [];
-  let nextUrl = url;
-
-  while (nextUrl && items.length < config.maxItems * 4) {
-    const payload = await graphRequest(accessToken, nextUrl);
-    items.push(...(payload.value ?? []));
-    nextUrl = payload['@odata.nextLink'];
-  }
-
-  return items;
-}
-
-function formatFolderList(folders) {
-  return folders
-    .map((folder) => `- ${folder.displayName ?? '(sin nombre)'} (${folder.id ?? 'sin id'})`)
-    .join('\n');
+async function readExistingNews() {
+  const raw = await readFile(outputPath, 'utf8');
+  return JSON.parse(raw);
 }
 
 async function resolveMailFolder(accessToken) {
-  if (config.folderId) {
-    console.log(`[Outlook news] Carpeta seleccionada: NEWS_MAIL_FOLDER_ID=${config.folderId}`);
-    console.log(`[Outlook news] folderId encontrado: ${config.folderId}`);
-    return config.folderId;
-  }
-
   if (config.folderName) {
-    console.log(`[Outlook news] Carpeta seleccionada: NEWS_MAIL_FOLDER_NAME=${config.folderName}`);
+    console.log(`[Outlook news] mailbox: ${config.mailboxUserId}`);
+    console.log(`[Outlook news] carpeta solicitada: ${config.folderName}`);
     const folders = await graphCollection(
       accessToken,
       `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders?$top=100`,
+      100,
     );
     const folder = folders.find((item) => item.displayName === config.folderName);
 
     if (!folder?.id) {
-      const availableFolders = formatFolderList(folders);
       throw new Error(
-        `NEWS_MAIL_FOLDER_NAME "${config.folderName}" not found for mailbox ${config.mailboxUserId}.\nAvailable folders:\n${availableFolders || '- (sin carpetas encontradas)'}`,
+        `NEWS_MAIL_FOLDER "${config.folderName}" not found for mailbox ${config.mailboxUserId}.\nAvailable folders:\n${folderListText(folders) || '- (sin carpetas encontradas)'}`,
       );
     }
 
@@ -161,24 +85,36 @@ async function resolveMailFolder(accessToken) {
     return folder.id;
   }
 
-  console.log('[Outlook news] Carpeta seleccionada: inbox');
+  console.log(`[Outlook news] mailbox: ${config.mailboxUserId}`);
+  console.log('[Outlook news] carpeta solicitada: inbox');
   console.log('[Outlook news] folderId encontrado: inbox');
   return 'inbox';
 }
 
+async function listNewsMessages(accessToken) {
+  if (!config.mailboxUserId) {
+    throw new Error('Missing NEWS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the news email.');
+  }
+
+  const folderId = await resolveMailFolder(accessToken);
+  const select = ['id', 'internetMessageId', 'subject', 'bodyPreview', 'receivedDateTime', 'from', 'webLink'].join(',');
+  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$top=100`;
+  const messages = await graphCollection(accessToken, url, 100);
+
+  console.log(`[Outlook news] Numero de mensajes recuperados: ${messages.length}`);
+  return messages;
+}
+
 function messageMatches(message) {
-  const sender = message.from?.emailAddress?.address ?? '';
-  const subject = message.subject ?? '';
+  const sender = normalizeText(message.from?.emailAddress?.address ?? '');
+  const subject = normalizeSubject(message.subject ?? '');
+  const prefix = normalizeText(config.subjectPrefix);
 
-  if (config.sender && normalizeSearch(sender) !== normalizeSearch(config.sender)) {
+  if (config.sender && sender !== normalizeText(config.sender)) {
     return false;
   }
 
-  if (config.subjectContains && !normalizeSearch(subject).includes(normalizeSearch(config.subjectContains))) {
-    return false;
-  }
-
-  return true;
+  return subject.startsWith(prefix) || subject.includes(prefix);
 }
 
 function toNewsItem(message) {
@@ -198,56 +134,31 @@ function toNewsItem(message) {
   };
 }
 
-async function readExistingNews() {
-  const raw = await readFile(outputPath, 'utf8');
-  return JSON.parse(raw);
-}
+async function main() {
+  const accessToken = await getAccessToken('NEWS', 'NEWS');
+  const existingNews = await readExistingNews();
+  const messages = await listNewsMessages(accessToken);
 
-async function listNewsMessages(accessToken) {
-  if (!config.mailboxUserId) {
-    throw new Error('Missing NEWS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the news email.');
-  }
+  const candidateMessages = messages
+    .filter(messageMatches)
+    .sort((left, right) => new Date(right.receivedDateTime ?? 0).getTime() - new Date(left.receivedDateTime ?? 0).getTime());
 
-  const folderId = await resolveMailFolder(accessToken);
+  console.log(
+    `[Outlook news] asuntos candidatos detectados: ${
+      candidateMessages.length > 0 ? candidateMessages.map((message) => message.subject).join(' | ') : '(ninguno)'
+    }`,
+  );
 
-  if (
-    normalizeSearch(folderId) === 'inbox' &&
-    !config.sender &&
-    !config.subjectContains &&
-    !config.allowUnfilteredInbox
-  ) {
+  if (candidateMessages.length === 0) {
     throw new Error(
-      'Refusing to import the full inbox. Set NEWS_SENDER, NEWS_SUBJECT_CONTAINS, NEWS_MAIL_FOLDER_ID, NEWS_MAIL_FOLDER_NAME, or NEWS_ALLOW_UNFILTERED_INBOX=true.',
+      `No Outlook message found in folder "${config.folderName ?? 'inbox'}" matching prefix "${config.subjectPrefix}".`,
     );
   }
 
-  const select = [
-    'id',
-    'internetMessageId',
-    'subject',
-    'bodyPreview',
-    'receivedDateTime',
-    'from',
-    'webLink',
-  ].join(',');
-  const filter = encodeURIComponent(`receivedDateTime ge ${getSinceIso()}`);
-  const orderBy = encodeURIComponent('receivedDateTime desc');
-  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$filter=${filter}&$orderby=${orderBy}&$top=50`;
+  const selectedMessage = candidateMessages[0];
+  console.log(`[Outlook news] asunto seleccionado: ${selectedMessage.subject}`);
 
-  const messages = await graphCollection(accessToken, url);
-  console.log(`[Outlook news] Numero de mensajes recuperados: ${messages.length}`);
-  return messages;
-}
-
-async function main() {
-  const accessToken = await getAccessToken();
-  const existingNews = await readExistingNews();
-  const messages = await listNewsMessages(accessToken);
-  const mailNews = messages
-    .filter(messageMatches)
-    .slice(0, config.maxItems)
-    .map(toNewsItem);
-
+  const mailNews = [selectedMessage].map(toNewsItem);
   const manualNews = existingNews.filter((item) => item.source !== config.source);
   const seenIds = new Set();
   const mergedNews = [...mailNews, ...manualNews]
@@ -264,10 +175,31 @@ async function main() {
 
   await writeFile(outputPath, `${JSON.stringify(mergedNews, null, 2)}\n`, 'utf8');
 
+  console.log(`[Outlook news] numero de noticias extraidas: ${mailNews.length}`);
   console.log(`Outlook news synced: ${mailNews.length} mail news, ${mergedNews.length} total news.`);
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}
+
+export function selectNewsMessageSubjects(messages, subjectPrefix, sender) {
+  const wantedPrefix = normalizeText(subjectPrefix);
+  const wantedSender = sender ? normalizeText(sender) : '';
+
+  return messages
+    .filter((message) => {
+      const subject = normalizeSubject(message.subject ?? '');
+      const from = normalizeText(message.from?.emailAddress?.address ?? '');
+
+      if (wantedSender && from !== wantedSender) {
+        return false;
+      }
+
+      return subject.startsWith(wantedPrefix) || subject.includes(wantedPrefix);
+    })
+    .sort((left, right) => new Date(right.receivedDateTime ?? 0).getTime() - new Date(left.receivedDateTime ?? 0).getTime());
+}

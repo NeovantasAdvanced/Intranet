@@ -1,37 +1,29 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  folderListText,
+  getAccessToken,
+  graphCollection,
+  graphRequest,
+  loadTextFile,
+  normalizeText,
+} from './outlook-graph-utils.mjs';
 
-const graphBaseUrl = 'https://graph.microsoft.com/v1.0';
 const outputPath = path.resolve('src/data/events.json');
 
 const config = {
-  mailboxUserId:
-    process.env.EVENTS_MAILBOX_USER_ID ||
-    process.env.NEWS_MAILBOX_USER_ID ||
-    process.env.SHAREPOINT_MAILBOX_USER_ID,
-  folderId: process.env.EVENTS_MAIL_FOLDER_ID,
+  mailboxUserId: process.env.EVENTS_MAILBOX_USER_ID,
   folderName: process.env.EVENTS_MAIL_FOLDER || process.env.EVENTS_MAIL_FOLDER_NAME,
-  subjectContains: process.env.EVENTS_SUBJECT_CONTAINS ?? 'Eventos de',
+  subjectPrefix: process.env.EVENTS_SUBJECT_PREFIX || process.env.EVENTS_SUBJECT_CONTAINS || 'Eventos de',
   lookbackDays: Number(process.env.EVENTS_LOOKBACK_DAYS ?? '365'),
-  maxMessages: Number(process.env.EVENTS_MAX_MESSAGES ?? '20'),
+  maxMessages: Number(process.env.EVENTS_MAX_MESSAGES ?? '100'),
   source: process.env.EVENTS_SOURCE ?? 'Outlook HTML',
   fixturePath: process.env.EVENTS_HTML_FIXTURE_PATH,
 };
 
-function readEnv(...names) {
-  return names.map((name) => process.env[name]).find(Boolean);
-}
-
-function normalizeSearch(value) {
-  return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
 function slugify(value) {
-  const slug = normalizeSearch(value)
+  const slug = normalizeText(value)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 120);
@@ -91,7 +83,7 @@ function extractFirstHref(html) {
 
 function readDateParts(value) {
   const text = stripTags(value).replace(/\s+/g, ' ').trim();
-  const lower = normalizeSearch(text);
+  const lower = normalizeText(text);
 
   if (!text) {
     return null;
@@ -111,7 +103,7 @@ function readDateParts(value) {
     };
   }
 
-  const monthMatch = lower.match(/\b(\d{1,2})\s+de\s+([a-záéíóúñ]+)\s+de\s+(\d{4})\b/i);
+  const monthMatch = lower.match(/\b(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})\b/i);
   if (monthMatch) {
     const months = {
       enero: '01',
@@ -128,7 +120,7 @@ function readDateParts(value) {
       noviembre: '11',
       diciembre: '12',
     };
-    const month = months[normalizeSearch(monthMatch[2])];
+    const month = months[normalizeText(monthMatch[2])];
 
     if (month) {
       return {
@@ -142,12 +134,11 @@ function readDateParts(value) {
 }
 
 function readTimeText(value) {
-  const text = stripTags(value).replace(/\s+/g, ' ').trim();
-  return text || '';
+  return stripTags(value).replace(/\s+/g, ' ').trim();
 }
 
 function inferWorkSchedule(scheduleText, timeText) {
-  const text = normalizeSearch(scheduleText);
+  const text = normalizeText(scheduleText);
 
   if (text.includes('fuera') || text.includes('after hours') || text.includes('outside')) {
     return 'fuera_horario';
@@ -166,10 +157,6 @@ function inferWorkSchedule(scheduleText, timeText) {
   }
 
   return 'laboral';
-}
-
-function stripHtmlAndNormalize(value) {
-  return normalizeSearch(stripTags(value));
 }
 
 function extractCellHtml(rowHtml) {
@@ -197,7 +184,7 @@ function findTableRows(tableHtml) {
 }
 
 function buildHeaderMap(headerCells) {
-  const headers = headerCells.map((cell) => stripHtmlAndNormalize(cell));
+  const headers = headerCells.map((cell) => normalizeText(stripTags(cell)));
   const matchIndex = (aliases) => headers.findIndex((header) => aliases.some((alias) => header.includes(alias)));
 
   return {
@@ -205,10 +192,10 @@ function buildHeaderMap(headerCells) {
     organization: matchIndex(['organizacion', 'empresa', 'organization', 'organizer', 'equipo', 'departamento']),
     format: matchIndex(['formato', 'format', 'modalidad', 'tipo']),
     category: matchIndex(['categoria', 'category', 'area', 'tema']),
-    date: matchIndex(['fecha', 'date', 'dia', 'día']),
+    date: matchIndex(['fecha', 'date', 'dia']),
     time: matchIndex(['hora', 'time', 'horario']),
     url: matchIndex(['enlace', 'link', 'url', 'cta']),
-    cta: matchIndex(['cta', 'accion', 'action', 'texto', 'boton', 'botón']),
+    cta: matchIndex(['cta', 'accion', 'action', 'texto', 'boton']),
     schedule: matchIndex(['laboral', 'schedule', 'work schedule', 'fuera']),
     tags: matchIndex(['tags', 'etiquetas']),
   };
@@ -222,29 +209,17 @@ function valueAt(cells, index) {
   return cells[index] ?? '';
 }
 
-function parseTimeCellToRange(timeText) {
-  const text = readTimeText(timeText);
-  if (!text) {
-    return { timeText: '', startDate: null, endDate: null };
-  }
-
-  return { timeText: text, startDate: null, endDate: null };
-}
-
 function parseEventRow(cells, headerMap, fallbackIndex) {
-  const cellText = cells.map((cell) => stripTags(cell));
-  const cellHtml = cells;
-
-  const title = stripTags(valueAt(cellHtml, headerMap.title >= 0 ? headerMap.title : fallbackIndex[0]));
-  const organization = stripTags(valueAt(cellHtml, headerMap.organization >= 0 ? headerMap.organization : fallbackIndex[1]));
-  const format = stripTags(valueAt(cellHtml, headerMap.format >= 0 ? headerMap.format : fallbackIndex[2]));
-  const category = stripTags(valueAt(cellHtml, headerMap.category >= 0 ? headerMap.category : fallbackIndex[3]));
-  const dateCell = valueAt(cellHtml, headerMap.date >= 0 ? headerMap.date : fallbackIndex[4]);
-  const timeCell = valueAt(cellHtml, headerMap.time >= 0 ? headerMap.time : fallbackIndex[5]);
-  const urlCell = valueAt(cellHtml, headerMap.url >= 0 ? headerMap.url : fallbackIndex[6]);
-  const ctaCell = valueAt(cellHtml, headerMap.cta >= 0 ? headerMap.cta : fallbackIndex[7]);
-  const scheduleCell = valueAt(cellHtml, headerMap.schedule >= 0 ? headerMap.schedule : fallbackIndex[8]);
-  const tagsCell = valueAt(cellHtml, headerMap.tags >= 0 ? headerMap.tags : fallbackIndex[9]);
+  const title = stripTags(valueAt(cells, headerMap.title >= 0 ? headerMap.title : fallbackIndex[0]));
+  const organization = stripTags(valueAt(cells, headerMap.organization >= 0 ? headerMap.organization : fallbackIndex[1]));
+  const format = stripTags(valueAt(cells, headerMap.format >= 0 ? headerMap.format : fallbackIndex[2]));
+  const category = stripTags(valueAt(cells, headerMap.category >= 0 ? headerMap.category : fallbackIndex[3]));
+  const dateCell = valueAt(cells, headerMap.date >= 0 ? headerMap.date : fallbackIndex[4]);
+  const timeCell = valueAt(cells, headerMap.time >= 0 ? headerMap.time : fallbackIndex[5]);
+  const scheduleCell = valueAt(cells, headerMap.schedule >= 0 ? headerMap.schedule : fallbackIndex[6]);
+  const urlCell = valueAt(cells, headerMap.url >= 0 ? headerMap.url : fallbackIndex[7]);
+  const ctaCell = valueAt(cells, headerMap.cta >= 0 ? headerMap.cta : fallbackIndex[8]);
+  const tagsCell = valueAt(cells, headerMap.tags >= 0 ? headerMap.tags : fallbackIndex[9]);
 
   const dateParts = readDateParts(dateCell);
   const timeText = readTimeText(timeCell);
@@ -258,7 +233,7 @@ function parseEventRow(cells, headerMap, fallbackIndex) {
     .map((tag) => tag.trim())
     .filter(Boolean);
 
-  if (!title && !organization && !dateParts) {
+  if (!title || !dateParts) {
     return null;
   }
 
@@ -279,15 +254,7 @@ function parseEventRow(cells, headerMap, fallbackIndex) {
     timeText,
   };
 
-  const idSeed = [
-    event.title,
-    event.organization,
-    event.startDate,
-    event.endDate,
-    event.format,
-    event.url,
-    event.category,
-  ]
+  const idSeed = [event.title, event.organization, event.startDate, event.endDate, event.format, event.url, event.category]
     .filter(Boolean)
     .join('|');
 
@@ -348,94 +315,10 @@ function uniqueById(items) {
   });
 }
 
-async function getAccessToken() {
-  const existingToken = readEnv('GRAPH_ACCESS_TOKEN', 'MS_GRAPH_ACCESS_TOKEN');
-
-  if (existingToken) {
-    return existingToken;
-  }
-
-  const tenantId = readEnv('EVENTS_TENANT_ID', 'NEWS_TENANT_ID', 'SHAREPOINT_TENANT_ID', 'AZURE_TENANT_ID', 'TENANT_ID');
-  const clientId = readEnv('EVENTS_CLIENT_ID', 'NEWS_CLIENT_ID', 'SHAREPOINT_CLIENT_ID', 'AZURE_CLIENT_ID', 'CLIENT_ID');
-  const clientSecret = readEnv(
-    'EVENTS_CLIENT_SECRET',
-    'NEWS_CLIENT_SECRET',
-    'SHAREPOINT_CLIENT_SECRET',
-    'AZURE_CLIENT_SECRET',
-    'CLIENT_SECRET',
-  );
-
-  if (!tenantId || !clientId || !clientSecret) {
-    throw new Error(
-      'Missing Graph credentials. Set EVENTS_TENANT_ID, EVENTS_CLIENT_ID and EVENTS_CLIENT_SECRET, or reuse NEWS_* / SHAREPOINT_* secrets.',
-    );
-  }
-
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: 'client_credentials',
-    scope: 'https://graph.microsoft.com/.default',
-  });
-
-  const response = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Graph auth failed: ${response.status} ${await response.text()}`);
-  }
-
-  const payload = await response.json();
-  return payload.access_token;
-}
-
-async function graphRequest(accessToken, url) {
-  const requestUrl = url.startsWith('https://') ? url : `${graphBaseUrl}${url}`;
-  const response = await fetch(requestUrl, {
-    headers: {
-      authorization: `Bearer ${accessToken}`,
-      accept: 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Graph request failed: ${response.status} ${await response.text()}`);
-  }
-
-  return response.json();
-}
-
-async function graphCollection(accessToken, url, limit = 200) {
-  const items = [];
-  let nextUrl = url;
-
-  while (nextUrl && items.length < limit) {
-    const payload = await graphRequest(accessToken, nextUrl);
-    items.push(...(payload.value ?? []));
-    nextUrl = payload['@odata.nextLink'];
-  }
-
-  return items;
-}
-
-function formatFolderList(folders) {
-  return folders
-    .map((folder) => `- ${folder.displayName ?? '(sin nombre)'} (${folder.id ?? 'sin id'})`)
-    .join('\n');
-}
-
 async function resolveMailFolder(accessToken) {
-  if (config.folderId) {
-    console.log(`[Outlook events] Carpeta seleccionada: EVENTS_MAIL_FOLDER_ID=${config.folderId}`);
-    console.log(`[Outlook events] folderId encontrado: ${config.folderId}`);
-    return config.folderId;
-  }
-
   if (config.folderName) {
-    console.log(`[Outlook events] Carpeta seleccionada: EVENTS_MAIL_FOLDER=${config.folderName}`);
+    console.log(`[Outlook events] mailbox: ${config.mailboxUserId}`);
+    console.log(`[Outlook events] carpeta solicitada: ${config.folderName}`);
     const folders = await graphCollection(
       accessToken,
       `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders?$top=100`,
@@ -444,9 +327,8 @@ async function resolveMailFolder(accessToken) {
     const folder = folders.find((item) => item.displayName === config.folderName);
 
     if (!folder?.id) {
-      const availableFolders = formatFolderList(folders);
       throw new Error(
-        `EVENTS_MAIL_FOLDER "${config.folderName}" not found for mailbox ${config.mailboxUserId}.\nAvailable folders:\n${availableFolders || '- (sin carpetas encontradas)'}`,
+        `EVENTS_MAIL_FOLDER "${config.folderName}" not found for mailbox ${config.mailboxUserId}.\nAvailable folders:\n${folderListText(folders) || '- (sin carpetas encontradas)'}`,
       );
     }
 
@@ -454,30 +336,29 @@ async function resolveMailFolder(accessToken) {
     return folder.id;
   }
 
-  console.log('[Outlook events] Carpeta seleccionada: inbox');
+  console.log(`[Outlook events] mailbox: ${config.mailboxUserId}`);
+  console.log('[Outlook events] carpeta solicitada: inbox');
   console.log('[Outlook events] folderId encontrado: inbox');
   return 'inbox';
 }
 
-async function listEventMessages(accessToken) {
-  if (!config.mailboxUserId) {
-    throw new Error('Missing EVENTS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the events email.');
-  }
+async function listRecentMessagesFromFolder(accessToken, folderId) {
+  const select = ['id', 'subject', 'receivedDateTime', 'from', 'webLink'].join(',');
+  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$top=100`;
+  const messages = await graphCollection(accessToken, url, Math.max(50, config.maxMessages));
 
-  const folderId = await resolveMailFolder(accessToken);
-  const select = ['id', 'subject', 'receivedDateTime', 'hasAttachments', 'from', 'webLink'].join(',');
-  const filter = encodeURIComponent(
-    `contains(subject,'${escapeODataString(config.subjectContains)}') and hasAttachments eq true and receivedDateTime ge ${getSinceIso()}`,
-  );
-  const orderBy = encodeURIComponent('receivedDateTime desc');
-  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$filter=${filter}&$orderby=${orderBy}&$top=${config.maxMessages}`;
-
-  const messages = await graphCollection(accessToken, url, config.maxMessages);
   console.log(`[Outlook events] Numero de mensajes recuperados: ${messages.length}`);
   return messages;
 }
 
-async function listMessageAttachments(accessToken, messageId) {
+function messageMatches(message) {
+  const subject = normalizeText(message.subject ?? '');
+  const prefix = normalizeText(config.subjectPrefix);
+
+  return subject.startsWith(prefix) || subject.includes(prefix);
+}
+
+async function getMessageAttachments(accessToken, messageId) {
   const select = ['id', 'name', 'contentType', 'size', 'contentBytes', 'isInline'].join(',');
   return graphCollection(
     accessToken,
@@ -487,12 +368,12 @@ async function listMessageAttachments(accessToken, messageId) {
 }
 
 function isHtmlAttachment(attachment) {
-  const name = normalizeSearch(attachment.name);
-  const type = normalizeSearch(attachment.contentType);
+  const name = normalizeText(attachment.name);
+  const type = normalizeText(attachment.contentType);
   return name.endsWith('.html') || name.endsWith('.htm') || type.includes('html');
 }
 
-function decodeAttachmentHtml(attachment) {
+function downloadAttachmentContent(attachment) {
   if (!attachment.contentBytes) {
     return '';
   }
@@ -500,37 +381,50 @@ function decodeAttachmentHtml(attachment) {
   return Buffer.from(attachment.contentBytes, 'base64').toString('utf8');
 }
 
-async function collectEventsFromMailbox(accessToken) {
-  const messages = await listEventMessages(accessToken);
-  const parsedEvents = [];
-
-  for (const message of messages) {
-    const attachments = await listMessageAttachments(accessToken, message.id);
-    const htmlAttachments = attachments.filter(isHtmlAttachment);
-
-    for (const attachment of htmlAttachments) {
-      const html = decodeAttachmentHtml(attachment);
-      if (!html) {
-        continue;
-      }
-
-      console.log(`[Outlook events] Procesando adjunto HTML: ${attachment.name}`);
-      parsedEvents.push(...parseEventsFromHtml(html));
-    }
-  }
-
-  return parsedEvents;
-}
-
 async function loadEventSources() {
   if (config.fixturePath) {
-    const html = await readFile(path.resolve(config.fixturePath), 'utf8');
+    const html = await loadTextFile(path.resolve(config.fixturePath));
     console.log(`[Outlook events] Usando fixture local: ${config.fixturePath}`);
     return parseEventsFromHtml(html);
   }
 
-  const accessToken = await getAccessToken();
-  return collectEventsFromMailbox(accessToken);
+  const accessToken = await getAccessToken('EVENTS', 'EVENTS');
+  const folderId = await resolveMailFolder(accessToken);
+  const messages = await listRecentMessagesFromFolder(accessToken, folderId);
+  const candidateMessages = messages
+    .filter(messageMatches)
+    .sort((left, right) => new Date(right.receivedDateTime ?? 0).getTime() - new Date(left.receivedDateTime ?? 0).getTime());
+
+  console.log(
+    `[Outlook events] asuntos candidatos detectados: ${
+      candidateMessages.length > 0 ? candidateMessages.map((message) => message.subject).join(' | ') : '(ninguno)'
+    }`,
+  );
+
+  if (candidateMessages.length === 0) {
+    throw new Error(
+      `No Outlook message found in folder "${config.folderName ?? 'inbox'}" matching prefix "${config.subjectPrefix}".`,
+    );
+  }
+
+  const selectedMessage = candidateMessages[0];
+  console.log(`[Outlook events] asunto seleccionado: ${selectedMessage.subject}`);
+
+  const attachments = await getMessageAttachments(accessToken, selectedMessage.id);
+  const htmlAttachment = attachments.find(isHtmlAttachment);
+
+  if (!htmlAttachment) {
+    throw new Error(`Selected Outlook message "${selectedMessage.subject}" has no HTML attachment.`);
+  }
+
+  console.log(`[Outlook events] adjunto HTML seleccionado: ${htmlAttachment.name}`);
+
+  const html = downloadAttachmentContent(htmlAttachment);
+  if (!html) {
+    throw new Error(`HTML attachment "${htmlAttachment.name}" has no contentBytes payload.`);
+  }
+
+  return parseEventsFromHtml(html);
 }
 
 function normalizeEvents(events) {
@@ -547,19 +441,25 @@ function normalizeEvents(events) {
 }
 
 async function main() {
+  if (!config.fixturePath && !config.mailboxUserId) {
+    throw new Error('Missing EVENTS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the events email.');
+  }
+
   const parsedEvents = await loadEventSources();
   if (parsedEvents.length === 0) {
     throw new Error('No event rows were parsed from the Outlook HTML attachment(s).');
   }
 
   const mergedEvents = normalizeEvents(parsedEvents);
-
   await writeFile(outputPath, `${JSON.stringify(mergedEvents, null, 2)}\n`, 'utf8');
 
+  console.log(`[Outlook events] numero de eventos extraidos: ${mergedEvents.length}`);
   console.log(`Outlook events synced: ${mergedEvents.length} total events.`);
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}

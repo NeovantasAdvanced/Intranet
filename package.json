@@ -9,7 +9,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "sync:sharepoint": "node scripts/sync-sharepoint-catalog.mjs",
     "sync:news": "node scripts/sync-outlook-news.mjs",
-    "sync:events": "node scripts/sync-outlook-events.mjs"
+    "sync:events": "node scripts/sync-outlook-events.mjs",
+    "test:news-subject": "node scripts/tests/news-subject-selection.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
