@@ -15,6 +15,34 @@ export function normalizeText(value) {
     .trim();
 }
 
+export function splitFolderReference(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/[\\]+/g, '/')
+    .split('/')
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+}
+
+export function isInboxLikeFolderName(value) {
+  const normalized = normalizeText(value);
+  return normalized === 'inbox' || normalized === 'bandeja de entrada';
+}
+
+export function sameFolderName(left, right) {
+  return normalizeText(left) === normalizeText(right);
+}
+
+export function folderPathLabel(segments) {
+  return segments.filter(Boolean).join('/');
+}
+
+export function formatFolderList(folders, prefix = '- ') {
+  return folders
+    .map((folder) => `${prefix}${folder.displayName ?? '(sin nombre)'} (${folder.id ?? 'sin id'})`)
+    .join('\n');
+}
+
 export async function getAccessToken(prefix, credentialPrefix) {
   const existingToken = readEnv('GRAPH_ACCESS_TOKEN', 'MS_GRAPH_ACCESS_TOKEN');
 
@@ -101,11 +129,305 @@ export async function graphCollection(accessToken, url, limit = 200) {
 }
 
 export function folderListText(folders) {
-  return folders
-    .map((folder) => `- ${folder.displayName ?? '(sin nombre)'} (${folder.id ?? 'sin id'})`)
-    .join('\n');
+  return formatFolderList(folders);
 }
 
 export async function loadTextFile(filePath) {
   return readFile(filePath, 'utf8');
+}
+
+export function normalizeMailSubject(value) {
+  return normalizeText(String(value ?? '').replace(/^(re|fw|fwd):\s*/i, '').trim());
+}
+
+export async function listRecentMessagesFromFolder(accessToken, mailboxUserId, folderId, limit = 100, selectFields = [
+  'id',
+  'internetMessageId',
+  'subject',
+  'bodyPreview',
+  'receivedDateTime',
+  'from',
+  'webLink',
+]) {
+  const select = selectFields.join(',');
+  const messages = await graphCollection(
+    accessToken,
+    `/users/${encodeURIComponent(mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$top=100`,
+    Math.max(1, limit),
+  );
+
+  return messages.slice(0, limit);
+}
+
+export async function getMessageAttachments(accessToken, mailboxUserId, messageId, selectFields = [
+  'id',
+  'name',
+  'contentType',
+  'size',
+  'contentBytes',
+  'isInline',
+]) {
+  const select = selectFields.join(',');
+  return graphCollection(
+    accessToken,
+    `/users/${encodeURIComponent(mailboxUserId)}/messages/${encodeURIComponent(messageId)}/attachments?$select=${select}`,
+    50,
+  );
+}
+
+export function downloadAttachmentContent(attachment) {
+  if (!attachment?.contentBytes) {
+    return '';
+  }
+
+  return Buffer.from(attachment.contentBytes, 'base64').toString('utf8');
+}
+
+export async function listRootMailFolders(accessToken, mailboxUserId) {
+  return graphCollection(accessToken, `/users/${encodeURIComponent(mailboxUserId)}/mailFolders?$top=100`, 100);
+}
+
+export async function listChildMailFolders(accessToken, mailboxUserId, folderId) {
+  return graphCollection(
+    accessToken,
+    `/users/${encodeURIComponent(mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/childFolders?$top=100`,
+    100,
+  );
+}
+
+export async function resolveMailFolderId(accessToken, options) {
+  const {
+    mailboxUserId,
+    folderReference,
+    folderId,
+    logPrefix,
+    folderLabel = 'carpeta',
+    maxDepth = 3,
+  } = options;
+
+  const requested = String(folderReference ?? '').trim();
+  const effectiveReference = requested || 'inbox';
+
+  if (folderId) {
+    console.log(`[${logPrefix}] mailbox: ${mailboxUserId}`);
+    console.log(`[${logPrefix}] carpeta solicitada: ${effectiveReference}`);
+    console.log(`[${logPrefix}] ruta resuelta: ${effectiveReference}`);
+    console.log(`[${logPrefix}] folderId final: ${folderId}`);
+    return {
+      folderId,
+      resolvedPath: effectiveReference,
+      rootFolders: [],
+      inboxChildFolders: [],
+    };
+  }
+
+  if (!mailboxUserId) {
+    throw new Error(`Missing ${folderLabel.toUpperCase()}_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the mail.`);
+  }
+
+  console.log(`[${logPrefix}] mailbox: ${mailboxUserId}`);
+  console.log(`[${logPrefix}] carpeta solicitada: ${effectiveReference}`);
+
+  const rootFolders = await listRootMailFolders(accessToken, mailboxUserId);
+  const inboxChildFolders = await listChildMailFolders(accessToken, mailboxUserId, 'inbox');
+  console.log(
+    `[${logPrefix}] subcarpetas encontradas dentro de inbox: ${
+      inboxChildFolders.length > 0
+        ? inboxChildFolders.map((folder) => folder.displayName ?? '(sin nombre)').join(' | ')
+        : '(ninguna)'
+    }`,
+  );
+
+  const rootExactMatch = rootFolders.find((folder) => sameFolderName(folder.displayName, effectiveReference));
+  if (rootExactMatch?.id) {
+    const resolvedPath = rootExactMatch.displayName ?? effectiveReference;
+    console.log(`[${logPrefix}] ruta resuelta: ${resolvedPath}`);
+    console.log(`[${logPrefix}] folderId final: ${rootExactMatch.id}`);
+    return {
+      folderId: rootExactMatch.id,
+      resolvedPath,
+      rootFolders,
+      inboxChildFolders,
+    };
+  }
+
+  const pathSegments = splitFolderReference(effectiveReference);
+  const wantsInboxPath = pathSegments.length > 1 && isInboxLikeFolderName(pathSegments[0]);
+
+  if (wantsInboxPath) {
+    console.log(`[${logPrefix}] se usa well-known folder inbox`);
+    const pathResolution = await resolveNestedFolderPath(accessToken, mailboxUserId, pathSegments.slice(1), 'inbox', 'Bandeja de entrada', logPrefix);
+    if (pathResolution) {
+      return {
+        folderId: pathResolution.folderId,
+        resolvedPath: pathResolution.resolvedPath,
+        rootFolders,
+        inboxChildFolders,
+      };
+    }
+  }
+
+  const inboxRootMatch = inboxChildFolders.find((folder) => sameFolderName(folder.displayName, effectiveReference));
+  if (inboxRootMatch?.id) {
+    const resolvedPath = folderPathLabel(['Bandeja de entrada', inboxRootMatch.displayName ?? effectiveReference]);
+    console.log(`[${logPrefix}] ruta resuelta: ${resolvedPath}`);
+    console.log(`[${logPrefix}] folderId final: ${inboxRootMatch.id}`);
+    return {
+      folderId: inboxRootMatch.id,
+      resolvedPath,
+      rootFolders,
+      inboxChildFolders,
+    };
+  }
+
+  const recursiveMatch = await searchFolderTree(accessToken, mailboxUserId, effectiveReference, rootFolders, inboxChildFolders, maxDepth, logPrefix);
+  if (recursiveMatch) {
+    return {
+      folderId: recursiveMatch.folderId,
+      resolvedPath: recursiveMatch.resolvedPath,
+      rootFolders,
+      inboxChildFolders,
+    };
+  }
+
+  throw new Error(
+    [
+      `${folderLabel.toUpperCase()} folder "${effectiveReference}" not found for mailbox ${mailboxUserId}.`,
+      'Available root folders:',
+      formatFolderList(rootFolders) || '- (sin carpetas encontradas)',
+      'Available inbox child folders:',
+      formatFolderList(inboxChildFolders) || '- (sin subcarpetas encontradas)',
+      `Recommendation: set ${folderLabel.toUpperCase()}_MAIL_FOLDER=inbox/Neovantas`,
+      `Fallback: set ${folderLabel.toUpperCase()}_MAIL_FOLDER_ID with the exact folder id if you prefer.`,
+    ].join('\n'),
+  );
+}
+
+async function resolveNestedFolderPath(accessToken, mailboxUserId, segments, folderId, resolvedPath, logPrefix) {
+  let currentFolderId = folderId;
+  let currentPath = resolvedPath;
+
+  for (const segment of segments) {
+    if (!segment) {
+      continue;
+    }
+
+    const childFolders = await listChildMailFolders(accessToken, mailboxUserId, currentFolderId);
+    const match = childFolders.find((folder) => sameFolderName(folder.displayName, segment));
+    if (!match?.id) {
+      console.log(
+        `[${logPrefix}] subcarpetas en ${currentPath}: ${
+          childFolders.length > 0 ? childFolders.map((folder) => folder.displayName ?? '(sin nombre)').join(' | ') : '(ninguna)'
+        }`,
+      );
+      return null;
+    }
+
+    currentFolderId = match.id;
+    currentPath = folderPathLabel([currentPath, match.displayName ?? segment]);
+  }
+
+  console.log(`[${logPrefix}] ruta resuelta: ${currentPath}`);
+  console.log(`[${logPrefix}] folderId final: ${currentFolderId}`);
+  return { folderId: currentFolderId, resolvedPath: currentPath };
+}
+
+async function searchFolderTree(accessToken, mailboxUserId, folderName, rootFolders, inboxChildFolders, maxDepth, logPrefix) {
+  const normalizedTarget = normalizeText(folderName);
+  const initialNodes = [
+    ...rootFolders.map((folder) => ({
+      folderId: folder.id,
+      displayName: folder.displayName ?? '',
+      path: folder.displayName ?? '',
+      depth: 1,
+    })),
+    ...inboxChildFolders.map((folder) => ({
+      folderId: folder.id,
+      displayName: folder.displayName ?? '',
+      path: folderPathLabel(['Bandeja de entrada', folder.displayName ?? '']),
+      depth: 1,
+    })),
+  ];
+
+  const queue = [...initialNodes];
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current || visited.has(current.folderId)) {
+      continue;
+    }
+
+    visited.add(current.folderId);
+
+    if (sameFolderName(current.displayName, folderName)) {
+      console.log(`[${logPrefix}] ruta resuelta: ${current.path}`);
+      console.log(`[${logPrefix}] folderId final: ${current.folderId}`);
+      return { folderId: current.folderId, resolvedPath: current.path };
+    }
+
+    if (current.depth >= maxDepth) {
+      continue;
+    }
+
+    const childFolders = await listChildMailFolders(accessToken, mailboxUserId, current.folderId);
+    for (const child of childFolders) {
+      queue.push({
+        folderId: child.id,
+        displayName: child.displayName ?? '',
+        path: folderPathLabel([current.path, child.displayName ?? '']),
+        depth: current.depth + 1,
+      });
+    }
+  }
+
+  if (normalizedTarget === 'neovantas') {
+    const inboxDeepMatch = await searchInInboxDepth(accessToken, mailboxUserId, inboxChildFolders, maxDepth, logPrefix);
+    if (inboxDeepMatch) {
+      return inboxDeepMatch;
+    }
+  }
+
+  return null;
+}
+
+async function searchInInboxDepth(accessToken, mailboxUserId, inboxChildFolders, maxDepth, logPrefix) {
+  const queue = inboxChildFolders.map((folder) => ({
+    folderId: folder.id,
+    displayName: folder.displayName ?? '',
+    path: folderPathLabel(['Bandeja de entrada', folder.displayName ?? '']),
+    depth: 1,
+  }));
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current || visited.has(current.folderId)) {
+      continue;
+    }
+
+    visited.add(current.folderId);
+
+    if (sameFolderName(current.displayName, 'Neovantas')) {
+      console.log(`[${logPrefix}] ruta resuelta: ${current.path}`);
+      console.log(`[${logPrefix}] folderId final: ${current.folderId}`);
+      return { folderId: current.folderId, resolvedPath: current.path };
+    }
+
+    if (current.depth >= maxDepth) {
+      continue;
+    }
+
+    const childFolders = await listChildMailFolders(accessToken, mailboxUserId, current.folderId);
+    for (const child of childFolders) {
+      queue.push({
+        folderId: child.id,
+        displayName: child.displayName ?? '',
+        path: folderPathLabel([current.path, child.displayName ?? '']),
+        depth: current.depth + 1,
+      });
+    }
+  }
+
+  return null;
 }

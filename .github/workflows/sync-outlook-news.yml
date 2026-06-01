@@ -83,6 +83,7 @@ jobs:
           NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
           NEWS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.NEWS_MAILBOX_USER_ID }}
           NEWS_MAIL_FOLDER: ${{ inputs.mail_folder_name || vars.NEWS_MAIL_FOLDER }}
+          NEWS_MAIL_FOLDER_ID: ${{ vars.NEWS_MAIL_FOLDER_ID || secrets.NEWS_MAIL_FOLDER_ID }}
           NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER || 'advanced.analytics@neovantas.com' }}
           NEWS_SUBJECT_PREFIX: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_PREFIX || 'Noticias relevantes de hoy' }}
           NEWS_SUBJECT_CONTAINS: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_PREFIX || 'Noticias relevantes de hoy' }}

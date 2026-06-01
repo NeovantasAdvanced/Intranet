@@ -100,8 +100,9 @@ El script guarda solo asunto, resumen, fecha, enlace a Outlook y metadatos. No c
 Configuracion actual:
 
 - `NEWS_MAILBOX_USER_ID` en `secrets`
-- `NEWS_MAIL_FOLDER=Neovantas` en `vars`
+- `NEWS_MAIL_FOLDER=inbox/Neovantas` en `vars`
 - `NEWS_SUBJECT_PREFIX=Noticias relevantes de hoy` en `vars`
+- `NEWS_MAIL_FOLDER_ID` en `secrets` o `vars` solo si quieres fijar el id exacto de la carpeta
 
 El workflow usa esas variables y filtra en JavaScript para excluir correos como `Noticias People de hoy`.
 
@@ -116,8 +117,9 @@ El script extrae eventos desde el HTML, normaliza fechas a ISO y deja campos pre
 Variables y secrets:
 
 - `EVENTS_MAILBOX_USER_ID` en `secrets`: buzon de correo a consultar. Puede ser UPN o id de Graph.
-- `EVENTS_MAIL_FOLDER=Neovantas` en `vars`: nombre exacto de la carpeta de Outlook donde llegan los correos de eventos.
+- `EVENTS_MAIL_FOLDER=inbox/Neovantas` en `vars`: ruta recomendada de la carpeta de Outlook donde llegan los correos de eventos.
 - `EVENTS_SUBJECT_PREFIX=Eventos de` en `vars`: prefijo que debe tener el asunto del correo.
+- `EVENTS_MAIL_FOLDER_ID` en `secrets` o `vars` solo si quieres fijar el id exacto de la carpeta.
 - `EVENTS_TENANT_ID`, `EVENTS_CLIENT_ID`, `EVENTS_CLIENT_SECRET` en `secrets`: credenciales de Graph para esta automatizacion.
 
 Si ya usas la aplicacion de Graph de noticias o SharePoint, el workflow tambien acepta fallback a `NEWS_*` y `SHAREPOINT_*` para no duplicar secretos.
@@ -135,12 +137,14 @@ En Azure, el acceso queda restringido por `staticwebapp.config.json`. En local, 
 
 ## Despliegue en Azure Static Web Apps
 
-El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. Tambien incluye `.github/workflows/azure-static-web-apps.yml` como workflow base de GitHub Actions.
+El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. Tambien incluye `.github/workflows/azure-static-web-apps-blue-sky-015473603.yml` como workflow base de GitHub Actions.
 
 1. Repositorio en GitHub.
 2. Crear la Static Web App en Azure conectada al repositorio.
-3. Configurar `AZURE_STATIC_WEB_APPS_API_TOKEN` como secreto en GitHub si Azure no lo crea automaticamente.
-4. El workflow construye `dist` antes de desplegar.
+3. Configurar `AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_SKY_015473603` como secreto en GitHub.
+4. El workflow activo se llama `Deploy Intranet - Azure Static Web Apps`.
+5. El despliegue de produccion vigente es `https://blue-sky-015473603.7.azurestaticapps.net/`.
+6. El workflow construye `dist` antes de desplegar.
 
 ## Notas de diseno tecnico
 

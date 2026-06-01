@@ -2,12 +2,14 @@ import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  folderListText,
+  downloadAttachmentContent,
+  getMessageAttachments,
   getAccessToken,
-  graphCollection,
-  graphRequest,
   loadTextFile,
+  listRecentMessagesFromFolder,
+  normalizeMailSubject,
   normalizeText,
+  resolveMailFolderId,
 } from './outlook-graph-utils.mjs';
 
 const outputPath = path.resolve('src/data/events.json');
@@ -15,6 +17,7 @@ const outputPath = path.resolve('src/data/events.json');
 const config = {
   mailboxUserId: process.env.EVENTS_MAILBOX_USER_ID,
   folderName: process.env.EVENTS_MAIL_FOLDER || process.env.EVENTS_MAIL_FOLDER_NAME,
+  folderId: process.env.EVENTS_MAIL_FOLDER_ID,
   subjectPrefix: process.env.EVENTS_SUBJECT_PREFIX || process.env.EVENTS_SUBJECT_CONTAINS || 'Eventos de',
   lookbackDays: Number(process.env.EVENTS_LOOKBACK_DAYS ?? '365'),
   maxMessages: Number(process.env.EVENTS_MAX_MESSAGES ?? '100'),
@@ -315,70 +318,17 @@ function uniqueById(items) {
   });
 }
 
-async function resolveMailFolder(accessToken) {
-  if (config.folderName) {
-    console.log(`[Outlook events] mailbox: ${config.mailboxUserId}`);
-    console.log(`[Outlook events] carpeta solicitada: ${config.folderName}`);
-    const folders = await graphCollection(
-      accessToken,
-      `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders?$top=100`,
-      100,
-    );
-    const folder = folders.find((item) => item.displayName === config.folderName);
-
-    if (!folder?.id) {
-      throw new Error(
-        `EVENTS_MAIL_FOLDER "${config.folderName}" not found for mailbox ${config.mailboxUserId}.\nAvailable folders:\n${folderListText(folders) || '- (sin carpetas encontradas)'}`,
-      );
-    }
-
-    console.log(`[Outlook events] folderId encontrado: ${folder.id}`);
-    return folder.id;
-  }
-
-  console.log(`[Outlook events] mailbox: ${config.mailboxUserId}`);
-  console.log('[Outlook events] carpeta solicitada: inbox');
-  console.log('[Outlook events] folderId encontrado: inbox');
-  return 'inbox';
-}
-
-async function listRecentMessagesFromFolder(accessToken, folderId) {
-  const select = ['id', 'subject', 'receivedDateTime', 'from', 'webLink'].join(',');
-  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$top=100`;
-  const messages = await graphCollection(accessToken, url, Math.max(50, config.maxMessages));
-
-  console.log(`[Outlook events] Numero de mensajes recuperados: ${messages.length}`);
-  return messages;
-}
-
 function messageMatches(message) {
-  const subject = normalizeText(message.subject ?? '');
-  const prefix = normalizeText(config.subjectPrefix);
+  const subject = normalizeMailSubject(message.subject ?? '');
+  const prefix = normalizeMailSubject(config.subjectPrefix);
 
   return subject.startsWith(prefix) || subject.includes(prefix);
-}
-
-async function getMessageAttachments(accessToken, messageId) {
-  const select = ['id', 'name', 'contentType', 'size', 'contentBytes', 'isInline'].join(',');
-  return graphCollection(
-    accessToken,
-    `/users/${encodeURIComponent(config.mailboxUserId)}/messages/${encodeURIComponent(messageId)}/attachments?$select=${select}`,
-    50,
-  );
 }
 
 function isHtmlAttachment(attachment) {
   const name = normalizeText(attachment.name);
   const type = normalizeText(attachment.contentType);
   return name.endsWith('.html') || name.endsWith('.htm') || type.includes('html');
-}
-
-function downloadAttachmentContent(attachment) {
-  if (!attachment.contentBytes) {
-    return '';
-  }
-
-  return Buffer.from(attachment.contentBytes, 'base64').toString('utf8');
 }
 
 async function loadEventSources() {
@@ -389,8 +339,21 @@ async function loadEventSources() {
   }
 
   const accessToken = await getAccessToken('EVENTS', 'EVENTS');
-  const folderId = await resolveMailFolder(accessToken);
-  const messages = await listRecentMessagesFromFolder(accessToken, folderId);
+  const resolvedFolder = await resolveMailFolderId(accessToken, {
+    mailboxUserId: config.mailboxUserId,
+    folderReference: config.folderName,
+    folderId: config.folderId,
+    logPrefix: 'Outlook events',
+    folderLabel: 'events',
+  });
+  const messages = await listRecentMessagesFromFolder(
+    accessToken,
+    config.mailboxUserId,
+    resolvedFolder.folderId,
+    Math.max(50, config.maxMessages),
+    ['id', 'subject', 'receivedDateTime', 'from', 'webLink'],
+  );
+  console.log(`[Outlook events] ruta final resuelta: ${resolvedFolder.resolvedPath}`);
   const candidateMessages = messages
     .filter(messageMatches)
     .sort((left, right) => new Date(right.receivedDateTime ?? 0).getTime() - new Date(left.receivedDateTime ?? 0).getTime());

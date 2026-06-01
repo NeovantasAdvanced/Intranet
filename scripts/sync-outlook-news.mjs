@@ -2,11 +2,11 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  folderListText,
   getAccessToken,
-  graphCollection,
+  listRecentMessagesFromFolder,
+  normalizeMailSubject,
+  resolveMailFolderId,
   normalizeText,
-  readEnv,
 } from './outlook-graph-utils.mjs';
 
 const outputPath = path.resolve('src/data/news.json');
@@ -14,6 +14,7 @@ const outputPath = path.resolve('src/data/news.json');
 const config = {
   mailboxUserId: process.env.NEWS_MAILBOX_USER_ID,
   folderName: process.env.NEWS_MAIL_FOLDER || process.env.NEWS_MAIL_FOLDER_NAME,
+  folderId: process.env.NEWS_MAIL_FOLDER_ID,
   subjectPrefix: process.env.NEWS_SUBJECT_PREFIX || process.env.NEWS_SUBJECT_CONTAINS || 'Noticias relevantes de hoy',
   sender: process.env.NEWS_SENDER,
   category: process.env.NEWS_CATEGORY ?? 'Comunicacion',
@@ -56,7 +57,7 @@ function getSinceIso() {
 }
 
 function normalizeSubject(value) {
-  return normalizeText(stripSubjectPrefix(value));
+  return normalizeMailSubject(stripSubjectPrefix(value));
 }
 
 async function readExistingNews() {
@@ -64,44 +65,24 @@ async function readExistingNews() {
   return JSON.parse(raw);
 }
 
-async function resolveMailFolder(accessToken) {
-  if (config.folderName) {
-    console.log(`[Outlook news] mailbox: ${config.mailboxUserId}`);
-    console.log(`[Outlook news] carpeta solicitada: ${config.folderName}`);
-    const folders = await graphCollection(
-      accessToken,
-      `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders?$top=100`,
-      100,
-    );
-    const folder = folders.find((item) => item.displayName === config.folderName);
-
-    if (!folder?.id) {
-      throw new Error(
-        `NEWS_MAIL_FOLDER "${config.folderName}" not found for mailbox ${config.mailboxUserId}.\nAvailable folders:\n${folderListText(folders) || '- (sin carpetas encontradas)'}`,
-      );
-    }
-
-    console.log(`[Outlook news] folderId encontrado: ${folder.id}`);
-    return folder.id;
-  }
-
-  console.log(`[Outlook news] mailbox: ${config.mailboxUserId}`);
-  console.log('[Outlook news] carpeta solicitada: inbox');
-  console.log('[Outlook news] folderId encontrado: inbox');
-  return 'inbox';
-}
-
 async function listNewsMessages(accessToken) {
-  if (!config.mailboxUserId) {
-    throw new Error('Missing NEWS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the news email.');
-  }
+  const resolvedFolder = await resolveMailFolderId(accessToken, {
+    mailboxUserId: config.mailboxUserId,
+    folderReference: config.folderName,
+    folderId: config.folderId,
+    logPrefix: 'Outlook news',
+    folderLabel: 'news',
+  });
 
-  const folderId = await resolveMailFolder(accessToken);
-  const select = ['id', 'internetMessageId', 'subject', 'bodyPreview', 'receivedDateTime', 'from', 'webLink'].join(',');
-  const url = `/users/${encodeURIComponent(config.mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$top=100`;
-  const messages = await graphCollection(accessToken, url, 100);
+  const messages = await listRecentMessagesFromFolder(
+    accessToken,
+    config.mailboxUserId,
+    resolvedFolder.folderId,
+    100,
+  );
 
   console.log(`[Outlook news] Numero de mensajes recuperados: ${messages.length}`);
+  console.log(`[Outlook news] ruta final resuelta: ${resolvedFolder.resolvedPath}`);
   return messages;
 }
 
@@ -135,6 +116,10 @@ function toNewsItem(message) {
 }
 
 async function main() {
+  if (!config.mailboxUserId) {
+    throw new Error('Missing NEWS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the news email.');
+  }
+
   const accessToken = await getAccessToken('NEWS', 'NEWS');
   const existingNews = await readExistingNews();
   const messages = await listNewsMessages(accessToken);
@@ -187,7 +172,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
 }
 
 export function selectNewsMessageSubjects(messages, subjectPrefix, sender) {
-  const wantedPrefix = normalizeText(subjectPrefix);
+  const wantedPrefix = normalizeMailSubject(subjectPrefix);
   const wantedSender = sender ? normalizeText(sender) : '';
 
   return messages

@@ -10,7 +10,8 @@
     "sync:sharepoint": "node scripts/sync-sharepoint-catalog.mjs",
     "sync:news": "node scripts/sync-outlook-news.mjs",
     "sync:events": "node scripts/sync-outlook-events.mjs",
-    "test:news-subject": "node scripts/tests/news-subject-selection.mjs"
+    "test:news-subject": "node scripts/tests/news-subject-selection.mjs",
+    "test:folder-normalization": "node scripts/tests/folder-normalization.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

@@ -79,6 +79,7 @@ jobs:
           EVENTS_CLIENT_SECRET: ${{ secrets.EVENTS_CLIENT_SECRET || secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
           EVENTS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.EVENTS_MAILBOX_USER_ID }}
           EVENTS_MAIL_FOLDER: ${{ inputs.mail_folder || vars.EVENTS_MAIL_FOLDER }}
+          EVENTS_MAIL_FOLDER_ID: ${{ vars.EVENTS_MAIL_FOLDER_ID || secrets.EVENTS_MAIL_FOLDER_ID }}
           EVENTS_SUBJECT_PREFIX: ${{ inputs.subject_contains || vars.EVENTS_SUBJECT_PREFIX || 'Eventos de' }}
           EVENTS_SOURCE: ${{ vars.EVENTS_SOURCE || 'Outlook HTML' }}
           EVENTS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.EVENTS_LOOKBACK_DAYS || '365' }}
