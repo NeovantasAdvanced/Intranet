@@ -29,6 +29,28 @@ export function isInboxLikeFolderName(value) {
   return normalized === 'inbox' || normalized === 'bandeja de entrada';
 }
 
+export function sanitizeFolderReference(value) {
+  const raw = String(value ?? '')
+    .trim()
+    .replace(/[\\]+/g, '/')
+    .replace(/\s+/g, ' ');
+
+  if (!raw) {
+    return '';
+  }
+
+  const withoutLeadingSlash = raw.replace(/^\/+/, '');
+  if (/^mailfolders\/inbox\/childfolders\/?$/i.test(withoutLeadingSlash)) {
+    return '';
+  }
+
+  if (/^mailfolders\//i.test(withoutLeadingSlash)) {
+    return withoutLeadingSlash.replace(/^mailfolders\//i, '');
+  }
+
+  return withoutLeadingSlash;
+}
+
 export function sameFolderName(left, right) {
   return normalizeText(left) === normalizeText(right);
 }
@@ -205,7 +227,7 @@ export async function resolveMailFolderId(accessToken, options) {
     maxDepth = 3,
   } = options;
 
-  const requested = String(folderReference ?? '').trim();
+  const requested = sanitizeFolderReference(folderReference);
   const effectiveReference = requested || 'inbox';
 
   if (folderId) {
