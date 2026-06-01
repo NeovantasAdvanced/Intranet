@@ -1,66 +1,6 @@
 [
   {
-    "id": "neovantas-kickoff-2026-06-01",
-    "title": "Kickoff mensual del equipo",
-    "organization": "Neovantas",
-    "format": "Online",
-    "category": "Direccion",
-    "startDate": "2026-06-01",
-    "endDate": "2026-06-01",
-    "timezone": "Europe/Madrid",
-    "workSchedule": "laboral",
-    "url": "https://outlook.office.com/calendar/",
-    "cta": "Abrir invitacion",
-    "source": "Outlook HTML",
-    "tags": ["Hoy", "Direccion", "Reunion"]
-  },
-  {
-    "id": "factorial-office-hours-2026-06-03",
-    "title": "Office hours de Factorial",
-    "organization": "Factorial",
-    "format": "Hibrido",
-    "category": "Personas",
-    "startDate": "2026-06-03",
-    "endDate": "2026-06-03",
-    "timezone": "Europe/Madrid",
-    "workSchedule": "laboral",
-    "url": "https://outlook.office.com/calendar/",
-    "cta": "Ver detalles",
-    "source": "Outlook HTML",
-    "tags": ["HR", "Personas", "Soporte"]
-  },
-  {
-    "id": "mkt-presentation-2026-06-10",
-    "title": "Presentacion de iniciativas comerciales",
-    "organization": "Comercial",
-    "format": "Presencial",
-    "category": "Comercial",
-    "startDate": "2026-06-10",
-    "endDate": "2026-06-10",
-    "timezone": "Europe/Madrid",
-    "workSchedule": "laboral",
-    "url": "https://outlook.office.com/calendar/",
-    "cta": "Ver agenda",
-    "source": "Outlook HTML",
-    "tags": ["Clientes", "Pipeline", "Equipo"]
-  },
-  {
-    "id": "afterwork-analytics-2026-06-18",
-    "title": "Afterwork del equipo de Analytics",
-    "organization": "Advanced Analytics",
-    "format": "Presencial",
-    "category": "Equipo",
-    "startDate": "2026-06-18",
-    "endDate": "2026-06-18",
-    "timezone": "Europe/Madrid",
-    "workSchedule": "fuera_horario",
-    "url": "https://outlook.office.com/calendar/",
-    "cta": "Ver invitacion",
-    "source": "Outlook HTML",
-    "tags": ["Equipo", "Convivencia", "Fuera horario"]
-  },
-  {
-    "id": "townhall-2026-05-20",
+    "id": "event-town-hall-trimestral-neovantas-2026-05-20-2026-05-20-online-https-outlook-office-com-calendar-item-4-direccion",
     "title": "Town hall trimestral",
     "organization": "Neovantas",
     "format": "Online",
@@ -69,24 +9,78 @@
     "endDate": "2026-05-20",
     "timezone": "Europe/Madrid",
     "workSchedule": "laboral",
-    "url": "https://outlook.office.com/calendar/",
-    "cta": "Abrir resumen",
+    "url": "https://outlook.office.com/calendar/item/4",
+    "cta": "Ver resumen",
     "source": "Outlook HTML",
-    "tags": ["Pasado", "Direccion", "Comunicacion"]
+    "tags": [
+      "Pasado",
+      "Direccion",
+      "Comunicacion"
+    ],
+    "dateText": "20 de mayo de 2026",
+    "timeText": "11:00 - 12:00"
   },
   {
-    "id": "training-2026-05-28",
-    "title": "Sesion interna de formacion",
-    "organization": "People",
+    "id": "event-kickoff-mensual-del-equipo-neovantas-2026-06-01-2026-06-01-online-https-outlook-office-com-calendar-item-1-direccion",
+    "title": "Kickoff mensual del equipo",
+    "organization": "Neovantas",
     "format": "Online",
-    "category": "Formacion",
-    "startDate": "2026-05-28",
-    "endDate": "2026-05-28",
+    "category": "Direccion",
+    "startDate": "2026-06-01",
+    "endDate": "2026-06-01",
     "timezone": "Europe/Madrid",
     "workSchedule": "laboral",
-    "url": "https://outlook.office.com/calendar/",
-    "cta": "Ver material",
+    "url": "https://outlook.office.com/calendar/item/1",
+    "cta": "Ver invitacion",
     "source": "Outlook HTML",
-    "tags": ["Pasado", "Formacion", "People"]
+    "tags": [
+      "Hoy",
+      "Direccion",
+      "Reunion"
+    ],
+    "dateText": "1 de junio de 2026",
+    "timeText": "09:30 - 10:30"
+  },
+  {
+    "id": "event-office-hours-de-factorial-factorial-2026-06-03-2026-06-03-hibrido-https-outlook-office-com-calendar-item-2-personas",
+    "title": "Office hours de Factorial",
+    "organization": "Factorial",
+    "format": "Hibrido",
+    "category": "Personas",
+    "startDate": "2026-06-03",
+    "endDate": "2026-06-03",
+    "timezone": "Europe/Madrid",
+    "workSchedule": "laboral",
+    "url": "https://outlook.office.com/calendar/item/2",
+    "cta": "Ver detalles",
+    "source": "Outlook HTML",
+    "tags": [
+      "HR",
+      "Personas",
+      "Soporte"
+    ],
+    "dateText": "3 de junio de 2026",
+    "timeText": "16:00 - 17:00"
+  },
+  {
+    "id": "event-afterwork-del-equipo-de-analytics-advanced-analytics-2026-06-18-2026-06-18-presencial-https-outlook-office-com-calendar-",
+    "title": "Afterwork del equipo de Analytics",
+    "organization": "Advanced Analytics",
+    "format": "Presencial",
+    "category": "Equipo",
+    "startDate": "2026-06-18",
+    "endDate": "2026-06-18",
+    "timezone": "Europe/Madrid",
+    "workSchedule": "fuera_horario",
+    "url": "https://outlook.office.com/calendar/item/3",
+    "cta": "Ver invitacion",
+    "source": "Outlook HTML",
+    "tags": [
+      "Equipo",
+      "Convivencia",
+      "Fuera horario"
+    ],
+    "dateText": "18 de junio de 2026",
+    "timeText": "19:30 - 21:00"
   }
 ]

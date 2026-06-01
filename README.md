@@ -26,6 +26,7 @@ src/
       SectionHeader.tsx
   data/
     apps.json
+    events.json
     documents.json
     news.json
     quickLinks.json
@@ -48,6 +49,7 @@ npm run dev
 npm run build
 npm run sync:sharepoint
 npm run sync:news
+npm run sync:events
 ```
 
 ## Contenidos
@@ -56,6 +58,7 @@ Los contenidos iniciales viven en `src/data`. Cada JSON representa una seccion d
 
 - `quickLinks.json`: accesos frecuentes.
 - `news.json`: comunicaciones y novedades.
+- `events.json`: agenda corporativa preparada para eventos de Outlook.
 - `documents.json`: documentacion corporativa.
 - `sharepointCatalog.json`: accesos a repositorios SharePoint y recursos filtrables.
 - `apps.json`: aplicaciones internas.
@@ -95,6 +98,27 @@ El workflow `.github/workflows/sync-outlook-news.yml` puede actualizar `src/data
 El script guarda solo asunto, resumen, fecha, enlace a Outlook y metadatos. No copia adjuntos ni cuerpos completos de correo.
 
 Guia operativa: `docs/outlook-news-sync.md`.
+
+## Sincronizacion de eventos Outlook
+
+El workflow `.github/workflows/sync-outlook-events.yml` puede actualizar `src/data/events.json` leyendo correos de Outlook con Microsoft Graph. Esta integracion esta pensada para los correos mensuales con asunto similar a `Eventos de junio` y un adjunto HTML con tablas de eventos.
+
+El script extrae eventos desde el HTML, normaliza fechas a ISO y deja campos preparados para que el frontend distinga entre proximos, pasados y eventos de hoy.
+
+Variables y secrets:
+
+- `EVENTS_MAILBOX_USER_ID`: buzon de correo a consultar. Puede ser UPN o id de Graph.
+- `EVENTS_MAIL_FOLDER`: nombre exacto de la carpeta de Outlook donde llegan los correos de eventos.
+- `EVENTS_MAIL_FOLDER_ID`: alternativa si prefieres fijar el identificador de carpeta.
+- `EVENTS_TENANT_ID`, `EVENTS_CLIENT_ID`, `EVENTS_CLIENT_SECRET`: credenciales de Graph para esta automatizacion.
+
+Si ya usas la aplicacion de Graph de noticias o SharePoint, el workflow tambien acepta fallback a `NEWS_*` y `SHAREPOINT_*` para no duplicar secretos.
+
+Para probar el parseo sin Outlook real puedes usar la fixture local:
+
+```bash
+EVENTS_HTML_FIXTURE_PATH=scripts/fixtures/events-sample.html npm run sync:events
+```
 
 ## Autenticacion Microsoft
 

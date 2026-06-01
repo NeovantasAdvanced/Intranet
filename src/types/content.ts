@@ -109,6 +109,8 @@ export type EventItem = {
   cta: string;
   source: string;
   tags: string[];
+  dateText?: string;
+  timeText?: string;
 };
 
 export type RoadmapItem = {

@@ -14,11 +14,14 @@ export function getTodayIso(timeZone = DEFAULT_TIME_ZONE) {
 }
 
 export function classifyEvent(event: Pick<EventItem, 'startDate' | 'endDate' | 'timezone'>, todayIso = getTodayIso(event.timezone || DEFAULT_TIME_ZONE)) {
-  if (todayIso < event.startDate) {
+  const startDate = event.startDate.slice(0, 10);
+  const endDate = event.endDate.slice(0, 10);
+
+  if (todayIso < startDate) {
     return 'upcoming';
   }
 
-  if (todayIso > event.endDate) {
+  if (todayIso > endDate) {
     return 'past';
   }
 
@@ -35,8 +38,8 @@ export function isPastEvent(event: Pick<EventItem, 'startDate' | 'endDate' | 'ti
 
 export function sortEventsAscending(left: Pick<EventItem, 'startDate' | 'endDate' | 'title'>, right: Pick<EventItem, 'startDate' | 'endDate' | 'title'>) {
   return (
-    left.startDate.localeCompare(right.startDate) ||
-    left.endDate.localeCompare(right.endDate) ||
+    left.startDate.slice(0, 10).localeCompare(right.startDate.slice(0, 10)) ||
+    left.endDate.slice(0, 10).localeCompare(right.endDate.slice(0, 10)) ||
     left.title.localeCompare(right.title, 'es', { sensitivity: 'base' })
   );
 }

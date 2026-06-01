@@ -1,0 +1,109 @@
+name: Sync Outlook events
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/sync-outlook-events.yml
+      - scripts/sync-outlook-events.mjs
+      - src/data/events.json
+  schedule:
+    - cron: '10 6 * * *'
+    - cron: '20 6 1 * *'
+  workflow_dispatch:
+    inputs:
+      mailbox_user_id:
+        description: 'Mailbox UPN or Graph id, for example info@neovantas.com'
+        required: false
+        type: string
+      mail_folder:
+        description: 'Exact mail folder display name, for example Eventos'
+        required: false
+        default: ''
+        type: string
+      mail_folder_id:
+        description: 'Optional folder id or well-known folder, for example inbox'
+        required: false
+        default: ''
+        type: string
+      subject_contains:
+        description: 'Subject text to match'
+        required: false
+        default: 'Eventos de'
+        type: string
+      lookback_days:
+        description: 'How many days back to search'
+        required: false
+        default: '365'
+        type: string
+      max_messages:
+        description: 'Maximum Outlook messages to inspect'
+        required: false
+        default: '20'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    name: Sync events JSON
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check events configuration
+        id: events-config
+        env:
+          EVENTS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.EVENTS_MAILBOX_USER_ID || secrets.NEWS_MAILBOX_USER_ID || secrets.SHAREPOINT_MAILBOX_USER_ID }}
+        run: |
+          if [ -z "$EVENTS_MAILBOX_USER_ID" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::EVENTS_MAILBOX_USER_ID is not configured. Set the secret or pass mailbox_user_id when running manually. Skipping Outlook events sync."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync Outlook events
+        if: steps.events-config.outputs.configured == 'true'
+        run: npm run sync:events
+        env:
+          EVENTS_TENANT_ID: ${{ secrets.EVENTS_TENANT_ID || secrets.NEWS_TENANT_ID || secrets.SHAREPOINT_TENANT_ID }}
+          EVENTS_CLIENT_ID: ${{ secrets.EVENTS_CLIENT_ID || secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
+          EVENTS_CLIENT_SECRET: ${{ secrets.EVENTS_CLIENT_SECRET || secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
+          EVENTS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.EVENTS_MAILBOX_USER_ID || secrets.NEWS_MAILBOX_USER_ID || secrets.SHAREPOINT_MAILBOX_USER_ID }}
+          EVENTS_MAIL_FOLDER_ID: ${{ inputs.mail_folder_id || vars.EVENTS_MAIL_FOLDER_ID }}
+          EVENTS_MAIL_FOLDER: ${{ inputs.mail_folder || vars.EVENTS_MAIL_FOLDER }}
+          EVENTS_SUBJECT_CONTAINS: ${{ inputs.subject_contains || vars.EVENTS_SUBJECT_CONTAINS || 'Eventos de' }}
+          EVENTS_SOURCE: ${{ vars.EVENTS_SOURCE || 'Outlook HTML' }}
+          EVENTS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.EVENTS_LOOKBACK_DAYS || '365' }}
+          EVENTS_MAX_MESSAGES: ${{ inputs.max_messages || vars.EVENTS_MAX_MESSAGES || '20' }}
+
+      - name: Validate build
+        if: steps.events-config.outputs.configured == 'true'
+        run: npm run build
+
+      - name: Commit events changes
+        if: steps.events-config.outputs.configured == 'true'
+        run: |
+          if git diff --quiet -- src/data/events.json; then
+            echo "Events already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/events.json
+          git commit -m "chore: sync Outlook events"
+          git push
