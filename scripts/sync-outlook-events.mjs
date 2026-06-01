@@ -275,6 +275,8 @@ function parseEventRow(cells, headerMap, fallbackIndex) {
 }
 
 function parseEventsFromHtml(html) {
+  const preview = String(html).slice(0, 240).replace(/\s+/g, ' ');
+  console.log(`[Outlook events] preview HTML adjunto: ${preview}`);
   const tables = [];
   const tableRegex = /<table\b[^>]*>([\s\S]*?)<\/table>/gi;
   let match;
@@ -284,6 +286,7 @@ function parseEventsFromHtml(html) {
   }
 
   const events = [];
+  const candidateBlocks = [];
 
   for (const table of tables) {
     const rows = findTableRows(table).filter((row) => stripTags(row).length > 0);
@@ -305,8 +308,55 @@ function parseEventsFromHtml(html) {
       const event = parseEventRow(cells, headerMap, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
       if (event) {
         events.push(event);
+      } else {
+        candidateBlocks.push(stripTags(row));
       }
     }
+  }
+
+  if (events.length === 0 && candidateBlocks.length > 0) {
+    const fallbackEvents = parseLooseEventsFromTextBlocks(candidateBlocks);
+    if (fallbackEvents.length > 0) {
+      return fallbackEvents;
+    }
+  }
+
+  return events;
+}
+
+function parseLooseEventsFromTextBlocks(blocks) {
+  const events = [];
+  for (const block of blocks) {
+    const normalized = block.replace(/\s+/g, ' ').trim();
+    const titleMatch = normalized.match(/^(.*?)\s+(?:\d{1,2}\s+de\s+[a-z]+\s+de\s+\d{4}|\d{4}-\d{2}-\d{2})/i);
+    const dateParts = readDateParts(normalized);
+
+    if (!titleMatch || !dateParts) {
+      continue;
+    }
+
+    const title = titleMatch[1].trim();
+    if (!title) {
+      continue;
+    }
+
+    events.push({
+      id: `event-${slugify(title + dateParts.iso)}`,
+      title,
+      organization: '',
+      format: '',
+      category: '',
+      startDate: dateParts.iso,
+      endDate: dateParts.iso,
+      timezone: 'Europe/Madrid',
+      workSchedule: 'laboral',
+      url: '',
+      cta: 'Abrir',
+      source: config.source,
+      tags: [],
+      dateText: dateParts.text,
+      timeText: '',
+    });
   }
 
   return events;
