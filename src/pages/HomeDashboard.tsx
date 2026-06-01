@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import quickLinksData from '../data/quickLinks.json';
 import newsData from '../data/news.json';
+import eventsData from '../data/events.json';
 import documentsData from '../data/documents.json';
 import sharePointCatalogData from '../data/sharepointCatalog.json';
 import appsData from '../data/apps.json';
@@ -29,9 +30,13 @@ import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { usePortalSearch } from '../context/PortalSearchContext';
+import { EventsSection } from '../components/events/EventsSection';
+import { UpcomingEventsBlock } from '../components/events/UpcomingEventsBlock';
+import { getTodayIso, isPastEvent, sortEventsAscending } from '../lib/events';
 import type {
   DocumentItem,
   InternalApp,
+  EventItem,
   NewsItem,
   QuickLink,
   SharePointCatalog,
@@ -40,6 +45,7 @@ import type {
 
 const quickLinks = quickLinksData as QuickLink[];
 const news = newsData as NewsItem[];
+const events = eventsData as EventItem[];
 const documents = documentsData as DocumentItem[];
 const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
 const sharePointRepositories = sharePointCatalog.repositories;
@@ -159,6 +165,18 @@ export function HomeDashboard() {
       news: news.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.excerpt, item.category, item.status, item.source]),
       ),
+      events: events.filter((item) =>
+        matchesQuery(searchQuery, [
+          item.title,
+          item.organization,
+          item.format,
+          item.category,
+          item.cta,
+          item.source,
+          item.tags,
+          item.workSchedule,
+        ]),
+      ),
       documents: documents.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.description, item.area, item.status]),
       ),
@@ -224,6 +242,7 @@ export function HomeDashboard() {
   const totalResults =
     filteredContent.quickLinks.length +
     filteredContent.news.length +
+    filteredContent.events.length +
     filteredContent.documents.length +
     filteredContent.sharePointResources.length +
     filteredContent.apps.length;
@@ -261,6 +280,10 @@ export function HomeDashboard() {
   const featuredQuickLinks = orderedQuickLinks.slice(0, 2);
   const secondaryQuickLinks = orderedQuickLinks.slice(2);
   const newsItems = filteredContent.news.slice(0, 3);
+  const todayIso = getTodayIso();
+  const upcomingEvents = [...filteredContent.events]
+    .filter((event) => !isPastEvent(event, todayIso))
+    .sort(sortEventsAscending);
   const documentItems = filteredContent.documents.slice(0, 4);
   const featuredApps = apps.slice(0, 1);
   const secondaryApps = apps.slice(1);
@@ -440,6 +463,14 @@ export function HomeDashboard() {
             </Card>
           </div>
         </section>
+      ) : null}
+
+      {(!isSearching || upcomingEvents.length > 0) ? (
+        <UpcomingEventsBlock events={upcomingEvents} todayIso={todayIso} />
+      ) : null}
+
+      {(!isSearching || filteredContent.events.length > 0) ? (
+        <EventsSection events={filteredContent.events} todayIso={todayIso} />
       ) : null}
 
       {(!isSearching || newsItems.length > 0 || documentItems.length > 0) ? (

@@ -1,5 +1,6 @@
 import {
   BriefcaseBusiness,
+  CalendarDays,
   FileText,
   Files,
   Home,
@@ -20,6 +21,7 @@ const navigation = [
   { label: 'Accesos', icon: LayoutGrid, href: '#accesos' },
   { label: 'Repositorios', icon: Files, href: '#repositorios' },
   { label: 'Noticias', icon: Newspaper, href: '#noticias' },
+  { label: 'Eventos', icon: CalendarDays, href: '#eventos' },
   { label: 'Documentacion', icon: FileText, href: '#documentacion' },
   { label: 'Aplicaciones', icon: BriefcaseBusiness, href: '#aplicaciones' },
 ];

@@ -93,6 +93,24 @@ export type InternalApp = {
   icon: string;
 };
 
+export type EventWorkSchedule = 'laboral' | 'fuera_horario';
+
+export type EventItem = {
+  id: string;
+  title: string;
+  organization: string;
+  format: string;
+  category: string;
+  startDate: string;
+  endDate: string;
+  timezone: string;
+  workSchedule: EventWorkSchedule;
+  url: string;
+  cta: string;
+  source: string;
+  tags: string[];
+};
+
 export type RoadmapItem = {
   id: string;
   title: string;
