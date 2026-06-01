@@ -481,7 +481,6 @@ export function HomeDashboard() {
     [searchQuery],
   );
 
-  const newsItems = filteredContent.news.slice(0, 3);
   const todayIso = getTodayIso();
   const upcomingEvents = [...filteredContent.events]
     .filter((event) => !isPastEvent(event, todayIso))
@@ -489,6 +488,9 @@ export function HomeDashboard() {
   const documentItems = filteredContent.documents.slice(0, 4);
   const featuredApps = apps.slice(0, 1);
   const secondaryApps = apps.slice(1);
+  const latestNewsSource = 'Noticias relevantes de hoy';
+  const latestNewsItems = filteredContent.news.filter((item) => item.source === latestNewsSource);
+  const newsItems = (latestNewsItems.length > 0 ? latestNewsItems : filteredContent.news).slice(0, 3);
 
   return (
     <div className="home-shell">
@@ -605,7 +607,7 @@ export function HomeDashboard() {
             <div id="noticias" className="home-news-section widget scroll-mt-40">
               <div className="widget-title">
                 <Newspaper className="h-4 w-4" aria-hidden="true" />
-                Últimas noticias
+                Noticias del correo
                 <a href="#noticias" className="section-action">Ver todas</a>
               </div>
               <div className="space-y-3">

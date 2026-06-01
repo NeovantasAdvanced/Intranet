@@ -95,7 +95,7 @@ Guia operativa: `docs/sharepoint-sync-access.md`.
 
 El workflow `.github/workflows/sync-outlook-news.yml` puede actualizar `src/data/news.json` leyendo correos de Outlook con Microsoft Graph. Esta integracion esta pensada para el correo diario de noticias que ya recibe el equipo.
 
-El script guarda solo asunto, resumen, fecha, enlace a Outlook y metadatos. No copia adjuntos ni cuerpos completos de correo.
+El script ya no guarda el mensaje completo como una sola noticia. Extrae las noticias individuales del ultimo correo recibido y genera un item por tarjeta con titulo, resumen y enlace.
 
 Configuracion actual:
 
@@ -103,8 +103,10 @@ Configuracion actual:
 - `NEWS_MAIL_FOLDER=inbox/Neovantas` en `vars`
 - `NEWS_SUBJECT_PREFIX=Noticias relevantes de hoy` en `vars`
 - `NEWS_MAIL_FOLDER_ID` en `secrets` o `vars` solo si quieres fijar el id exacto de la carpeta
+- `NEWS_HTML_FIXTURE_PATH` para probar el parser localmente con un `.mht` o HTML exportado de Outlook
 
 El workflow usa esas variables y filtra en JavaScript para excluir correos como `Noticias People de hoy`.
+En la Home, la seccion de noticias prioriza los items cuyo `source` es `Noticias relevantes de hoy`, para mostrar solo las noticias extraidas del ultimo correo diario.
 
 Guia operativa: `docs/outlook-news-sync.md`.
 

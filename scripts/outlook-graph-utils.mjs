@@ -212,6 +212,23 @@ export async function getMessageAttachments(accessToken, mailboxUserId, messageI
   );
 }
 
+export async function getMessageDetails(accessToken, mailboxUserId, messageId, selectFields = [
+  'id',
+  'internetMessageId',
+  'subject',
+  'body',
+  'bodyPreview',
+  'receivedDateTime',
+  'from',
+  'webLink',
+]) {
+  const select = selectFields.join(',');
+  return graphRequest(
+    accessToken,
+    `/users/${encodeURIComponent(mailboxUserId)}/messages/${encodeURIComponent(messageId)}?$select=${select}`,
+  );
+}
+
 export function downloadAttachmentContent(attachment) {
   if (!attachment?.contentBytes) {
     return '';

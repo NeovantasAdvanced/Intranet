@@ -1,40 +1,112 @@
 [
   {
-    "id": "mail-2026-06-01-am9p194mb1441bc21a070354eba851d8b88152-am9p194mb1441-eurp194-prod-outlook-com",
-    "title": "Noticias relevantes de hoy - 01 junio 2026",
-    "excerpt": "Briefing · lunes, 01 de junio de 2026 8 noticias seleccionadas · Generado automáticamente 🏦 Banca (8) 1. BBVA crea una división de IA para impulsar la transformación del banco 🇪🇸 EspañaBBVA · Fuente: Expansión BBVA ha",
-    "category": "Comunicacion",
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-bbva-crea-una-division-de-ia-para-impulsar-la-tra",
+    "title": "BBVA crea una división de IA para impulsar la transformación del banco",
+    "excerpt": "BBVA ha establecido una nueva división dedicada a la inteligencia artificial, llamada 'AI Transformation', que reportará directamente al presidente y al CEO del banco.",
+    "category": "Banca",
     "date": "2026-06-01",
     "status": "Nuevo",
     "tone": "info",
-    "href": "https://outlook.office365.com/owa/?ItemID=AAMkAGZkMDc3OTI2LTFiODUtNGQyOC05YjExLTU5MGUzMmY2MGM0YwBGAAAAAADYAFAgqiUITKtkPiPJzrA6BwDgZ5BpEs7DRIQFp4o3bFPcAAAXAbndAAB8YH8TJkCTRYmxjg1KvHwLAAlGugxsAAA%3D&exvsurl=1&viewmodel=ReadMessageItem",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/banca/2026/05/28/6a18738e468aebcc718b4596.html",
     "source": "Noticias relevantes de hoy"
   },
   {
-    "id": "ia-guidelines",
-    "title": "Nueva guia de uso responsable de IA",
-    "excerpt": "Ya esta disponible el primer marco interno para usar asistentes generativos en proyectos.",
-    "category": "Mesa IA",
-    "date": "2026-05-20",
-    "status": "Destacado",
-    "tone": "info"
-  },
-  {
-    "id": "office-day",
-    "title": "Proxima jornada presencial en Madrid",
-    "excerpt": "Agenda de sesiones, retrospectiva comercial y espacio de demos internas.",
-    "category": "Comunicacion",
-    "date": "2026-05-17",
-    "status": "Evento",
-    "tone": "warning"
-  },
-  {
-    "id": "benefits",
-    "title": "Actualizacion de beneficios empleados",
-    "excerpt": "Recopilacion de novedades en bienestar, formacion y conciliacion.",
-    "category": "Personas",
-    "date": "2026-05-09",
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-1-sabadell-levanta-el-secreto-de-la-opa-sobre-los",
+    "title": "Sabadell levanta el secreto de la opa sobre los depósitos, pero lo mantiene para el capital",
+    "excerpt": "Sabadell ha decidido revelar el coste de su pasivo en España, pero mantendrá en secreto la información sobre los accionistas debido a la distorsión causada por un megadividendo.",
+    "category": "Banca",
+    "date": "2026-06-01",
     "status": "Nuevo",
-    "tone": "success"
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/banca/2026/05/29/6a0d9e56e5fdeae6698b456d.html",
+    "source": "Noticias relevantes de hoy"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-2-la-nueva-primacia-de-los-depositos-pone-en-jaqu",
+    "title": "La nueva primacía de los depósitos pone en jaque 95.300 millones en deuda de la banca",
+    "excerpt": "(resumen no disponible)",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/banca/2026/05/29/6a0c4934468aeb68568b4590.html",
+    "source": "Noticias relevantes de hoy"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-3-caixabank-eleva-un-23-su-cartera-de-leasing-en-",
+    "title": "CaixaBank eleva un 23% su cartera de 'leasing' en dos años y supera los 6.000 millones",
+    "excerpt": "CaixaBank ha incrementado su cartera de leasing en un 23% en dos años, alcanzando 6.043 millones de euros y aumentando su cuota de mercado del 23,86% al 26,11%.",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/banca/2026/05/29/6a18a2bce5fdea91298b45a1.html",
+    "source": "Noticias relevantes de hoy"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-4-caixabank-se-lanza-a-captar-16-000-millones-en-",
+    "title": "CaixaBank se lanza a captar 16.000 millones en productos de inversión",
+    "excerpt": "CaixaBank planea captar 16.000 millones de euros en productos de inversión, manteniendo expectativas de suscripciones similares a las del año anterior.",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/banca/2026/05/29/6a18c044e5fdea875d8b4571.html",
+    "source": "Noticias relevantes de hoy"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-5-santander-echara-mano-de-su-solvencia-record-pa",
+    "title": "Santander echará mano de su solvencia récord para sus adquisiciones - Expansión",
+    "excerpt": "Santander utilizará su solvencia récord para llevar a cabo adquisiciones en el futuro.",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPWjRzRi1vRDJneU5xM0xvdmNmS0piaG1UM3ZYT2EtZ05jWFFxaGhYUjgtb2xPc1dSQUd6OXhSeDQxRDVCUHV1czBuZnhRdERtWEYxY2FreVduOTUxQl9pX1FTN3VlUEE5eHRLUy1lMDU3VkRNQjlkYWRqT2ZvbHp4Um5DNWxITjc50gGIAUFVX3lxTE01WFJLTlBiNFl5U1dUc1BJN3hET1l4WC1wdDRlTGNONFFJQWRIZWVYWWRJYW15NW5CZHpYRTlrdjIzbFlOaEN5cEprMmJfeGNVYlN6enN5R3dSWnd1Njd5NjJLN2cxVDVobDFycFZuVGZQSmpfQ0otaVBjeXFWTFZOYjlnRDlHdks",
+    "source": "Noticias relevantes de hoy"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-6-bbva-seguros-gana-un-7-7-mas-en-el-primer-trime",
+    "title": "BBVA Seguros gana un 7,7% más en el primer trimestre",
+    "excerpt": "BBVA Seguros, filial de BBVA, reportó una ganancia de 75,5 millones de euros en el primer trimestre de 2026, lo que representa un aumento del 7,5% en comparación con el mismo periodo del año anterior.",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/seguros/2026/06/01/6a1c6444e5fdea7e608b4588.html",
+    "source": "Noticias relevantes de hoy"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-57-844z-banca-7-apoyo-o-cese-asi-actuan-las-cotizadas-ante-una-",
+    "title": "¿Apoyo o cese? Así actúan las cotizadas ante una investigación penal como la de Jonathan Andic",
+    "excerpt": "La CNMV ha incluido en su código de buenas prácticas medidas para proteger a las empresas ante daños reputacionales, aunque BBVA y otras compañías no han especificado cómo actuar ante consejeros investigados.",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/cincodias.elpais.com/companias/2026-06-01/apoyo-o-cese-asi-actuan-las-cotizadas-ante-una-investigacion-penal-como-la-de-jonathan-andic.html",
+    "source": "Noticias relevantes de hoy"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-15-181z-banca-bbva-crea-una-division-de-ia-para-impulsar-la-tra",
+    "title": "BBVA crea una división de IA para impulsar la transformación del banco",
+    "excerpt": "BBVA ha establecido una nueva división dedicada a la inteligencia artificial, llamada 'AI Transformation', que reportará directamente al presidente y al CEO del banco.",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/banca/2026/05/28/6a18738e468aebcc718b4596.html",
+    "source": "Expansión"
+  },
+  {
+    "id": "mail-2026-06-01-2026-06-01t21-42-15-181z-banca-1-sabadell-levanta-el-secreto-de-la-opa-sobre-los",
+    "title": "Sabadell levanta el secreto de la opa sobre los depósitos, pero lo mantiene para el capital",
+    "excerpt": "Sabadell ha decidido revelar el coste de su pasivo en España, pero mantendrá en secreto la información sobre los accionistas debido a la distorsión causada por un megadividendo.",
+    "category": "Banca",
+    "date": "2026-06-01",
+    "status": "Nuevo",
+    "tone": "info",
+    "href": "https://archive.ph/newest/https:/www.expansion.com/empresas/banca/2026/05/29/6a0d9e56e5fdeae6698b456d.html",
+    "source": "Expansión"
   }
 ]
