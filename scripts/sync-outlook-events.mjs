@@ -10,13 +10,18 @@ import {
   normalizeMailSubject,
   normalizeText,
   resolveMailFolderId,
+  sanitizeFolderReference,
 } from './outlook-graph-utils.mjs';
 
 const outputPath = path.resolve('src/data/events.json');
 
+const rawFolderReference = process.env.EVENTS_MAIL_FOLDER ?? process.env.EVENTS_MAIL_FOLDER_NAME ?? '';
+const effectiveFolderReference = sanitizeFolderReference(rawFolderReference);
+
 const config = {
   mailboxUserId: process.env.EVENTS_MAILBOX_USER_ID,
-  folderName: process.env.EVENTS_MAIL_FOLDER || process.env.EVENTS_MAIL_FOLDER_NAME,
+  folderName: effectiveFolderReference,
+  rawFolderReference,
   folderId: process.env.EVENTS_MAIL_FOLDER_ID,
   subjectPrefix: process.env.EVENTS_SUBJECT_PREFIX || process.env.EVENTS_SUBJECT_CONTAINS || 'Eventos de',
   lookbackDays: Number(process.env.EVENTS_LOOKBACK_DAYS ?? '365'),
@@ -332,6 +337,15 @@ function isHtmlAttachment(attachment) {
 }
 
 async function loadEventSources() {
+  console.log(`[Outlook events] mailbox usado: ${config.mailboxUserId ?? '(vacío)'}`);
+  console.log(`[Outlook events] EVENTS_MAIL_FOLDER bruto: ${config.rawFolderReference || '(vacío)'}`);
+  if (config.folderName) {
+    console.log(`[Outlook events] carpeta efectiva: ${config.folderName}`);
+  } else {
+    console.log('[Outlook events] EVENTS_MAIL_FOLDER no está definida; usando fallback inbox.');
+  }
+  console.log(`[Outlook events] prefijo de asunto: ${config.subjectPrefix}`);
+
   if (config.fixturePath) {
     const html = await loadTextFile(path.resolve(config.fixturePath));
     console.log(`[Outlook events] Usando fixture local: ${config.fixturePath}`);

@@ -7,13 +7,18 @@ import {
   normalizeMailSubject,
   resolveMailFolderId,
   normalizeText,
+  sanitizeFolderReference,
 } from './outlook-graph-utils.mjs';
 
 const outputPath = path.resolve('src/data/news.json');
 
+const rawFolderReference = process.env.NEWS_MAIL_FOLDER ?? process.env.NEWS_MAIL_FOLDER_NAME ?? '';
+const effectiveFolderReference = sanitizeFolderReference(rawFolderReference);
+
 const config = {
   mailboxUserId: process.env.NEWS_MAILBOX_USER_ID,
-  folderName: process.env.NEWS_MAIL_FOLDER || process.env.NEWS_MAIL_FOLDER_NAME,
+  folderName: effectiveFolderReference,
+  rawFolderReference,
   folderId: process.env.NEWS_MAIL_FOLDER_ID,
   subjectPrefix: process.env.NEWS_SUBJECT_PREFIX || process.env.NEWS_SUBJECT_CONTAINS || 'Noticias relevantes de hoy',
   sender: process.env.NEWS_SENDER,
@@ -119,6 +124,15 @@ async function main() {
   if (!config.mailboxUserId) {
     throw new Error('Missing NEWS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the news email.');
   }
+
+  console.log(`[Outlook news] mailbox usado: ${config.mailboxUserId}`);
+  console.log(`[Outlook news] NEWS_MAIL_FOLDER bruto: ${config.rawFolderReference || '(vacío)'}`);
+  if (config.folderName) {
+    console.log(`[Outlook news] carpeta efectiva: ${config.folderName}`);
+  } else {
+    console.log('[Outlook news] NEWS_MAIL_FOLDER no está definida; usando fallback inbox.');
+  }
+  console.log(`[Outlook news] prefijo de asunto: ${config.subjectPrefix}`);
 
   const accessToken = await getAccessToken('NEWS', 'NEWS');
   const existingNews = await readExistingNews();

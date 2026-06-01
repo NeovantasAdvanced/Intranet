@@ -77,10 +77,10 @@ jobs:
           EVENTS_TENANT_ID: ${{ secrets.EVENTS_TENANT_ID || secrets.NEWS_TENANT_ID || secrets.SHAREPOINT_TENANT_ID }}
           EVENTS_CLIENT_ID: ${{ secrets.EVENTS_CLIENT_ID || secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
           EVENTS_CLIENT_SECRET: ${{ secrets.EVENTS_CLIENT_SECRET || secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
-          EVENTS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.EVENTS_MAILBOX_USER_ID }}
-          EVENTS_MAIL_FOLDER: ${{ inputs.mail_folder || vars.EVENTS_MAIL_FOLDER }}
+          EVENTS_MAILBOX_USER_ID: ${{ secrets.EVENTS_MAILBOX_USER_ID }}
+          EVENTS_MAIL_FOLDER: ${{ vars.EVENTS_MAIL_FOLDER }}
           EVENTS_MAIL_FOLDER_ID: ${{ vars.EVENTS_MAIL_FOLDER_ID || secrets.EVENTS_MAIL_FOLDER_ID }}
-          EVENTS_SUBJECT_PREFIX: ${{ inputs.subject_contains || vars.EVENTS_SUBJECT_PREFIX || 'Eventos de' }}
+          EVENTS_SUBJECT_PREFIX: ${{ vars.EVENTS_SUBJECT_PREFIX }}
           EVENTS_SOURCE: ${{ vars.EVENTS_SOURCE || 'Outlook HTML' }}
           EVENTS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.EVENTS_LOOKBACK_DAYS || '365' }}
           EVENTS_MAX_MESSAGES: ${{ inputs.max_messages || vars.EVENTS_MAX_MESSAGES || '20' }}

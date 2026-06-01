@@ -260,6 +260,18 @@ export async function resolveMailFolderId(accessToken, options) {
     }`,
   );
 
+  if (isInboxLikeFolderName(effectiveReference)) {
+    console.log(`[${logPrefix}] se usa well-known folder inbox`);
+    console.log(`[${logPrefix}] ruta resuelta: inbox`);
+    console.log(`[${logPrefix}] folderId final: inbox`);
+    return {
+      folderId: 'inbox',
+      resolvedPath: 'inbox',
+      rootFolders,
+      inboxChildFolders,
+    };
+  }
+
   const rootExactMatch = rootFolders.find((folder) => sameFolderName(folder.displayName, effectiveReference));
   if (rootExactMatch?.id) {
     const resolvedPath = rootExactMatch.displayName ?? effectiveReference;

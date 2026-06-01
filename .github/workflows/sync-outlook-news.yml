@@ -81,12 +81,12 @@ jobs:
           NEWS_TENANT_ID: ${{ secrets.NEWS_TENANT_ID || secrets.SHAREPOINT_TENANT_ID }}
           NEWS_CLIENT_ID: ${{ secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
           NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
-          NEWS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.NEWS_MAILBOX_USER_ID }}
-          NEWS_MAIL_FOLDER: ${{ inputs.mail_folder_name || vars.NEWS_MAIL_FOLDER }}
+          NEWS_MAILBOX_USER_ID: ${{ secrets.NEWS_MAILBOX_USER_ID }}
+          NEWS_MAIL_FOLDER: ${{ vars.NEWS_MAIL_FOLDER }}
           NEWS_MAIL_FOLDER_ID: ${{ vars.NEWS_MAIL_FOLDER_ID || secrets.NEWS_MAIL_FOLDER_ID }}
           NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER || 'advanced.analytics@neovantas.com' }}
-          NEWS_SUBJECT_PREFIX: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_PREFIX || 'Noticias relevantes de hoy' }}
-          NEWS_SUBJECT_CONTAINS: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_PREFIX || 'Noticias relevantes de hoy' }}
+          NEWS_SUBJECT_PREFIX: ${{ vars.NEWS_SUBJECT_PREFIX }}
+          NEWS_SUBJECT_CONTAINS: ${{ vars.NEWS_SUBJECT_PREFIX }}
           NEWS_CATEGORY: ${{ vars.NEWS_CATEGORY || 'Comunicacion' }}
           NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Noticias relevantes de hoy' }}
