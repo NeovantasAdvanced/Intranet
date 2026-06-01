@@ -91,7 +91,54 @@ function extractFirstHref(html) {
   return match ? decodeHtmlEntities(match[1]) : '';
 }
 
-function readDateParts(value) {
+function extractClassText(html, className) {
+  const pattern = new RegExp(
+    `<(?:div|span|a|p|td)\\b[^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/(?:div|span|a|p|td)>`,
+    'i',
+  );
+  const match = String(html).match(pattern);
+  return match ? match[1] : '';
+}
+
+function extractYearFromHtml(html) {
+  const titleMatch = String(html).match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  const candidates = [titleMatch ? stripTags(titleMatch[1]) : '', String(html)];
+
+  for (const candidate of candidates) {
+    const yearMatch = String(candidate).match(/\b(20\d{2})\b/);
+    if (yearMatch) {
+      return Number(yearMatch[1]);
+    }
+  }
+
+  return new Date().getFullYear();
+}
+
+function monthNameToNumber(monthName) {
+  const months = {
+    enero: '01',
+    febrero: '02',
+    marzo: '03',
+    abril: '04',
+    mayo: '05',
+    junio: '06',
+    julio: '07',
+    agosto: '08',
+    septiembre: '09',
+    setiembre: '09',
+    octubre: '10',
+    noviembre: '11',
+    diciembre: '12',
+  };
+
+  return months[normalizeText(monthName)] ?? '';
+}
+
+function buildDateIso(year, month, day) {
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function readDateParts(value, defaultYear = new Date().getFullYear()) {
   const text = stripTags(value).replace(/\s+/g, ' ').trim();
   const lower = normalizeText(text);
 
@@ -101,42 +148,38 @@ function readDateParts(value) {
 
   const isoMatch = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
   if (isoMatch) {
-    return { iso: `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`, text };
+    return { iso: `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`, endIso: `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`, text };
   }
 
   const numericMatch = text.match(/\b(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b/);
   if (numericMatch) {
     const year = numericMatch[3].length === 2 ? `20${numericMatch[3]}` : numericMatch[3];
-    return {
-      iso: `${year}-${numericMatch[2].padStart(2, '0')}-${numericMatch[1].padStart(2, '0')}`,
-      text,
-    };
+    const iso = `${year}-${numericMatch[2].padStart(2, '0')}-${numericMatch[1].padStart(2, '0')}`;
+    return { iso, endIso: iso, text };
   }
 
-  const monthMatch = lower.match(/\b(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})\b/i);
-  if (monthMatch) {
-    const months = {
-      enero: '01',
-      febrero: '02',
-      marzo: '03',
-      abril: '04',
-      mayo: '05',
-      junio: '06',
-      julio: '07',
-      agosto: '08',
-      septiembre: '09',
-      setiembre: '09',
-      octubre: '10',
-      noviembre: '11',
-      diciembre: '12',
-    };
-    const month = months[normalizeText(monthMatch[2])];
+  const rangeMatch = lower.match(/\b(\d{1,2})\s*[–-]\s*(\d{1,2})\s+de\s+([a-záéíóúñ]+)(?:\s+de\s+(\d{4}))?\b/i);
+  if (rangeMatch) {
+    const month = monthNameToNumber(rangeMatch[3]);
+    const year = Number(rangeMatch[4] ?? defaultYear);
 
     if (month) {
       return {
-        iso: `${monthMatch[3]}-${month}-${monthMatch[1].padStart(2, '0')}`,
+        iso: buildDateIso(year, month, rangeMatch[1]),
+        endIso: buildDateIso(year, month, rangeMatch[2]),
         text,
       };
+    }
+  }
+
+  const monthMatch = lower.match(/\b(\d{1,2})\s+de\s+([a-záéíóúñ]+)(?:\s+de\s+(\d{4}))?\b/i);
+  if (monthMatch) {
+    const month = monthNameToNumber(monthMatch[2]);
+    const year = Number(monthMatch[3] ?? defaultYear);
+
+    if (month) {
+      const iso = buildDateIso(year, month, monthMatch[1]);
+      return { iso, endIso: iso, text };
     }
   }
 
@@ -145,6 +188,40 @@ function readDateParts(value) {
 
 function readTimeText(value) {
   return stripTags(value).replace(/\s+/g, ' ').trim();
+}
+
+function extractTimeFromDateCell(dateCell) {
+  const text = stripTags(dateCell).replace(/\s+/g, ' ').trim();
+  const timeMatch = text.match(/\b(\d{1,2}:\d{2}(?:\s*(?:CET|CEST|UTC|GMT))?)\b/i);
+  return timeMatch ? timeMatch[1].replace(/\s+/g, ' ').trim() : '';
+}
+
+function detectFormat(value) {
+  const text = normalizeText(value);
+
+  if (text.includes('online')) {
+    return 'online';
+  }
+
+  if (text.includes('presencial') || text.includes('in person') || text.includes('onsite')) {
+    return 'presencial';
+  }
+
+  return '';
+}
+
+function detectScheduleFromChunk(chunk) {
+  const text = normalizeText(chunk);
+
+  if (text.includes('fuera de horario laboral')) {
+    return 'fuera_horario';
+  }
+
+  if (text.includes('horario laboral')) {
+    return 'laboral';
+  }
+
+  return '';
 }
 
 function inferWorkSchedule(scheduleText, timeText) {
@@ -219,29 +296,38 @@ function valueAt(cells, index) {
   return cells[index] ?? '';
 }
 
-function parseEventRow(cells, headerMap, fallbackIndex) {
-  const title = stripTags(valueAt(cells, headerMap.title >= 0 ? headerMap.title : fallbackIndex[0]));
-  const organization = stripTags(valueAt(cells, headerMap.organization >= 0 ? headerMap.organization : fallbackIndex[1]));
-  const format = stripTags(valueAt(cells, headerMap.format >= 0 ? headerMap.format : fallbackIndex[2]));
-  const category = stripTags(valueAt(cells, headerMap.category >= 0 ? headerMap.category : fallbackIndex[3]));
-  const dateCell = valueAt(cells, headerMap.date >= 0 ? headerMap.date : fallbackIndex[4]);
-  const timeCell = valueAt(cells, headerMap.time >= 0 ? headerMap.time : fallbackIndex[5]);
-  const scheduleCell = valueAt(cells, headerMap.schedule >= 0 ? headerMap.schedule : fallbackIndex[6]);
-  const urlCell = valueAt(cells, headerMap.url >= 0 ? headerMap.url : fallbackIndex[7]);
-  const ctaCell = valueAt(cells, headerMap.cta >= 0 ? headerMap.cta : fallbackIndex[8]);
-  const tagsCell = valueAt(cells, headerMap.tags >= 0 ? headerMap.tags : fallbackIndex[9]);
+function parseEventRow(cells, headerMap, fallbackIndex, options = {}) {
+  const firstCell = valueAt(cells, headerMap.title >= 0 ? headerMap.title : 0);
+  const secondCell = valueAt(cells, headerMap.organization >= 0 ? headerMap.organization : 1);
+  const thirdCell = valueAt(cells, headerMap.date >= 0 ? headerMap.date : 2);
+  const fourthCell = valueAt(cells, headerMap.url >= 0 ? headerMap.url : 3);
 
-  const dateParts = readDateParts(dateCell);
-  const timeText = readTimeText(timeCell);
+  const title =
+    stripTags(extractClassText(firstCell, 'event-name')) ||
+    stripTags(firstCell).replace(/\b(?:online|presencial)\b/gi, '').replace(/\s+/g, ' ').trim();
+  const organization = stripTags(extractClassText(secondCell, 'org-badge')) || stripTags(secondCell);
+  const format =
+    detectFormat(firstCell) ||
+    detectFormat(secondCell) ||
+    detectFormat(title) ||
+    stripTags(extractClassText(firstCell, 'fbadge')) ||
+    '';
+  const category = options.sectionCategory || detectScheduleFromChunk(options.sectionLabel ?? '') || '';
+  const dateCell = thirdCell;
+  const timeCell = '';
+  const scheduleCell = options.sectionLabel ?? '';
+  const urlCell = fourthCell;
+  const ctaCell = fourthCell;
+  const tagsCell = '';
+
+  const dateParts = readDateParts(dateCell, options.defaultYear);
+  const timeText = readTimeText(timeCell) || extractTimeFromDateCell(dateCell);
   const startDate = dateParts?.iso ?? '';
-  const endDate = dateParts?.iso ?? '';
+  const endDate = dateParts?.endIso ?? dateParts?.iso ?? '';
   const url = extractFirstHref(urlCell) || extractFirstHref(ctaCell) || stripTags(urlCell) || stripTags(ctaCell);
   const cta = stripTags(ctaCell) || 'Abrir';
-  const schedule = inferWorkSchedule(scheduleCell, timeText);
-  const tags = stripTags(tagsCell)
-    .split(/[,|/]+/)
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+  const schedule = options.scheduleHint || inferWorkSchedule(scheduleCell, timeText);
+  const tags = [];
 
   if (!title || !dateParts) {
     return null;
@@ -249,14 +335,14 @@ function parseEventRow(cells, headerMap, fallbackIndex) {
 
   const event = {
     title,
-    organization,
-    format,
-    category,
-    startDate,
-    endDate,
-    timezone: 'Europe/Madrid',
-    workSchedule: schedule,
-    url,
+      organization,
+      format,
+      category: category || (schedule === 'fuera_horario' ? 'Fuera de horario laboral' : 'Horario laboral'),
+      startDate,
+      endDate,
+      timezone: 'Europe/Madrid',
+      workSchedule: schedule,
+      url,
     cta,
     source: config.source,
     tags,
@@ -277,6 +363,7 @@ function parseEventRow(cells, headerMap, fallbackIndex) {
 function parseEventsFromHtml(html) {
   const preview = String(html).slice(0, 240).replace(/\s+/g, ' ');
   console.log(`[Outlook events] preview HTML adjunto: ${preview}`);
+  const defaultYear = extractYearFromHtml(html);
   const tables = [];
   const tableRegex = /<table\b[^>]*>([\s\S]*?)<\/table>/gi;
   let match;
@@ -287,8 +374,16 @@ function parseEventsFromHtml(html) {
 
   const events = [];
   const candidateBlocks = [];
+  let previousTableEnd = 0;
 
   for (const table of tables) {
+    const tableIndex = html.indexOf(table, previousTableEnd);
+    const betweenTables = tableIndex >= 0 ? html.slice(previousTableEnd, tableIndex) : '';
+    const scheduleHint = detectScheduleFromChunk(betweenTables);
+    const sectionLabelMatch = betweenTables.match(/<div\b[^>]*class=["'][^"']*section-label[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
+    const sectionLabel = sectionLabelMatch ? stripTags(sectionLabelMatch[1]) : '';
+    previousTableEnd = tableIndex >= 0 ? tableIndex + table.length : previousTableEnd;
+
     const rows = findTableRows(table).filter((row) => stripTags(row).length > 0);
     if (rows.length === 0) {
       continue;
@@ -305,7 +400,12 @@ function parseEventsFromHtml(html) {
         continue;
       }
 
-      const event = parseEventRow(cells, headerMap, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      const event = parseEventRow(cells, headerMap, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], {
+        defaultYear,
+        scheduleHint,
+        sectionLabel,
+        sectionCategory: sectionLabel,
+      });
       if (event) {
         events.push(event);
       } else {
