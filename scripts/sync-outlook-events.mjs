@@ -400,7 +400,9 @@ async function loadEventSources() {
 
   const html = htmlAttachment.contentBytes
     ? downloadAttachmentContent(htmlAttachment)
-    : await downloadAttachmentValue(accessToken, config.mailboxUserId, selectedMessage.id, htmlAttachment.id);
+    : downloadAttachmentContent(
+        await downloadAttachmentValue(accessToken, config.mailboxUserId, selectedMessage.id, htmlAttachment.id),
+      );
 
   if (!html) {
     throw new Error(`HTML attachment "${htmlAttachment.name}" has no readable content.`);

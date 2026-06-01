@@ -221,9 +221,9 @@ export function downloadAttachmentContent(attachment) {
 }
 
 export async function downloadAttachmentValue(accessToken, mailboxUserId, messageId, attachmentId) {
-  return graphRawRequest(
+  return graphRequest(
     accessToken,
-    `/users/${encodeURIComponent(mailboxUserId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}/$value`,
+    `/users/${encodeURIComponent(mailboxUserId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`,
   );
 }
 
