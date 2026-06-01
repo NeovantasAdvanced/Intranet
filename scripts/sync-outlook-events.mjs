@@ -389,7 +389,7 @@ async function loadEventSources() {
   const selectedMessage = candidateMessages[0];
   console.log(`[Outlook events] asunto seleccionado: ${selectedMessage.subject}`);
 
-  const attachments = await getMessageAttachments(accessToken, selectedMessage.id);
+  const attachments = await getMessageAttachments(accessToken, config.mailboxUserId, selectedMessage.id);
   const htmlAttachment = attachments.find(isHtmlAttachment);
 
   if (!htmlAttachment) {
