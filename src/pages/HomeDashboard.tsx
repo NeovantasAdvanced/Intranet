@@ -19,6 +19,7 @@ import {
   SlidersHorizontal,
   Users,
   X,
+  type LucideIcon,
 } from 'lucide-react';
 import quickLinksData from '../data/quickLinks.json';
 import newsData from '../data/news.json';
@@ -29,6 +30,7 @@ import appsData from '../data/apps.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
+import { SearchBar } from '../components/ui/SearchBar';
 import { usePortalSearch } from '../context/PortalSearchContext';
 import { EventsSection } from '../components/events/EventsSection';
 import { UpcomingEventsBlock } from '../components/events/UpcomingEventsBlock';
@@ -51,6 +53,221 @@ const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
 const sharePointRepositories = sharePointCatalog.repositories;
 const sharePointResources = sharePointCatalog.resources;
 const apps = appsData as InternalApp[];
+
+type HomeLink = {
+  title: string;
+  description: string;
+  href: string;
+  icon: LucideIcon;
+  tone: NewsItem['tone'];
+  actionLabel?: string;
+  download?: boolean;
+};
+
+type HomeBlock = {
+  title: string;
+  description: string;
+  href: string;
+  actionLabel: string;
+  icon: LucideIcon;
+  iconClassName: string;
+  panelClassName?: string;
+  links: HomeLink[];
+};
+
+const homeQuickLinks: HomeLink[] = [
+  {
+    title: 'ChatGPT',
+    description: 'Asistente de redacción, análisis y apoyo diario.',
+    href: 'https://chat.openai.com',
+    icon: BriefcaseBusiness,
+    tone: 'info',
+    actionLabel: 'Abrir',
+  },
+  {
+    title: 'Factorial',
+    description: 'Gestión de personas, vacaciones y solicitudes internas.',
+    href: 'https://id.factorialhr.com/login?&return_to=https%3A%2F%2Fapp.factorialhr.com%2Fdashboard',
+    icon: Users,
+    tone: 'success',
+    actionLabel: 'Abrir',
+  },
+  {
+    title: 'iRecursos',
+    description: 'Imputación horaria a proyectos con acceso por VPN.',
+    href: 'https://irecursos.neovantas.com:8443',
+    icon: Clock3,
+    tone: 'warning',
+    actionLabel: 'Abrir',
+  },
+  {
+    title: 'Creador de Slides',
+    description: 'Genera presentaciones ejecutivas con estilo Neovantas.',
+    href: 'https://chatgpt.com/g/g-6a0331e985d081918928a1765dda235d-creador-de-slides-neovantas',
+    icon: Rocket,
+    tone: 'info',
+    actionLabel: 'Abrir',
+  },
+  {
+    title: 'Evaluador de documentos',
+    description: 'Audita estructura, claridad y calidad de documentos.',
+    href: 'https://chatgpt.com/g/g-6a0ee263171c8191b155edbddf1332a2-auditor-de-calidad-de-documentos-neovantas',
+    icon: FileText,
+    tone: 'critical',
+    actionLabel: 'Abrir',
+  },
+];
+
+const homeBlocks: HomeBlock[] = [
+  {
+    title: 'Herramientas IA',
+    description: 'Asistentes y GPTs internos para acelerar trabajo operativo y entregables.',
+    href: '#aplicaciones',
+    actionLabel: 'Ir a Aplicaciones',
+    icon: BriefcaseBusiness,
+    iconClassName: 'bg-[#EBF2FE] text-neovantas-blue',
+    links: [
+      homeQuickLinks[0],
+      homeQuickLinks[3],
+    ],
+  },
+  {
+    title: 'Recursos y herramientas',
+    description: 'Aplicaciones internas, gestión, productividad, diseño y formación.',
+    href: '#aplicaciones',
+    actionLabel: 'Ir a Aplicaciones',
+    icon: Users,
+    iconClassName: 'bg-[#F0EEFF] text-[#5340B8]',
+    links: [
+      homeQuickLinks[1],
+      homeQuickLinks[2],
+    ],
+  },
+  {
+    title: 'Documentación',
+    description: 'Carpetas documentales, políticas, guías y materiales internos.',
+    href: '#documentacion',
+    actionLabel: 'Ir a Documentación',
+    icon: FileText,
+    iconClassName: 'bg-[#E6F7F3] text-neovantas-teal',
+    links: [
+      {
+        title: 'Políticas',
+        description: 'Ir a documentación corporativa.',
+        href: '#documentacion',
+        icon: FileText,
+        tone: 'success',
+        actionLabel: 'Abrir',
+      },
+      homeQuickLinks[1],
+    ],
+  },
+  {
+    title: 'Repositorios',
+    description: 'Acceso a conocimiento de banca y repositorio de proyectos.',
+    href: '#repositorios',
+    actionLabel: 'Ir a Repositorios',
+    icon: Files,
+    iconClassName: 'bg-[#FEF3E6] text-[#985D0F]',
+    links: [
+      {
+        title: 'Banca',
+        description: 'NotebookLM con conocimiento del área bancaria.',
+        href: 'https://notebooklm.google.com/notebook/cc6fd8d2-a08d-4235-9e9e-83008d66335a',
+        icon: Files,
+        tone: 'warning',
+        actionLabel: 'Abrir',
+      },
+      {
+        title: 'GPT proyectos',
+        description: 'Repositorio asistido para proyectos y entregables.',
+        href: 'https://chatgpt.com/g/g-68f7400f6c54819189ba2f836487dfea-repositorio',
+        icon: BriefcaseBusiness,
+        tone: 'info',
+        actionLabel: 'Abrir',
+      },
+    ],
+  },
+  {
+    title: 'KeePass',
+    description: 'Gestor seguro de contraseñas recomendado para proteger accesos y credenciales de trabajo.',
+    href: 'https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Herramientas_Neovantas.kdbx?download=1',
+    actionLabel: 'Descargar KeePass',
+    icon: KeyRound,
+    iconClassName: 'bg-[#E0FAF5] text-[#0A7A65]',
+    panelClassName: 'keepass-home-card',
+    links: [
+      {
+        title: 'Herramientas_Neovantas.kdbx',
+        description: 'Archivo cifrado con accesos compartidos del equipo.',
+        href: 'https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Herramientas_Neovantas.kdbx?download=1',
+        icon: KeyRound,
+        tone: 'success',
+        actionLabel: 'Descargar',
+        download: true,
+      },
+    ],
+  },
+];
+
+function HomeLinkCard({ item, compact = false }: { item: HomeLink; compact?: boolean }) {
+  const Icon = item.icon;
+  const href = item.download ? withDownloadParam(item.href) : item.href;
+
+  return (
+    <a
+      href={href}
+      {...getLinkProps(href)}
+      download={item.download ? true : undefined}
+      className={`focus-ring group flex items-start gap-3 rounded-[16px] border border-neovantas-line bg-white p-4 transition hover:-translate-y-0.5 hover:border-neovantas-blue hover:shadow-panel ${
+        compact ? 'min-h-[112px]' : 'min-h-[132px]'
+      }`}
+    >
+      <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-[12px] ${item.tone === 'success' ? 'bg-[#EAFBF2] text-neovantas-teal' : item.tone === 'warning' ? 'bg-[#FEF3E6] text-[#985D0F]' : item.tone === 'critical' ? 'bg-[#FFF1E5] text-[#C2410C]' : 'bg-[#EEF8FF] text-neovantas-blue'}`}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="truncate text-sm font-semibold text-neovantas-navy">{item.title}</h3>
+          {item.actionLabel ? <span className="text-xs font-semibold text-neovantas-muted">{item.actionLabel}</span> : null}
+        </div>
+        <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.description}</p>
+      </div>
+    </a>
+  );
+}
+
+function HomeBlockCard({ block }: { block: HomeBlock }) {
+  const Icon = block.icon;
+
+  return (
+    <article className={`home-block-card ${block.panelClassName ?? ''}`}>
+      <div className="home-block-top">
+        <div className={`module-icon ${block.iconClassName}`}>
+          <Icon className="h-[23px] w-[23px]" aria-hidden="true" />
+        </div>
+        <a href={block.href} className="home-block-open">
+          {block.actionLabel}
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </a>
+      </div>
+
+      <h3>{block.title}</h3>
+      <p>{block.description}</p>
+
+      <div className="home-block-links">
+        {block.links.map((item) => {
+          const href = item.download ? withDownloadParam(item.href) : item.href;
+          return (
+            <a key={item.title} href={href} {...getLinkProps(href)} download={item.download ? true : undefined}>
+              {item.title}
+            </a>
+          );
+        })}
+      </div>
+    </article>
+  );
+}
 
 type RepositoryFilterId =
   | 'all'
@@ -239,46 +456,31 @@ export function HomeDashboard() {
     };
   }, []);
 
+  const homeQuickLinkMatches = searchQuery
+    ? homeQuickLinks.filter((item) => matchesQuery(searchQuery, [item.title, item.description])).length
+    : homeQuickLinks.length;
+
   const totalResults =
     filteredContent.quickLinks.length +
+    homeQuickLinkMatches +
     filteredContent.news.length +
     filteredContent.events.length +
     filteredContent.documents.length +
     filteredContent.sharePointResources.length +
     filteredContent.apps.length;
 
-  const priorityLinks = [
-    'herramientas-passwords',
-    'factorial',
-    'chatgpt',
-    'deepl',
-    'canva',
-    'personas',
-    'soporte',
-    'calendario',
-    'onboarding',
-  ];
-  const orderedQuickLinks = [...filteredContent.quickLinks].sort((left, right) => {
-    const leftRank = priorityLinks.indexOf(left.id);
-    const rightRank = priorityLinks.indexOf(right.id);
+  const resourceLinks = useMemo(
+    () =>
+      homeQuickLinks.filter((item) => {
+        if (!searchQuery) {
+          return true;
+        }
 
-    if (leftRank === -1 && rightRank === -1) {
-      return left.title.localeCompare(right.title, 'es', { sensitivity: 'base' });
-    }
+        return matchesQuery(searchQuery, [item.title, item.description]);
+      }),
+    [searchQuery],
+  );
 
-    if (leftRank === -1) {
-      return 1;
-    }
-
-    if (rightRank === -1) {
-      return -1;
-    }
-
-    return leftRank - rightRank;
-  });
-
-  const featuredQuickLinks = orderedQuickLinks.slice(0, 2);
-  const secondaryQuickLinks = orderedQuickLinks.slice(2);
   const newsItems = filteredContent.news.slice(0, 3);
   const todayIso = getTodayIso();
   const upcomingEvents = [...filteredContent.events]
@@ -289,64 +491,42 @@ export function HomeDashboard() {
   const secondaryApps = apps.slice(1);
 
   return (
-    <div className="space-y-8">
+    <div className="home-shell">
       <section
         id="inicio"
-        className="scroll-mt-40 overflow-hidden rounded-[20px] bg-gradient-to-br from-neovantas-navy via-neovantas-blue to-[#123D74] p-6 text-white shadow-elevated md:p-8 lg:p-10"
+        className="home-compact-hero scroll-mt-40"
       >
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:items-stretch">
-          <div className="flex h-full flex-col justify-between gap-8">
-            <div className="max-w-3xl">
-              <Badge tone="info" className="border-white/20 bg-white/10 text-white">
-                Portal ejecutivo
-              </Badge>
-              <h1 className="mt-5 font-display text-4xl font-normal leading-tight md:text-5xl">
-                Portal de Recursos Neovantas
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 md:text-base">
-                Una entrada unica para consultar conocimiento, proyectos, noticias, accesos y herramientas
-                internas con una experiencia clara para directivos y consultores.
-              </p>
-            </div>
+        <div className="home-hero-copy">
+          <span className="home-eyebrow">Portal de Recursos</span>
+          <h1 id="home-title">El Workspace de Neovantas</h1>
+          <p>
+            Accede a los recursos más utilizados por bloque: asistentes IA, herramientas internas,
+            documentación, repositorios, noticias y eventos.
+          </p>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:max-w-2xl">
-              <a
-                href="#repositorios"
-                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-neovantas-navy shadow-sm"
-              >
-                Ver repositorios
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-              <a
-                href="#documentacion"
-                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
-              >
-                Documentacion
-              </a>
-            </div>
-          </div>
-
-          <div className="grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                <p className="text-3xl font-semibold text-white">{quickLinks.length}</p>
-                <p className="mt-1 text-sm text-white/60">Accesos clave</p>
-              </div>
-              <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                <p className="text-3xl font-semibold text-white">{sharePointStats.total}</p>
-                <p className="mt-1 text-sm text-white/60">Recursos SharePoint</p>
-              </div>
-              <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                <p className="text-3xl font-semibold text-white">{sharePointStats.projects}</p>
-                <p className="mt-1 text-sm text-white/60">Proyectos catalogados</p>
-              </div>
-              <div className="rounded-[14px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                <p className="text-3xl font-semibold text-white">{apps.length}</p>
-                <p className="mt-1 text-sm text-white/60">Aplicaciones internas</p>
-              </div>
-            </div>
-          </div>
+          <SearchBar
+            value={searchValue}
+            onChange={setSearchValue}
+            className="home-search-box"
+            placeholder="Buscar GPTs, documentos, aplicaciones o recursos..."
+          />
         </div>
+
+        <aside className="home-quick-side" aria-label="Accesos rápidos">
+          <div className="home-side-title">Accesos rápidos</div>
+          {homeQuickLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a key={item.title} className="home-side-link" href={item.href} {...getLinkProps(item.href)}>
+                <span className="flex min-w-0 items-center gap-2">
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{item.title}</span>
+                </span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            );
+          })}
+        </aside>
       </section>
 
       {isSearching ? (
@@ -385,153 +565,107 @@ export function HomeDashboard() {
         </Card>
       ) : null}
 
-      {(!isSearching || orderedQuickLinks.length > 0) ? (
-        <section id="accesos" className="scroll-mt-40">
-          <SectionHeader
-            title="Accesos frecuentes"
-            description="Opciones ordenadas por uso habitual para entrar antes a lo más consultado."
-          />
-
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <Card className="p-0 overflow-hidden">
-              <div className="border-b border-neovantas-line bg-neovantas-mist px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neovantas-muted">
-                  Accesos prioritarios
-                </p>
-                <p className="mt-1 text-sm text-neovantas-muted">
-                  Los primeros accesos son los que más se usan en el trabajo diario.
-                </p>
-              </div>
-              <div className="divide-y divide-neovantas-line">
-                {featuredQuickLinks.map((item) => {
-                  const Icon = iconMap[item.icon as keyof typeof iconMap] ?? ArrowRight;
-
-                  return (
-                    <a
-                      key={item.id}
-                      href={item.href}
-                      {...getLinkProps(item.href)}
-                      className="flex items-center gap-4 px-5 py-4 transition hover:bg-neovantas-mist"
-                    >
-                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-blue">
-                        <Icon className="h-5 w-5" aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <h3 className="truncate text-[15px] font-semibold text-neovantas-navy">{item.title}</h3>
-                          <Badge tone={item.tone}>{item.status}</Badge>
-                        </div>
-                        <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.description}</p>
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            </Card>
-
-            <Card className="p-0 overflow-hidden">
-              <div className="border-b border-neovantas-line bg-neovantas-mist px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neovantas-muted">
-                  Más utilizados
-                </p>
-              </div>
-              <div className="divide-y divide-neovantas-line">
-                {secondaryQuickLinks.map((item) => {
-                  const Icon = iconMap[item.icon as keyof typeof iconMap] ?? ArrowRight;
-
-                  return (
-                    <a
-                      key={item.id}
-                      href={item.href}
-                      {...getLinkProps(item.href)}
-                      className="flex items-center gap-3 px-5 py-4 transition hover:bg-neovantas-mist"
-                    >
-                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white text-neovantas-blue shadow-sm">
-                        <Icon className="h-4 w-4" aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="truncate text-sm font-semibold text-neovantas-navy">{item.title}</h3>
-                          <span className="text-xs text-neovantas-muted">{item.status}</span>
-                        </div>
-                        <p className="mt-1 text-xs leading-5 text-neovantas-muted">{item.description}</p>
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            </Card>
+      <section id="accesos" className="scroll-mt-40" aria-labelledby="portal-recursos-title">
+        <div className="home-blocks-header">
+          <div>
+            <h2 id="portal-recursos-title">Portal de recursos</h2>
+            <p>Accesos directos a las herramientas y espacios más utilizados por el equipo.</p>
           </div>
-        </section>
-      ) : null}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {resourceLinks.map((item) => (
+            <HomeLinkCard key={item.title} item={item} compact />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="bloques-principales-title">
+        <div className="home-blocks-header">
+          <div>
+            <h2 id="bloques-principales-title">Bloques principales</h2>
+            <p>Una vista rápida de los accesos operativos más importantes del portal.</p>
+          </div>
+        </div>
+
+        <div className="home-blocks-row">
+          {homeBlocks.map((block) => (
+            <HomeBlockCard key={block.title} block={block} />
+          ))}
+        </div>
+      </section>
 
       {(!isSearching || upcomingEvents.length > 0) ? (
         <UpcomingEventsBlock events={upcomingEvents} todayIso={todayIso} />
       ) : null}
 
-      {(!isSearching || filteredContent.events.length > 0) ? (
-        <EventsSection events={filteredContent.events} todayIso={todayIso} />
-      ) : null}
-
       {(!isSearching || newsItems.length > 0 || documentItems.length > 0) ? (
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)]">
+        <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           {(!isSearching || newsItems.length > 0) ? (
-            <div id="noticias" className="scroll-mt-40">
-              <SectionHeader title="Noticias" description="Comunicaciones recientes para el equipo." />
-              <Card className="overflow-hidden">
-                <div className="divide-y divide-neovantas-line">
-                  {newsItems.map((item) => (
-                    <a
-                      key={item.id}
-                      href={item.href ?? '#'}
-                      {...getLinkProps(item.href ?? '#')}
-                      className="flex items-start gap-4 px-5 py-4 transition hover:bg-neovantas-mist"
-                    >
-                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#EEF8FF] text-neovantas-blue">
-                        <Newspaper className="h-5 w-5" aria-hidden="true" />
+            <div id="noticias" className="home-news-section widget scroll-mt-40">
+              <div className="widget-title">
+                <Newspaper className="h-4 w-4" aria-hidden="true" />
+                Últimas noticias
+                <a href="#noticias" className="section-action">Ver todas</a>
+              </div>
+              <div className="space-y-3">
+                {newsItems.map((item) => (
+                  <a
+                    key={item.id}
+                    href={item.href ?? '#'}
+                    {...getLinkProps(item.href ?? '#')}
+                    className="flex items-start gap-4 rounded-[14px] border border-neovantas-line bg-white px-4 py-4 transition hover:-translate-y-0.5 hover:border-neovantas-blue"
+                  >
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#EEF8FF] text-neovantas-blue">
+                      <Newspaper className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge tone={item.tone}>{item.status}</Badge>
+                        <span className="text-xs font-medium text-neovantas-muted">{item.category}</span>
+                        <span className="text-xs text-neovantas-muted">{formatDate(item.date)}</span>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge tone={item.tone}>{item.status}</Badge>
-                          <span className="text-xs font-medium text-neovantas-muted">{item.category}</span>
-                          <span className="text-xs text-neovantas-muted">{formatDate(item.date)}</span>
-                        </div>
-                        <h3 className="mt-2 text-sm font-semibold text-neovantas-navy">{item.title}</h3>
-                        <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.excerpt}</p>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </Card>
+                      <h3 className="mt-2 text-sm font-semibold text-neovantas-navy">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.excerpt}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           ) : null}
 
           {(!isSearching || documentItems.length > 0) ? (
-            <div id="documentacion" className="scroll-mt-40">
-              <SectionHeader title="Documentacion" description="Recursos versionados y listos para enlazar." />
-              <Card className="overflow-hidden">
-                <div className="divide-y divide-neovantas-line">
-                  {documentItems.map((item) => (
-                    <div key={item.id} className="flex items-start gap-4 px-5 py-4">
-                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#EAFBF2] text-neovantas-teal">
-                        <FileText className="h-5 w-5" aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge tone={item.tone}>{item.status}</Badge>
-                          <span className="text-xs text-neovantas-muted">{item.area}</span>
-                          <span className="text-xs text-neovantas-muted">Rev. {formatDate(item.updatedAt)}</span>
-                        </div>
-                        <h3 className="mt-2 text-sm font-semibold text-neovantas-navy">{item.title}</h3>
-                        <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.description}</p>
-                      </div>
+            <div id="documentacion" className="home-news-section widget scroll-mt-40">
+              <div className="widget-title">
+                <FileText className="h-4 w-4" aria-hidden="true" />
+                Últimos documentos
+                <a href="#documentacion" className="section-action">Ver todos</a>
+              </div>
+              <div className="space-y-3">
+                {documentItems.map((item) => (
+                  <div key={item.id} className="flex items-start gap-4 rounded-[14px] border border-neovantas-line bg-white px-4 py-4">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#EAFBF2] text-neovantas-teal">
+                      <FileText className="h-5 w-5" aria-hidden="true" />
                     </div>
-                  ))}
-                </div>
-              </Card>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge tone={item.tone}>{item.status}</Badge>
+                        <span className="text-xs text-neovantas-muted">{item.area}</span>
+                        <span className="text-xs text-neovantas-muted">Rev. {formatDate(item.updatedAt)}</span>
+                      </div>
+                      <h3 className="mt-2 text-sm font-semibold text-neovantas-navy">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
         </section>
+      ) : null}
+
+      {(!isSearching || filteredContent.events.length > 0) ? (
+        <EventsSection events={filteredContent.events} todayIso={todayIso} />
       ) : null}
 
       {(!isSearching || filteredContent.sharePointResources.length > 0) ? (

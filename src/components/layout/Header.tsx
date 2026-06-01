@@ -1,8 +1,6 @@
 import { Bell, LogIn, LogOut, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
-import { usePortalSearch } from '../../context/PortalSearchContext';
-import { SearchBar } from '../ui/SearchBar';
 
 type ClientPrincipal = {
   userDetails: string;
@@ -28,7 +26,6 @@ function getLinkProps(href: string) {
 }
 
 export function Header() {
-  const { searchValue, setSearchValue } = usePortalSearch();
   const [clientPrincipal, setClientPrincipal] = useState<ClientPrincipal | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -81,13 +78,6 @@ export function Header() {
           </span>
         </a>
 
-        <SearchBar
-          value={searchValue}
-          onChange={setSearchValue}
-          className="hidden max-w-xl flex-1 md:flex"
-          placeholder="Buscar accesos, documentos, repositorios y noticias"
-        />
-
         <div className="ml-auto flex items-center gap-2">
           <button
             type="button"
@@ -135,13 +125,6 @@ export function Header() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1200px] pb-3 md:hidden">
-        <SearchBar
-          value={searchValue}
-          onChange={setSearchValue}
-          placeholder="Buscar en la intranet"
-        />
-      </div>
     </header>
   );
 }
