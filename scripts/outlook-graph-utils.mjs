@@ -137,6 +137,22 @@ export async function graphRequest(accessToken, url) {
   return response.json();
 }
 
+export async function graphRawRequest(accessToken, url) {
+  const requestUrl = url.startsWith('https://') ? url : `${graphBaseUrl}${url}`;
+  const response = await fetch(requestUrl, {
+    headers: {
+      authorization: `Bearer ${accessToken}`,
+      accept: '*/*',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Graph request failed: ${response.status} ${await response.text()}`);
+  }
+
+  return response.text();
+}
+
 export async function graphCollection(accessToken, url, limit = 200) {
   const items = [];
   let nextUrl = url;
@@ -186,7 +202,6 @@ export async function getMessageAttachments(accessToken, mailboxUserId, messageI
   'name',
   'contentType',
   'size',
-  'contentBytes',
   'isInline',
 ]) {
   const select = selectFields.join(',');
@@ -203,6 +218,13 @@ export function downloadAttachmentContent(attachment) {
   }
 
   return Buffer.from(attachment.contentBytes, 'base64').toString('utf8');
+}
+
+export async function downloadAttachmentValue(accessToken, mailboxUserId, messageId, attachmentId) {
+  return graphRawRequest(
+    accessToken,
+    `/users/${encodeURIComponent(mailboxUserId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}/$value`,
+  );
 }
 
 export async function listRootMailFolders(accessToken, mailboxUserId) {

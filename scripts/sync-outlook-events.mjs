@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   downloadAttachmentContent,
+  downloadAttachmentValue,
   getMessageAttachments,
   getAccessToken,
   loadTextFile,
@@ -397,9 +398,12 @@ async function loadEventSources() {
 
   console.log(`[Outlook events] adjunto HTML seleccionado: ${htmlAttachment.name}`);
 
-  const html = downloadAttachmentContent(htmlAttachment);
+  const html = htmlAttachment.contentBytes
+    ? downloadAttachmentContent(htmlAttachment)
+    : await downloadAttachmentValue(accessToken, config.mailboxUserId, selectedMessage.id, htmlAttachment.id);
+
   if (!html) {
-    throw new Error(`HTML attachment "${htmlAttachment.name}" has no contentBytes payload.`);
+    throw new Error(`HTML attachment "${htmlAttachment.name}" has no readable content.`);
   }
 
   return parseEventsFromHtml(html);
