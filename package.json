@@ -12,6 +12,7 @@
     "sync:events": "node scripts/sync-outlook-events.mjs",
     "test:news-subject": "node scripts/tests/news-subject-selection.mjs",
     "test:folder-normalization": "node scripts/tests/folder-normalization.mjs",
+    "test:news-parser": "node scripts/tests/news-html-parser.mjs",
     "test:news-html": "node scripts/tests/news-html-parser.mjs"
   },
   "dependencies": {

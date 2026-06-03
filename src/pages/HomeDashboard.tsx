@@ -380,7 +380,17 @@ export function HomeDashboard() {
         matchesQuery(searchQuery, [item.title, item.description, item.status]),
       ),
       news: news.filter((item) =>
-        matchesQuery(searchQuery, [item.title, item.excerpt, item.category, item.status, item.source]),
+        matchesQuery(searchQuery, [
+          item.title,
+          item.excerpt,
+          item.summary,
+          item.category,
+          item.status,
+          item.source,
+          item.rawMeta?.newsletterSource,
+          item.rawMeta?.briefingTitle,
+          item.rawMeta?.dateText,
+        ]),
       ),
       events: events.filter((item) =>
         matchesQuery(searchQuery, [
@@ -489,7 +499,9 @@ export function HomeDashboard() {
   const featuredApps = apps.slice(0, 1);
   const secondaryApps = apps.slice(1);
   const latestNewsSource = 'Noticias relevantes de hoy';
-  const latestNewsItems = filteredContent.news.filter((item) => item.source === latestNewsSource);
+  const latestNewsItems = filteredContent.news.filter(
+    (item) => item.rawMeta?.newsletterSource === latestNewsSource || item.source === latestNewsSource,
+  );
   const newsItems = (latestNewsItems.length > 0 ? latestNewsItems : filteredContent.news).slice(0, 3);
 
   return (

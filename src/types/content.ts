@@ -31,6 +31,20 @@ export type NewsItem = {
   tone: StatusTone;
   href?: string;
   source?: string;
+  url?: string;
+  summary?: string;
+  rawMeta?: {
+    briefingTitle?: string;
+    dateText?: string;
+    totalNews?: number;
+    newsletterSource?: string;
+    sectionCategory?: string;
+    sectionExpectedCount?: number;
+    itemNumber?: number;
+    marketLine?: string;
+    sourceLine?: string;
+    subject?: string;
+  };
 };
 
 export type DocumentItem = {

@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -11,6 +11,11 @@ import {
   loadTextFile,
   sanitizeFolderReference,
 } from './outlook-graph-utils.mjs';
+import {
+  buildNewsParseDebugSnapshot,
+  extractNewsItemsFromEmailContent,
+  parseNewsEmailContent,
+} from './news-parser.mjs';
 
 const outputPath = path.resolve('src/data/news.json');
 
@@ -280,6 +285,37 @@ function toNewsItem(message) {
   };
 }
 
+async function writeNewsDebugArtifacts(normalizedText, parsedEmail) {
+  await mkdir(path.resolve('tmp'), { recursive: true });
+
+  await writeFile(path.resolve('tmp/latest-news-email.txt'), `${normalizedText}\n`, 'utf8');
+  await writeFile(
+    path.resolve('tmp/latest-news-parsed-debug.json'),
+    `${JSON.stringify(buildNewsParseDebugSnapshot(parsedEmail), null, 2)}\n`,
+    'utf8',
+  );
+}
+
+function logNewsParseDebug(parsedEmail) {
+  const debugSnapshot = buildNewsParseDebugSnapshot(parsedEmail);
+  console.log(
+    `[Outlook news] normalized preview: ${debugSnapshot.normalizedTextPreview.slice(0, 3000).replace(/\n/g, ' ')}`,
+  );
+  console.log(
+    `[Outlook news] categories detected: ${
+      debugSnapshot.categoriesDetected.length > 0
+        ? debugSnapshot.categoriesDetected.map((item) => `${item.category} (${item.expectedCount})`).join(' | ')
+        : '(none)'
+    }`,
+  );
+  console.log(
+    `[Outlook news] links detected: ${debugSnapshot.linksDetected.length > 0 ? debugSnapshot.linksDetected.join(' | ') : '(none)'}`,
+  );
+  console.log(
+    `[Outlook news] numbered lines: ${debugSnapshot.numberedLines.length > 0 ? debugSnapshot.numberedLines.join(' | ') : '(none)'}`,
+  );
+}
+
 async function main() {
   console.log(`[Outlook news] mailbox usado: ${config.mailboxUserId}`);
   console.log(`[Outlook news] NEWS_MAIL_FOLDER bruto: ${config.rawFolderReference || '(vacío)'}`);
@@ -293,11 +329,17 @@ async function main() {
   const existingNews = await readExistingNews();
 
   let parsedNews = [];
+  let parsedEmail = null;
 
   if (config.htmlFixturePath) {
     const html = await loadTextFile(path.resolve(config.htmlFixturePath));
     console.log(`[Outlook news] Usando fixture local: ${config.htmlFixturePath}`);
-    parsedNews = parseNewsItemsFromHtml(html, new Date().toISOString());
+    parsedEmail = parseNewsEmailContent(html, {
+      subject: '',
+      fallbackDateIso: new Date().toISOString(),
+      newsletterSource: config.source,
+    });
+    parsedNews = parsedEmail.items;
   } else {
     if (!config.mailboxUserId) {
       throw new Error('Missing NEWS_MAILBOX_USER_ID. Use the mailbox userPrincipalName or id that receives the news email.');
@@ -331,19 +373,29 @@ async function main() {
       throw new Error(`Selected Outlook message "${selectedMessage.subject}" has no readable HTML body.`);
     }
 
-    parsedNews = parseNewsItemsFromHtml(html, selectedMessage.receivedDateTime ?? new Date().toISOString());
-    console.log(
-      `[Outlook news] noticias detectadas en el correo: ${
-        parsedNews.length > 0 ? parsedNews.map((item) => item.title).join(' | ') : '(ninguna)'
-      }`,
-    );
+    parsedEmail = parseNewsEmailContent(html, {
+      subject: selectedMessage.subject ?? '',
+      fallbackDateIso: selectedMessage.receivedDateTime ?? new Date().toISOString(),
+      newsletterSource: config.source,
+    });
+    parsedNews = parsedEmail.items;
   }
 
+  console.log(
+    `[Outlook news] noticias detectadas en el correo: ${parsedNews.length > 0 ? parsedNews.map((item) => item.title).join(' | ') : '(ninguna)'}`,
+  );
+
   if (parsedNews.length === 0) {
+    if (parsedEmail) {
+      logNewsParseDebug(parsedEmail);
+      await writeNewsDebugArtifacts(parsedEmail.normalizedText, parsedEmail);
+    }
     throw new Error('No news cards were parsed from the latest Outlook HTML email.');
   }
 
-  const manualNews = existingNews.filter((item) => item.source !== config.source);
+  const manualNews = existingNews.filter(
+    (item) => item.source !== config.source && item.rawMeta?.newsletterSource !== config.source,
+  );
   const seenIds = new Set();
   const mergedNews = [...parsedNews, ...manualNews]
     .filter((item) => {
@@ -389,5 +441,5 @@ export function selectNewsMessageSubjects(messages, subjectPrefix, sender) {
 }
 
 export function extractNewsItemsFromHtml(html, emailDate = new Date().toISOString()) {
-  return parseNewsItemsFromHtml(html, emailDate);
+  return extractNewsItemsFromEmailContent(html, { fallbackDateIso: emailDate });
 }
