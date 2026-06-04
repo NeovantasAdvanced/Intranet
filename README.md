@@ -102,6 +102,7 @@ Configuracion actual:
 - `NEWS_MAILBOX_USER_ID` en `secrets`
 - `NEWS_MAIL_FOLDER=inbox/Neovantas` en `vars`
 - `NEWS_SUBJECT_PREFIX=Noticias relevantes de hoy` en `vars`
+- `NEWS_SENDER` es opcional y solo conviene usarlo si quieres fijar un remitente concreto
 - `NEWS_MAIL_FOLDER_ID` en `secrets` o `vars` solo si quieres fijar el id exacto de la carpeta
 - `NEWS_HTML_FIXTURE_PATH` para probar el parser localmente con un `.mht`, HTML exportado de Outlook o un texto plano del briefing
 
@@ -109,6 +110,7 @@ El workflow usa esas variables y filtra en JavaScript para excluir correos como 
 En la Home, la seccion de noticias prioriza los items cuyo `rawMeta.newsletterSource` es `Noticias relevantes de hoy`, para mostrar solo las noticias extraidas del ultimo correo diario.
 
 Si el parseo falla, el workflow deja artefactos de depuracion en `tmp/latest-news-email.txt` y `tmp/latest-news-parsed-debug.json`.
+Este sync ya no se dispara por `push` en `main`; se ejecuta por programacion o manualmente para evitar ciclos cuando hace commit de `news.json`.
 
 Guia operativa: `docs/outlook-news-sync.md`.
 
@@ -127,6 +129,7 @@ Variables y secrets:
 - `EVENTS_TENANT_ID`, `EVENTS_CLIENT_ID`, `EVENTS_CLIENT_SECRET` en `secrets`: credenciales de Graph para esta automatizacion.
 
 Si ya usas la aplicacion de Graph de noticias o SharePoint, el workflow tambien acepta fallback a `NEWS_*` y `SHAREPOINT_*` para no duplicar secretos.
+Este sync tambien se ejecuta solo por programacion o manualmente, no por `push` en `main`, para evitar bucles al guardar `events.json`.
 
 En ambos sync, el log inicial muestra el valor bruto de la variable de carpeta y la carpeta efectiva despues del fallback. Si GitHub entrega una ruta interna de Graph como `/mailFolders/inbox/childFolders`, el workflow la normaliza y usa `inbox/Neovantas` como valor operativo.
 

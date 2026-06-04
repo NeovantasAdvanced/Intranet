@@ -1,13 +1,6 @@
 name: Sync SharePoint catalog
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/sync-sharepoint-catalog.yml
-      - scripts/sync-sharepoint-catalog.mjs
-      - src/data/sharepointCatalog.json
   schedule:
     - cron: '15 5 * * *'
   workflow_dispatch:

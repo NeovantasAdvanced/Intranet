@@ -1,13 +1,6 @@
 name: Sync Outlook news
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/sync-outlook-news.yml
-      - scripts/sync-outlook-news.mjs
-      - src/data/news.json
   schedule:
     - cron: '35 6 * * 1-5'
   workflow_dispatch:
@@ -105,7 +98,7 @@ jobs:
           NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
           NEWS_MAILBOX_USER_ID: ${{ secrets.NEWS_MAILBOX_USER_ID }}
           NEWS_MAIL_FOLDER_ID: ${{ vars.NEWS_MAIL_FOLDER_ID || secrets.NEWS_MAIL_FOLDER_ID }}
-          NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER || 'advanced.analytics@neovantas.com' }}
+          NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER }}
           NEWS_CATEGORY: ${{ vars.NEWS_CATEGORY || 'Comunicacion' }}
           NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Noticias relevantes de hoy' }}

@@ -1,13 +1,6 @@
 name: Sync Outlook events
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/sync-outlook-events.yml
-      - scripts/sync-outlook-events.mjs
-      - src/data/events.json
   schedule:
     - cron: '10 6 * * *'
     - cron: '20 6 1 * *'
