@@ -20,12 +20,27 @@ const ADMIN_ROLE_ALIASES = new Set(
   ].map((value) => value.toLowerCase()),
 );
 
+const ADMIN_ROLE_IDS = new Set([
+  '62e90394-69f5-4237-9190-012177145e10', // Global Administrator
+  'e8611ab8-c189-46e8-94e1-60213ab1f814', // Privileged Role Administrator
+]);
+
 function normalizeEmail(value: string) {
   return String(value ?? '').trim().toLowerCase();
 }
 
 function normalizeRole(value: string) {
   return normalizeEmail(value).replace(/\s+/g, ' ');
+}
+
+function isRoleLikeClaimType(value: string) {
+  const normalized = normalizeRole(value);
+  return (
+    normalized.includes('role') ||
+    normalized.includes('group') ||
+    normalized.includes('wids') ||
+    normalized.includes('directoryrole')
+  );
 }
 
 function getConfiguredAdminEmails() {
@@ -65,11 +80,11 @@ export function isOffice365AdminPrincipal(principal: ClientPrincipal | null | un
       return false;
     }
 
-    if (!['role', 'roles', 'wids', 'groups'].includes(claimType)) {
+    if (!isRoleLikeClaimType(claimType)) {
       return false;
     }
 
-    return ADMIN_ROLE_ALIASES.has(claimValue);
+    return ADMIN_ROLE_ALIASES.has(claimValue) || ADMIN_ROLE_IDS.has(claimValue);
   });
 }
 

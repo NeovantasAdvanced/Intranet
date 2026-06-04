@@ -154,7 +154,7 @@ VITE_ADMIN_EMAILS=fernando.macias@neovantas.com,admin@neovantas.com
 Reglas actuales:
 
 - `isAdminUser(userEmail)` sigue permitiendo una lista manual de respaldo con `VITE_ADMIN_EMAILS`.
-- La pagina tambien acepta los privilegios administrativos que llegan desde Microsoft 365 en `/.auth/me` si el usuario ya es administrador en el tenant.
+- La pagina tambien acepta los privilegios administrativos que llegan desde Microsoft 365 en `/.auth/me` si el usuario ya es administrador en el tenant, incluyendo el rol de Global Administrator.
 - Si el usuario no es admin, la pagina muestra un mensaje de acceso denegado y no consulta el endpoint de metricas.
 - El tracking general del portal sigue funcionando para todos los usuarios.
 - La logica esta preparada para migrar en el futuro a un grupo de Microsoft Entra ID llamado `Intranet Admins`.
