@@ -1,16 +1,8 @@
-import { Bell, LogIn, LogOut, ShieldCheck, UserRound } from 'lucide-react';
+import { Bell, LogIn, LogOut, Settings2, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
-
-type ClientPrincipal = {
-  userDetails: string;
-  identityProvider: string;
-  userRoles: string[];
-};
-
-type AuthPayload = {
-  clientPrincipal: ClientPrincipal | null;
-};
+import { fetchClientPrincipal, type ClientPrincipal } from '../../lib/auth';
+import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
 
 function getInitials(value: string) {
   return value
@@ -28,20 +20,22 @@ function getLinkProps(href: string) {
 export function Header() {
   const [clientPrincipal, setClientPrincipal] = useState<ClientPrincipal | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
-    fetch('/.auth/me', { cache: 'no-store' })
-      .then((response) => (response.ok ? response.json() as Promise<AuthPayload> : null))
-      .then((payload) => {
-        if (mounted && payload?.clientPrincipal) {
-          setClientPrincipal(payload.clientPrincipal);
+    fetchClientPrincipal()
+      .then((principal) => {
+        if (mounted) {
+          setClientPrincipal(principal);
+          setIsAdmin(Boolean(principal && (isAdminUser(principal.userDetails) || isOffice365AdminPrincipal(principal))));
         }
       })
       .catch(() => {
         if (mounted) {
           setClientPrincipal(null);
+          setIsAdmin(false);
         }
       })
       .finally(() => {
@@ -79,6 +73,16 @@ export function Header() {
         </a>
 
         <div className="ml-auto flex items-center gap-2">
+          {isAdmin ? (
+            <a
+              href="/admin/usage"
+              className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/15 hover:text-white"
+              aria-label="Uso de la intranet"
+              title="Uso de la intranet"
+            >
+              <Settings2 className="h-4 w-4" aria-hidden="true" />
+            </a>
+          ) : null}
           <button
             type="button"
             className="focus-ring hidden h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/15 hover:text-white lg:grid"
