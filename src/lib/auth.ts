@@ -2,6 +2,10 @@ export type ClientPrincipal = {
   userDetails: string;
   identityProvider: string;
   userRoles: string[];
+  claims?: Array<{
+    typ?: string;
+    val?: string;
+  }>;
 };
 
 export type AuthPayload = {

@@ -14,7 +14,7 @@ import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { fetchClientPrincipal } from '../lib/auth';
-import { isAdminRoleMember, isAdminUser } from '../lib/admin';
+import { isAdminUser, isOffice365AdminPrincipal } from '../lib/admin';
 
 type UsageMetricRow = {
   label: string;
@@ -218,7 +218,7 @@ export function AdminUsagePage() {
         const email = principal?.userDetails?.trim() ?? '';
         setUserEmail(email);
 
-        const allowed = isAdminUser(email) || isAdminRoleMember(principal?.userRoles ?? []);
+        const allowed = isAdminUser(email) || isOffice365AdminPrincipal(principal);
         setAuthState(allowed ? 'admin' : 'forbidden');
       })
       .catch(() => {
