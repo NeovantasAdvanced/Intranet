@@ -15,6 +15,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: data-sync-main
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -44,14 +48,4 @@ jobs:
         run: npm run build
 
       - name: Commit catalog changes
-        run: |
-          if git diff --quiet -- src/data/sharepointCatalog.json; then
-            echo "SharePoint catalog already up to date."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data/sharepointCatalog.json
-          git commit -m "chore: sync SharePoint catalog"
-          git push
+        run: bash scripts/push-main-with-rebase.sh "chore: sync SharePoint catalog" src/data/sharepointCatalog.json

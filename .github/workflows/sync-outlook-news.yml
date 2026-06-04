@@ -45,6 +45,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: data-sync-main
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -125,14 +129,4 @@ jobs:
 
       - name: Commit news changes
         if: steps.news-config.outputs.configured == 'true'
-        run: |
-          if git diff --quiet -- src/data/news.json; then
-            echo "News already up to date."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data/news.json
-          git commit -m "chore: sync Outlook news"
-          git push
+        run: bash scripts/push-main-with-rebase.sh "chore: sync Outlook news" src/data/news.json

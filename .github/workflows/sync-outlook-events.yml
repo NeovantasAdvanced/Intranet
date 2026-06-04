@@ -41,6 +41,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: data-sync-main
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -107,14 +111,4 @@ jobs:
 
       - name: Commit events changes
         if: steps.events-config.outputs.configured == 'true'
-        run: |
-          if git diff --quiet -- src/data/events.json; then
-            echo "Events already up to date."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data/events.json
-          git commit -m "chore: sync Outlook events"
-          git push
+        run: bash scripts/push-main-with-rebase.sh "chore: sync Outlook events" src/data/events.json
