@@ -173,6 +173,11 @@ En Azure Static Web Apps:
 4. Guarda y vuelve a desplegar.
 5. Cierra sesion y vuelve a entrar para refrescar `/.auth/me`.
 
+Importante: si el despliegue compila la web en GitHub Actions, esa variable tambien debe existir en
+`Settings > Secrets and variables > Actions > Variables` del repositorio GitHub, porque Vite lee
+`VITE_ADMIN_EMAILS` en tiempo de build. La variable creada solo en Azure no entra en el bundle
+estatico que se publica.
+
 La pagina espera un endpoint de resumen en `/api/usage/summary` para cargar:
 
 - accesos totales
