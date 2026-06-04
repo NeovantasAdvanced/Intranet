@@ -52,6 +52,39 @@ function getConfiguredAdminEmails() {
     .filter(Boolean);
 }
 
+function getClaimValue(principal: ClientPrincipal, predicate: (value: string) => boolean) {
+  return (principal.claims ?? []).find((claim) => predicate(normalizeRole(claim.typ ?? '')))?.val ?? '';
+}
+
+export function getPrincipalEmailCandidates(principal: ClientPrincipal | null | undefined) {
+  if (!principal) {
+    return [];
+  }
+
+  const candidates = new Set<string>();
+  const pushCandidate = (value: string) => {
+    const normalized = normalizeEmail(value);
+    if (normalized.includes('@')) {
+      candidates.add(normalized);
+    }
+  };
+
+  pushCandidate(principal.userDetails);
+  pushCandidate(getClaimValue(principal, (type) => type.includes('email')));
+  pushCandidate(getClaimValue(principal, (type) => type.includes('preferred_username')));
+  pushCandidate(getClaimValue(principal, (type) => type.includes('upn')));
+  pushCandidate(getClaimValue(principal, (type) => type.includes('unique_name')));
+
+  for (const claim of principal.claims ?? []) {
+    const value = normalizeEmail(claim.val ?? '');
+    if (value.includes('@')) {
+      candidates.add(value);
+    }
+  }
+
+  return [...candidates];
+}
+
 export function isAdminUser(userEmail: string) {
   const normalizedEmail = normalizeEmail(userEmail);
 
@@ -70,6 +103,14 @@ export function isOffice365AdminPrincipal(principal: ClientPrincipal | null | un
   const roleMatches = (principal.userRoles ?? []).some((role) => ADMIN_ROLE_ALIASES.has(normalizeRole(role)));
   if (roleMatches) {
     return true;
+  }
+
+  const configuredAdminEmails = getConfiguredAdminEmails();
+  if (configuredAdminEmails.length > 0) {
+    const principalEmails = getPrincipalEmailCandidates(principal);
+    if (principalEmails.some((email) => configuredAdminEmails.includes(email))) {
+      return true;
+    }
   }
 
   return (principal.claims ?? []).some((claim) => {

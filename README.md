@@ -159,6 +159,20 @@ Reglas actuales:
 - El tracking general del portal sigue funcionando para todos los usuarios.
 - La logica esta preparada para migrar en el futuro a un grupo de Microsoft Entra ID llamado `Intranet Admins`.
 
+Si necesitas abrir acceso de forma inmediata, añade el correo al allowlist temporal:
+
+```bash
+VITE_ADMIN_EMAILS=fmacias@neovantas.com
+```
+
+En Azure Static Web Apps:
+
+1. Abre el recurso de la app.
+2. Entra en `Configuration`.
+3. Añade la variable de aplicacion `VITE_ADMIN_EMAILS`.
+4. Guarda y vuelve a desplegar.
+5. Cierra sesion y vuelve a entrar para refrescar `/.auth/me`.
+
 La pagina espera un endpoint de resumen en `/api/usage/summary` para cargar:
 
 - accesos totales
