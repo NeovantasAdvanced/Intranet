@@ -141,6 +141,32 @@ EVENTS_HTML_FIXTURE_PATH=scripts/fixtures/events-sample.html npm run sync:events
 El portal incluye rutas de acceso `/login` y `/logout` para usar la autenticacion integrada de Azure Static Web Apps con Microsoft Entra ID. El header consulta `/.auth/me` cuando la aplicacion esta desplegada en Azure para mostrar la sesion Microsoft 365 si existe.
 En Azure, el acceso queda restringido por `staticwebapp.config.json`. En local, Vite sigue permitiendo probar la UI sin bloquear el login.
 
+## Analitica de uso privada
+
+La pagina de analitica se publica en `/admin/usage` y no aparece en la navegacion principal. Solo pueden verla los administradores definidos por email.
+
+Configurar en el entorno de build o en las variables de la Static Web App:
+
+```bash
+VITE_ADMIN_EMAILS=fernando.macias@neovantas.com,admin@neovantas.com
+```
+
+Reglas actuales:
+
+- `isAdminUser(userEmail)` comprueba si el correo autenticado esta en `VITE_ADMIN_EMAILS`.
+- Si el usuario no es admin, la pagina muestra un mensaje de acceso denegado y no consulta el endpoint de metricas.
+- El tracking general del portal sigue funcionando para todos los usuarios.
+- La logica esta preparada para migrar en el futuro a un grupo de Microsoft Entra ID llamado `Intranet Admins`.
+
+La pagina espera un endpoint de resumen en `/api/usage/summary` para cargar:
+
+- accesos totales
+- usuarios unicos
+- secciones mas visitadas
+- enlaces mas pulsados
+- actividad por dia
+- actividad por usuario
+
 ## Despliegue en Azure Static Web Apps
 
 El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. Tambien incluye `.github/workflows/azure-static-web-apps-blue-sky-015473603.yml` como workflow base de GitHub Actions.
