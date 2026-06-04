@@ -2,7 +2,7 @@ name: Sync Outlook news
 
 on:
   schedule:
-    - cron: '35 6 * * 1-5'
+    - cron: '10 7 * * *'
   workflow_dispatch:
     inputs:
       mailbox_user_id:

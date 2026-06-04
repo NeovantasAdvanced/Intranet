@@ -110,7 +110,7 @@ El workflow usa esas variables y filtra en JavaScript para excluir correos como 
 En la Home, la seccion de noticias prioriza los items cuyo `rawMeta.newsletterSource` es `Noticias relevantes de hoy`, para mostrar solo las noticias extraidas del ultimo correo diario.
 
 Si el parseo falla, el workflow deja artefactos de depuracion en `tmp/latest-news-email.txt` y `tmp/latest-news-parsed-debug.json`.
-Este sync ya no se dispara por `push` en `main`; se ejecuta por programacion o manualmente para evitar ciclos cuando hace commit de `news.json`.
+Este sync se ejecuta cada dia a las 09:10 hora de Madrid, que en GitHub Actions corresponde a `07:10 UTC`. Tambien se puede lanzar manualmente. Ya no se dispara por `push` en `main`; se ejecuta por programacion o manualmente para evitar ciclos cuando hace commit de `news.json`.
 
 Guia operativa: `docs/outlook-news-sync.md`.
 
