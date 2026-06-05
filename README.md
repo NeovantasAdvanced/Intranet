@@ -162,6 +162,23 @@ Reglas actuales:
 - El tracking general del portal sigue funcionando para todos los usuarios.
 - La logica esta preparada para migrar en el futuro a un grupo de Microsoft Entra ID llamado `Intranet Admins`.
 
+### Backend de analitica
+
+La analitica ya no depende de un JSON estatizado. El portal registra accesos y clics en Azure Functions y los guarda en Azure Table Storage para poder sacar estadisticas por usuario.
+
+Variables necesarias en Azure Static Web Apps:
+
+- `AZURE_STORAGE_CONNECTION_STRING`: conexion al Storage Account donde se guarda el tracking.
+- `USAGE_TABLE_NAME`: opcional. Nombre de la tabla; por defecto `NeovantasUsageEvents`.
+- `VITE_ADMIN_EMAILS`: allowlist temporal de administradores para el build y para el backend.
+
+Rutas internas:
+
+- `POST /api/usage/track`: registra pageviews, secciones y enlaces.
+- `GET /api/usage/summary`: devuelve totales, usuarios unicos, secciones, enlaces, actividad por dia y actividad por usuario.
+
+Si `AZURE_STORAGE_CONNECTION_STRING` no esta configurada, la pagina privada seguira visible para administradores, pero las metricas no se podran persistir y la vista mostrara un error explicito.
+
 Si necesitas abrir acceso de forma inmediata, añade el correo al allowlist temporal:
 
 ```bash
@@ -192,14 +209,15 @@ La pagina espera un endpoint de resumen en `/api/usage/summary` para cargar:
 
 ## Despliegue en Azure Static Web Apps
 
-El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. Tambien incluye `.github/workflows/azure-static-web-apps-blue-sky-015473603.yml` como workflow base de GitHub Actions.
+El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. Tambien incluye el directorio `api/` para la analitica de uso y `.github/workflows/azure-static-web-apps-blue-sky-015473603.yml` como workflow base de GitHub Actions.
 
 1. Repositorio en GitHub.
 2. Crear la Static Web App en Azure conectada al repositorio.
 3. Configurar `AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_SKY_015473603` como secreto en GitHub.
 4. El workflow activo se llama `Deploy Intranet - Azure Static Web Apps`.
 5. El despliegue de produccion vigente es `https://blue-sky-015473603.7.azurestaticapps.net/`.
-6. El workflow construye `dist` antes de desplegar.
+6. El workflow construye `dist` antes de desplegar y publica tambien la carpeta `api/`.
+7. En Azure Static Web Apps añade `AZURE_STORAGE_CONNECTION_STRING` y, si quieres, `USAGE_TABLE_NAME` para la analitica de uso.
 
 ## Notas de diseno tecnico
 

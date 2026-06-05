@@ -10,6 +10,7 @@ import {
 import { useEffect, useState, type ReactNode } from 'react';
 import { APP_VERSION } from '../../config/appVersion';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
+import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
 
 type AppLayoutProps = {
@@ -73,6 +74,43 @@ function PortalNavigation() {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [searchValue, setSearchValue] = useState('');
+
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const anchor = target.closest('a[href]');
+      if (!anchor) {
+        return;
+      }
+
+      const href = anchor.getAttribute('href') ?? '';
+      if (!href || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+        return;
+      }
+
+      const label =
+        anchor.getAttribute('aria-label')?.trim() ||
+        anchor.getAttribute('title')?.trim() ||
+        anchor.textContent?.trim() ||
+        href;
+
+      const sectionLabel = href.startsWith('#') ? label : window.location.hash.replace(/^#/, '') || 'inicio';
+
+      trackUsageEvent({
+        kind: href.startsWith('#') ? 'section' : 'link',
+        label,
+        href,
+        section: sectionLabel,
+      });
+    };
+
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
+  }, []);
 
   return (
     <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>

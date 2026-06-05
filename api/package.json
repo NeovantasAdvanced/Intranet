@@ -1,0 +1,8 @@
+{
+  "name": "neovantas-intranet-api",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "@azure/data-tables": "^13.3.0"
+  }
+}

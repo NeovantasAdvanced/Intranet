@@ -2,6 +2,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { AdminUsagePage } from './pages/AdminUsagePage';
 import { HomeDashboard } from './pages/HomeDashboard';
 import { useEffect, useState } from 'react';
+import { trackUsageEvent } from './lib/usageTracking';
 
 function getRouteName() {
   if (typeof window === 'undefined') {
@@ -32,6 +33,17 @@ export default function App() {
       window.removeEventListener('popstate', handleRouteChange);
     };
   }, []);
+
+  useEffect(() => {
+    const label = routeName === 'admin-usage' ? 'Uso de la intranet' : 'Inicio';
+    trackUsageEvent({
+      kind: 'pageview',
+      label,
+      page: label,
+      route: routeName,
+      section: label,
+    });
+  }, [routeName]);
 
   return (
     <AppLayout>
