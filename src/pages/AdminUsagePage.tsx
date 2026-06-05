@@ -240,10 +240,23 @@ export function AdminUsagePage() {
     let mounted = true;
     const controller = new AbortController();
 
-    fetch('/api/usage/summary', { cache: 'no-store', signal: controller.signal })
+    fetch('/api/usage/summary', {
+      cache: 'no-store',
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+      },
+    })
       .then(async (response) => {
         if (!response.ok) {
           throw new Error(`Usage metrics request failed: ${response.status}`);
+        }
+
+        const contentType = response.headers.get('content-type') ?? '';
+        if (!contentType.toLowerCase().includes('application/json')) {
+          throw new Error(
+            'Usage metrics endpoint did not return JSON. Configure a backend for /api/usage/summary in Azure Static Web Apps.',
+          );
         }
 
         return response.json() as Promise<UsageSummary>;
