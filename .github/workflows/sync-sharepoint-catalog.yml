@@ -41,4 +41,5 @@ jobs:
         run: npm run build
 
       - name: Commit catalog changes
-        run: bash scripts/push-main-with-rebase.sh "chore: sync SharePoint catalog" src/data/sharepointCatalog.json
+        run: |
+          bash scripts/push-main-with-rebase.sh "chore: sync SharePoint catalog" src/data/sharepointCatalog.json

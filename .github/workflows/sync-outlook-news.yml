@@ -122,4 +122,5 @@ jobs:
 
       - name: Commit news changes
         if: steps.news-config.outputs.configured == 'true'
-        run: bash scripts/push-main-with-rebase.sh "chore: sync Outlook news" src/data/news.json
+        run: |
+          bash scripts/push-main-with-rebase.sh "chore: sync Outlook news" src/data/news.json

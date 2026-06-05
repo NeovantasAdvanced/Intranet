@@ -104,4 +104,5 @@ jobs:
 
       - name: Commit events changes
         if: steps.events-config.outputs.configured == 'true'
-        run: bash scripts/push-main-with-rebase.sh "chore: sync Outlook events" src/data/events.json
+        run: |
+          bash scripts/push-main-with-rebase.sh "chore: sync Outlook events" src/data/events.json
