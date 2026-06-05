@@ -226,3 +226,8 @@ El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, nece
 - JSON versionado como fuente inicial de contenido.
 - Header y navegacion superior pensados para evolucionar a rutas reales.
 - Buscador global con filtrado por contenidos versionados y catalogo SharePoint sincronizable.
+
+## Ventanas de sincronizacion
+
+- `news`: ejecucion diaria a las 09:10 hora de Madrid y ventana de busqueda limitada a 3 dias.
+- `events`: ejecucion quincenal los dias 1 y 16 a las 06:20 UTC y ventana de busqueda limitada a 45 dias.

@@ -26,7 +26,7 @@ const config = {
   rawFolderReference,
   folderId: process.env.EVENTS_MAIL_FOLDER_ID,
   subjectPrefix: process.env.EVENTS_SUBJECT_PREFIX || process.env.EVENTS_SUBJECT_CONTAINS || 'Eventos de',
-  lookbackDays: Number(process.env.EVENTS_LOOKBACK_DAYS ?? '365'),
+  lookbackDays: Number(process.env.EVENTS_LOOKBACK_DAYS ?? '45'),
   maxMessages: Number(process.env.EVENTS_MAX_MESSAGES ?? '20'),
   source: process.env.EVENTS_SOURCE ?? 'Outlook HTML',
   fixturePath: process.env.EVENTS_HTML_FIXTURE_PATH,

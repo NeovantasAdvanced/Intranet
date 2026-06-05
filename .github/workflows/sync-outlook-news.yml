@@ -27,7 +27,7 @@ on:
       lookback_days:
         description: 'How many days back to search'
         required: false
-        default: '14'
+        default: '3'
         type: string
       max_items:
         description: 'Maximum Outlook news items to publish'
@@ -103,7 +103,7 @@ jobs:
           NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Noticias relevantes de hoy' }}
           NEWS_ALLOW_UNFILTERED_INBOX: ${{ vars.NEWS_ALLOW_UNFILTERED_INBOX || 'false' }}
-          NEWS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.NEWS_LOOKBACK_DAYS || '14' }}
+          NEWS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.NEWS_LOOKBACK_DAYS || '3' }}
           NEWS_MAX_ITEMS: ${{ inputs.max_items || vars.NEWS_MAX_ITEMS || '10' }}
 
       - name: Upload news debug artifacts

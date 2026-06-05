@@ -33,7 +33,7 @@ const config = {
   category: process.env.NEWS_CATEGORY ?? 'Comunicacion',
   status: process.env.NEWS_STATUS ?? 'Nuevo',
   source: process.env.NEWS_SOURCE ?? 'Noticias relevantes de hoy',
-  lookbackDays: Number(process.env.NEWS_LOOKBACK_DAYS ?? '14'),
+  lookbackDays: Number(process.env.NEWS_LOOKBACK_DAYS ?? '3'),
   maxItems: Number(process.env.NEWS_MAX_ITEMS ?? '10'),
   htmlFixturePath: process.env.NEWS_HTML_FIXTURE_PATH,
 };

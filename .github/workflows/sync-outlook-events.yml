@@ -2,8 +2,7 @@ name: Sync Outlook events
 
 on:
   schedule:
-    - cron: '10 6 * * *'
-    - cron: '20 6 1 * *'
+    - cron: '20 6 1,16 * *'
   workflow_dispatch:
     inputs:
       mailbox_user_id:
@@ -23,7 +22,7 @@ on:
       lookback_days:
         description: 'How many days back to search'
         required: false
-        default: '365'
+        default: '45'
         type: string
       max_messages:
         description: 'Maximum Outlook messages to inspect'
@@ -95,7 +94,7 @@ jobs:
           EVENTS_MAILBOX_USER_ID: ${{ secrets.EVENTS_MAILBOX_USER_ID }}
           EVENTS_MAIL_FOLDER_ID: ${{ vars.EVENTS_MAIL_FOLDER_ID || secrets.EVENTS_MAIL_FOLDER_ID }}
           EVENTS_SOURCE: ${{ vars.EVENTS_SOURCE || 'Outlook HTML' }}
-          EVENTS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.EVENTS_LOOKBACK_DAYS || '365' }}
+          EVENTS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.EVENTS_LOOKBACK_DAYS || '45' }}
           EVENTS_MAX_MESSAGES: ${{ inputs.max_messages || vars.EVENTS_MAX_MESSAGES || '20' }}
 
       - name: Validate build
