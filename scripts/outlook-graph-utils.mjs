@@ -178,19 +178,33 @@ export function normalizeMailSubject(value) {
   return normalizeText(String(value ?? '').replace(/^(re|fw|fwd):\s*/i, '').trim());
 }
 
-export async function listRecentMessagesFromFolder(accessToken, mailboxUserId, folderId, limit = 20, selectFields = [
-  'id',
-  'internetMessageId',
-  'subject',
-  'bodyPreview',
-  'receivedDateTime',
-  'from',
-  'webLink',
-]) {
+export async function listRecentMessagesFromFolder(
+  accessToken,
+  mailboxUserId,
+  folderId,
+  limit = 20,
+  selectFields = [
+    'id',
+    'internetMessageId',
+    'subject',
+    'bodyPreview',
+    'receivedDateTime',
+    'from',
+    'webLink',
+  ],
+  options = {},
+) {
   const select = selectFields.join(',');
+  const filters = [];
+  if (options.sinceIso) {
+    filters.push(`receivedDateTime ge ${options.sinceIso}`);
+  }
+
+  const filterQuery = filters.length > 0 ? `&$filter=${encodeURIComponent(filters.join(' and '))}` : '';
+  const orderByQuery = '&$orderby=receivedDateTime desc';
   const messages = await graphCollection(
     accessToken,
-    `/users/${encodeURIComponent(mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}&$top=100`,
+    `/users/${encodeURIComponent(mailboxUserId)}/mailFolders/${encodeURIComponent(folderId)}/messages?$select=${select}${filterQuery}${orderByQuery}&$top=100`,
     Math.max(1, limit),
   );
 

@@ -249,6 +249,10 @@ async function listNewsMessages(accessToken) {
     config.mailboxUserId,
     resolvedFolder.folderId,
     100,
+    undefined,
+    {
+      sinceIso: getSinceIso(),
+    },
   );
 
   console.log(`[Outlook news] Numero de mensajes recuperados: ${messages.length}`);

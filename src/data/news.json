@@ -16,10 +16,10 @@
       "subject": "Noticias relevantes de hoy - 07 junio 2026",
       "newsletterSource": "Noticias relevantes de hoy",
       "sectionCategory": "Banca",
-      "sectionExpectedCount": 6,
+      "sectionExpectedCount": 2,
       "itemNumber": 1,
-      "marketLine": "🇪🇸 España Santander",
-      "sourceLine": "🇪🇸 España Santander · Fuente: Expansión"
+      "marketLine": "EspañaSantander",
+      "sourceLine": "EspañaSantander · Fuente: Expansión"
     }
   },
   {
@@ -39,10 +39,10 @@
       "subject": "Noticias relevantes de hoy - 07 junio 2026",
       "newsletterSource": "Noticias relevantes de hoy",
       "sectionCategory": "Banca",
-      "sectionExpectedCount": 6,
+      "sectionExpectedCount": 2,
       "itemNumber": 2,
-      "marketLine": "🇪🇸 España BBVA",
-      "sourceLine": "🇪🇸 España BBVA · Fuente: Expansión"
+      "marketLine": "EspañaGobierno",
+      "sourceLine": "EspañaGobierno · Fuente: Expansión"
     }
   },
   {
@@ -64,8 +64,8 @@
       "sectionCategory": "Banca",
       "sectionExpectedCount": 6,
       "itemNumber": 3,
-      "marketLine": "🇪🇸 España Unicaja",
-      "sourceLine": "🇪🇸 España Unicaja · Fuente: Expansión"
+      "marketLine": "España Unicaja",
+      "sourceLine": "España Unicaja · Fuente: Expansión"
     }
   },
   {
@@ -87,8 +87,8 @@
       "sectionCategory": "Banca",
       "sectionExpectedCount": 6,
       "itemNumber": 4,
-      "marketLine": "🇪🇸 España",
-      "sourceLine": "🇪🇸 España · Fuente: Expansión"
+      "marketLine": "España",
+      "sourceLine": "España · Fuente: Expansión"
     }
   },
   {
@@ -133,8 +133,8 @@
       "sectionCategory": "Banca",
       "sectionExpectedCount": 6,
       "itemNumber": 6,
-      "marketLine": "🇪🇸 España BBVA",
-      "sourceLine": "🇪🇸 España BBVA · Fuente: El País"
+      "marketLine": "España BBVA",
+      "sourceLine": "España BBVA · Fuente: El País"
     }
   },
   {
@@ -156,8 +156,8 @@
       "sectionCategory": "Seguros",
       "sectionExpectedCount": 2,
       "itemNumber": 1,
-      "marketLine": "🇪🇸 España Generali",
-      "sourceLine": "🇪🇸 España Generali · Fuente: Expansión"
+      "marketLine": "España Generali",
+      "sourceLine": "España Generali · Fuente: Expansión"
     }
   },
   {
@@ -179,31 +179,8 @@
       "sectionCategory": "Seguros",
       "sectionExpectedCount": 2,
       "itemNumber": 2,
-      "marketLine": "🇪🇸 España Occident",
-      "sourceLine": "🇪🇸 España Occident · Fuente: Expansión"
-    }
-  },
-  {
-    "id": "news-2026-06-07-telco-avatel-ahonda-en-sus-perdidas-y-afronta-la-devolucion-de-ayudas-publicas-millonarias-2026-",
-    "title": "Avatel ahonda en sus pérdidas y afronta la devolución de ayudas públicas millonarias",
-    "category": "Telco",
-    "source": "Cinco Días",
-    "summary": "Avatel ha incrementado sus pérdidas y está provisionando 164 millones de euros para la devolución de ayudas públicas por retrasos en programas de Internet y 5G rural financiados por la UE.",
-    "excerpt": "Avatel ha incrementado sus pérdidas y está provisionando 164 millones de euros para la devolución de ayudas públicas por retrasos en programas de Internet y 5G rural financiados por la UE.",
-    "url": "https://archive.ph/newest/https://cincodias.elpais.com/companias/2026-06-05/avatel-ahonda-en-sus-perdidas-y-afronta-la-devolucion-de-ayudas-publicas-millonarias.html",
-    "href": "https://archive.ph/newest/https://cincodias.elpais.com/companias/2026-06-05/avatel-ahonda-en-sus-perdidas-y-afronta-la-devolucion-de-ayudas-publicas-millonarias.html",
-    "date": "2026-06-07",
-    "rawMeta": {
-      "briefingTitle": "Briefing · domingo, 07 de junio de 2026",
-      "dateText": "domingo, 07 de junio de 2026",
-      "totalNews": 9,
-      "subject": "Noticias relevantes de hoy - 07 junio 2026",
-      "newsletterSource": "Noticias relevantes de hoy",
-      "sectionCategory": "Telco",
-      "sectionExpectedCount": 1,
-      "itemNumber": 1,
-      "marketLine": "",
-      "sourceLine": "· Fuente: Cinco Días"
+      "marketLine": "España Occident",
+      "sourceLine": "España Occident · Fuente: Expansión"
     }
   }
 ]
