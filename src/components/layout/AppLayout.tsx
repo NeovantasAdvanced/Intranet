@@ -1,11 +1,12 @@
 import {
-  BriefcaseBusiness,
+  Bot,
   CalendarDays,
   FileText,
   Files,
   Home,
-  LayoutGrid,
+  LifeBuoy,
   Newspaper,
+  Wrench,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { APP_VERSION } from '../../config/appVersion';
@@ -19,12 +20,13 @@ type AppLayoutProps = {
 
 const navigation = [
   { label: 'Inicio', icon: Home, href: '#inicio' },
-  { label: 'Accesos', icon: LayoutGrid, href: '#accesos' },
-  { label: 'Repositorios', icon: Files, href: '#repositorios' },
-  { label: 'Noticias', icon: Newspaper, href: '#noticias' },
-  { label: 'Eventos', icon: CalendarDays, href: '#eventos' },
+  { label: 'Herramientas IA', icon: Bot, href: '#herramientas-ia' },
+  { label: 'Recursos y herramientas', icon: Wrench, href: '#recursos-herramientas' },
   { label: 'Documentacion', icon: FileText, href: '#documentacion' },
-  { label: 'Aplicaciones', icon: BriefcaseBusiness, href: '#aplicaciones' },
+  { label: 'Repositorios', icon: Files, href: '#repositorios' },
+  { label: 'Eventos', icon: CalendarDays, href: '#eventos' },
+  { label: 'Noticias', icon: Newspaper, href: '#noticias' },
+  { label: 'Soporte AST', icon: LifeBuoy, href: '#soporte-ast' },
 ];
 
 function PortalNavigation() {

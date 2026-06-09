@@ -21,6 +21,17 @@ export type Assistant = {
   href: string;
 };
 
+export type SupportAstItem = {
+  id: string;
+  title: string;
+  description: string;
+  owner: string;
+  href: string;
+  status: string;
+  tone: StatusTone;
+  icon: string;
+};
+
 export type NewsItem = {
   id: string;
   title: string;

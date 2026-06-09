@@ -179,7 +179,7 @@ a {
 
   .home-blocks-row {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }
 
@@ -280,12 +280,32 @@ a {
   }
 
   .keepass-home-card {
-    border-color: #b7e9df;
-    background: linear-gradient(180deg, #ffffff 0%, #f6fbf9 100%);
+    border-color: transparent;
+    background: linear-gradient(135deg, #0d1e3d 0%, #1a4a8a 100%);
+    color: #fff;
   }
 
   .keepass-home-card h3 {
-    color: #0a7a65;
+    color: #fff;
+  }
+
+  .keepass-home-card p {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .keepass-home-card .home-block-open {
+    color: #7bc8ff;
+  }
+
+  .keepass-home-card .home-block-links a {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .keepass-home-card .home-block-links a:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.16);
   }
 
   .widget {
