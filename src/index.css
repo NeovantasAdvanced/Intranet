@@ -179,21 +179,21 @@ a {
 
   .home-blocks-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
   }
 
   .home-block-card {
     position: relative;
     display: flex;
-    min-height: 18rem;
+    min-height: 15.5rem;
     flex-direction: column;
     gap: 0.9rem;
     overflow: hidden;
     border-radius: 18px;
     border: 1px solid #dbe3ee;
     background: #fff;
-    padding: 1.15rem;
+    padding: 1.25rem;
     box-shadow: 0 14px 34px rgba(13, 30, 61, 0.08);
     transition:
       transform 160ms ease,
@@ -237,15 +237,15 @@ a {
   .home-block-card h3 {
     margin: 0;
     font-family: 'DM Serif Display', serif;
-    font-size: 1.35rem;
-    line-height: 1.05;
+    font-size: 1.28rem;
+    line-height: 1.15;
     color: #1a2340;
   }
 
   .home-block-card p {
     margin: 0;
-    font-size: 0.92rem;
-    line-height: 1.65;
+    font-size: 0.9rem;
+    line-height: 1.55;
     color: #667089;
   }
 

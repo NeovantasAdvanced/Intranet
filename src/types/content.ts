@@ -27,6 +27,7 @@ export type SupportAstItem = {
   description: string;
   owner: string;
   href: string;
+  phone?: string;
   status: string;
   tone: StatusTone;
   icon: string;

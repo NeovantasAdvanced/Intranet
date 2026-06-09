@@ -24,7 +24,6 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import quickLinksData from '../data/quickLinks.json';
 import assistantsData from '../data/assistants.json';
 import newsData from '../data/news.json';
 import eventsData from '../data/events.json';
@@ -46,13 +45,11 @@ import type {
   InternalApp,
   EventItem,
   NewsItem,
-  QuickLink,
   SharePointCatalog,
   SharePointResourceScope,
   SupportAstItem,
 } from '../types/content';
 
-const quickLinks = quickLinksData as QuickLink[];
 const assistants = assistantsData as Assistant[];
 const news = newsData as NewsItem[];
 const events = eventsData as EventItem[];
@@ -82,6 +79,16 @@ type HomeBlock = {
   iconClassName: string;
   panelClassName?: string;
   links: HomeLink[];
+};
+
+type PortalSearchResult = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  section: string;
+  icon: LucideIcon;
+  tone: NewsItem['tone'];
 };
 
 const homeQuickLinks: HomeLink[] = [
@@ -487,7 +494,9 @@ function formatDate(value: string) {
 }
 
 function getLinkProps(href: string) {
-  return href.startsWith('#') ? {} : { target: '_blank', rel: 'noreferrer' as const };
+  return href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')
+    ? {}
+    : { target: '_blank', rel: 'noreferrer' as const };
 }
 
 const portalTabIds = [
@@ -540,9 +549,6 @@ export function HomeDashboard() {
 
   const filteredContent = useMemo(
     () => ({
-      quickLinks: quickLinks.filter((item) =>
-        matchesQuery(searchQuery, [item.title, item.description, item.status]),
-      ),
       assistants: assistants.filter((item) =>
         matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status, item.tags]),
       ),
@@ -590,7 +596,7 @@ export function HomeDashboard() {
         matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status]),
       ),
       supportAst: supportAst.filter((item) =>
-        matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status]),
+        matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status, item.phone]),
       ),
     }),
     [searchQuery],
@@ -641,7 +647,6 @@ export function HomeDashboard() {
     : homeQuickLinks.length;
 
   const totalResults =
-    filteredContent.quickLinks.length +
     homeQuickLinkMatches +
     filteredContent.assistants.length +
     filteredContent.news.length +
@@ -677,6 +682,90 @@ export function HomeDashboard() {
   const newsItems = (latestNewsItems.length > 0 ? latestNewsItems : filteredContent.news).slice(0, 3);
   const visibleNewsItems = showNews ? filteredContent.news : newsItems;
   const visibleDocumentItems = showDocuments ? filteredContent.documents : documentItems;
+  const searchResults = useMemo<PortalSearchResult[]>(() => {
+    if (!searchQuery) {
+      return [];
+    }
+
+    const quickAccessResults = homeQuickLinks
+      .filter((item) => matchesQuery(searchQuery, [item.title, item.description]))
+      .map((item) => ({
+        id: `quick-${item.title}`,
+        title: item.title,
+        description: item.description,
+        href: item.download ? withDownloadParam(item.href) : item.href,
+        section: 'Acceso rápido',
+        icon: item.icon,
+        tone: item.tone,
+      }));
+
+    return [
+      ...quickAccessResults,
+      ...filteredContent.assistants.map((item) => ({
+        id: `assistant-${item.id}`,
+        title: item.title,
+        description: item.description,
+        href: item.href,
+        section: 'Herramientas IA',
+        icon: Bot,
+        tone: item.tone,
+      })),
+      ...filteredContent.apps.map((item) => ({
+        id: `app-${item.id}`,
+        title: item.title,
+        description: item.description,
+        href: item.href.includes('.kdbx') ? withDownloadParam(item.href) : item.href,
+        section: 'Recursos y herramientas',
+        icon: iconMap[item.icon as keyof typeof iconMap] ?? BriefcaseBusiness,
+        tone: item.tone,
+      })),
+      ...filteredContent.documents.map((item) => ({
+        id: `document-${item.id}`,
+        title: item.title,
+        description: item.description,
+        href: item.href,
+        section: 'Documentación',
+        icon: FileText,
+        tone: item.tone,
+      })),
+      ...filteredContent.sharePointResources.map((item) => ({
+        id: `sharepoint-${item.id}`,
+        title: item.title,
+        description: item.description,
+        href: normalizeSearch(item.category).includes('credencial') ? withDownloadParam(item.href) : item.href,
+        section: 'Repositorios',
+        icon: item.itemType === 'file' ? FileSpreadsheet : FolderOpen,
+        tone: item.tone,
+      })),
+      ...filteredContent.events.map((item) => ({
+        id: `event-${item.id}`,
+        title: item.title,
+        description: `${item.organization} · ${item.format} · ${item.dateText ?? formatDate(item.startDate)}`,
+        href: item.url,
+        section: 'Eventos',
+        icon: CalendarDays,
+        tone: 'info' as const,
+      })),
+      ...filteredContent.news.map((item) => ({
+        id: `news-${item.id}`,
+        title: item.title,
+        description: item.excerpt,
+        href: item.href ?? item.url ?? '#noticias',
+        section: 'Noticias',
+        icon: Newspaper,
+        tone: item.tone,
+      })),
+      ...filteredContent.supportAst.map((item) => ({
+        id: `support-${item.id}`,
+        title: item.title,
+        description: item.phone ? `${item.description} Telefono: ${item.phone}` : item.description,
+        href: item.href,
+        section: 'Soporte AST',
+        icon: iconMap[item.icon as keyof typeof iconMap] ?? LifeBuoy,
+        tone: item.tone,
+      })),
+    ].slice(0, 10);
+  }, [filteredContent, searchQuery]);
 
   return (
     <div className="home-shell">
@@ -720,26 +809,57 @@ export function HomeDashboard() {
       ) : null}
 
       {showHome && isSearching ? (
-        <Card className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sky-50 text-neovantas-blue">
-              <SearchX className="h-5 w-5" aria-hidden="true" />
+        <Card className="overflow-hidden p-0">
+          <div className="flex flex-col gap-4 border-b border-neovantas-line bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sky-50 text-neovantas-blue">
+                <SearchX className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-950">
+                  {totalResults === 1 ? '1 resultado encontrado' : `${totalResults} resultados encontrados`}
+                </p>
+                <p className="mt-1 truncate text-sm text-slate-500">Búsqueda activa: {searchValue}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-950">
-                {totalResults === 1 ? '1 resultado encontrado' : `${totalResults} resultados encontrados`}
-              </p>
-              <p className="mt-1 truncate text-sm text-slate-500">Busqueda activa: {searchValue}</p>
-            </div>
+            <button
+              type="button"
+              className="focus-ring inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700"
+              onClick={() => setSearchValue('')}
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+              Limpiar
+            </button>
           </div>
-          <button
-            type="button"
-            className="focus-ring inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700"
-            onClick={() => setSearchValue('')}
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-            Limpiar
-          </button>
+
+          {searchResults.length > 0 ? (
+            <div className="divide-y divide-neovantas-line">
+              {searchResults.map((result) => {
+                const Icon = result.icon;
+
+                return (
+                  <a
+                    key={result.id}
+                    href={result.href}
+                    {...getLinkProps(result.href)}
+                    className="focus-ring flex items-start gap-4 px-5 py-4 transition hover:bg-neovantas-mist"
+                  >
+                    <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-[12px] ${result.tone === 'success' ? 'bg-[#EAFBF2] text-neovantas-teal' : result.tone === 'warning' ? 'bg-[#FEF3E6] text-[#985D0F]' : result.tone === 'critical' ? 'bg-[#FFF1E5] text-[#C2410C]' : 'bg-[#EEF8FF] text-neovantas-blue'}`}>
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-neovantas-muted">
+                        {result.section}
+                      </span>
+                      <h3 className="mt-1 text-sm font-semibold text-neovantas-navy">{result.title}</h3>
+                      <p className="mt-1 line-clamp-2 text-sm leading-6 text-neovantas-muted">{result.description}</p>
+                    </div>
+                    <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-neovantas-muted" aria-hidden="true" />
+                  </a>
+                );
+              })}
+            </div>
+          ) : null}
         </Card>
       ) : null}
 
@@ -755,8 +875,8 @@ export function HomeDashboard() {
         </Card>
       ) : null}
 
-      {showHome ? (
-      <section id="accesos" className="scroll-mt-40" aria-labelledby="portal-recursos-title">
+      {false ? (
+      <section id="accesos" className="hidden scroll-mt-40" aria-labelledby="portal-recursos-title">
         <div className="home-blocks-header">
           <div>
             <h2 id="portal-recursos-title">Accesos rápidos</h2>
@@ -1186,7 +1306,7 @@ export function HomeDashboard() {
             description="Canales para incidencias, solicitudes de acceso, equipamiento y soporte del puesto de trabajo."
           />
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,520px)]">
             {filteredContent.supportAst.map((item) => {
               const Icon = iconMap[item.icon as keyof typeof iconMap] ?? LifeBuoy;
 
@@ -1200,6 +1320,11 @@ export function HomeDashboard() {
                   </div>
                   <h3 className="mt-4 text-base font-semibold text-neovantas-navy">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-neovantas-muted">{item.description}</p>
+                  {item.phone ? (
+                    <p className="mt-3 text-sm font-semibold text-neovantas-navy">
+                      Telefono: <a href={`tel:${item.phone}`} className="text-neovantas-blue">{item.phone}</a>
+                    </p>
+                  ) : null}
                   <div className="mt-5 flex items-center justify-between gap-3 text-sm">
                     <span className="font-medium text-neovantas-muted">{item.owner}</span>
                     <a
@@ -1207,7 +1332,7 @@ export function HomeDashboard() {
                       {...getLinkProps(item.href)}
                       className="inline-flex items-center gap-1.5 font-semibold text-neovantas-blue"
                     >
-                      Solicitar
+                      Abrir correo
                       <ExternalLink className="h-4 w-4" aria-hidden="true" />
                     </a>
                   </div>

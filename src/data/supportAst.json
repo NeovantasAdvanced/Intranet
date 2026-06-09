@@ -1,32 +1,13 @@
 [
   {
     "id": "portal-ast",
-    "title": "Portal AST",
+    "title": "Soporte AST",
     "description": "Alta y seguimiento de incidencias tecnicas, accesos, equipos y solicitudes operativas.",
     "owner": "AST",
     "href": "mailto:soporte.ast@neovantas.com",
+    "phone": "913329719",
     "status": "Soporte",
     "tone": "info",
     "icon": "life-buoy"
-  },
-  {
-    "id": "solicitud-accesos",
-    "title": "Solicitud de accesos",
-    "description": "Pide altas, permisos o revisiones de acceso a herramientas internas y espacios SharePoint.",
-    "owner": "AST",
-    "href": "mailto:soporte.ast@neovantas.com?subject=Solicitud%20de%20accesos",
-    "status": "Accesos",
-    "tone": "warning",
-    "icon": "shield"
-  },
-  {
-    "id": "equipamiento",
-    "title": "Equipamiento y puesto",
-    "description": "Gestiona incidencias de equipo, perifericos, VPN, correo o configuracion del puesto.",
-    "owner": "AST",
-    "href": "mailto:soporte.ast@neovantas.com?subject=Soporte%20puesto%20de%20trabajo",
-    "status": "Puesto",
-    "tone": "success",
-    "icon": "briefcase"
   }
 ]
