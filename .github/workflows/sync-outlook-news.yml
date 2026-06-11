@@ -2,7 +2,11 @@ name: Sync Outlook news
 
 on:
   schedule:
-    - cron: '10 7 * * *'
+    # GitHub cron runs in UTC. These two entries cover 09:30 Europe/Madrid
+    # in summer time (07:30 UTC) and winter time (08:30 UTC); the job gate
+    # below skips the non-matching one.
+    - cron: '30 7 * * *'
+    - cron: '30 8 * * *'
   workflow_dispatch:
     inputs:
       mailbox_user_id:
@@ -50,16 +54,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Check Madrid 09:30 schedule
+        id: madrid-schedule
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          if [ "$EVENT_NAME" != "schedule" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          madrid_offset="$(TZ=Europe/Madrid date +'%z')"
+          if { [ "$madrid_offset" = "+0200" ] && [ "$EVENT_SCHEDULE" = "30 7 * * *" ]; } || \
+             { [ "$madrid_offset" = "+0100" ] && [ "$EVENT_SCHEDULE" = "30 8 * * *" ]; }; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping Outlook news sync for schedule $EVENT_SCHEDULE with Madrid offset $madrid_offset."
+          fi
+
       - name: Setup Node
+        if: steps.madrid-schedule.outputs.should_run == 'true'
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
 
       - name: Install dependencies
+        if: steps.madrid-schedule.outputs.should_run == 'true'
         run: npm ci
 
       - name: Normalize news folder
+        if: steps.madrid-schedule.outputs.should_run == 'true'
         env:
           RAW_NEWS_MAIL_FOLDER: ${{ vars.NEWS_MAIL_FOLDER }}
         run: |
@@ -78,6 +105,7 @@ jobs:
           echo "NEWS_SUBJECT_PREFIX=${{ vars.NEWS_SUBJECT_PREFIX }}" >> "$GITHUB_ENV"
 
       - name: Check news configuration
+        if: steps.madrid-schedule.outputs.should_run == 'true'
         id: news-config
         env:
           NEWS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.NEWS_MAILBOX_USER_ID }}
@@ -90,7 +118,7 @@ jobs:
           fi
 
       - name: Sync Outlook news
-        if: steps.news-config.outputs.configured == 'true'
+        if: steps.madrid-schedule.outputs.should_run == 'true' && steps.news-config.outputs.configured == 'true'
         run: npm run sync:news
         env:
           NEWS_TENANT_ID: ${{ secrets.NEWS_TENANT_ID || secrets.SHAREPOINT_TENANT_ID }}
@@ -117,10 +145,10 @@ jobs:
           if-no-files-found: ignore
 
       - name: Validate build
-        if: steps.news-config.outputs.configured == 'true'
+        if: steps.madrid-schedule.outputs.should_run == 'true' && steps.news-config.outputs.configured == 'true'
         run: npm run build
 
       - name: Commit news changes
-        if: steps.news-config.outputs.configured == 'true'
+        if: steps.madrid-schedule.outputs.should_run == 'true' && steps.news-config.outputs.configured == 'true'
         run: |
           bash scripts/push-main-with-rebase.sh "chore: sync Outlook news" src/data/news.json
