@@ -1,5 +1,5 @@
-const { recordUsageEvent } = require('../../_shared/usage-store.cjs');
-const { getPrincipalFromRequest } = require('../../_shared/auth.cjs');
+const { recordUsageEvent } = require('../_shared/usage-store.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
 
 function parseRequestBody(body) {
   if (!body) {

@@ -1,5 +1,5 @@
-const { buildUsageSummary, getTableClient, listUsageEntities } = require('../../_shared/usage-store.cjs');
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../../_shared/auth.cjs');
+const { buildUsageSummary, getTableClient, listUsageEntities } = require('../_shared/usage-store.cjs');
+const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
 
 function getLookbackDays(req) {
   const raw = Number(req.query?.days ?? req.query?.lookbackDays ?? process.env.USAGE_LOOKBACK_DAYS ?? '365');
