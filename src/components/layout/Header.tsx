@@ -1,7 +1,7 @@
 import { Bell, LogIn, LogOut, Settings2, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
-import { fetchClientPrincipal, type ClientPrincipal } from '../../lib/auth';
+import { useAuthSession } from '../../context/AuthSessionContext';
 import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
 
 function getInitials(value: string) {
@@ -18,36 +18,12 @@ function getLinkProps(href: string) {
 }
 
 export function Header() {
-  const [clientPrincipal, setClientPrincipal] = useState<ClientPrincipal | null>(null);
-  const [authChecked, setAuthChecked] = useState(false);
+  const { authChecked, clientPrincipal } = useAuthSession();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-
-    fetchClientPrincipal()
-      .then((principal) => {
-        if (mounted) {
-          setClientPrincipal(principal);
-          setIsAdmin(Boolean(principal && (isAdminUser(principal.userDetails) || isOffice365AdminPrincipal(principal))));
-        }
-      })
-      .catch(() => {
-        if (mounted) {
-          setClientPrincipal(null);
-          setIsAdmin(false);
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setAuthChecked(true);
-        }
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    setIsAdmin(Boolean(clientPrincipal && (isAdminUser(clientPrincipal.userDetails) || isOffice365AdminPrincipal(clientPrincipal))));
+  }, [clientPrincipal]);
 
   const isAuthenticated = Boolean(clientPrincipal);
   const authHref = isAuthenticated ? '/logout' : '/login';

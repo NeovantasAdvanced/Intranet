@@ -1,10 +1,30 @@
 const { recordUsageEvent } = require('../../_shared/usage-store.cjs');
 const { getPrincipalFromRequest } = require('../../_shared/auth.cjs');
 
+function parseRequestBody(body) {
+  if (!body) {
+    return null;
+  }
+
+  if (typeof body === 'object' && !Buffer.isBuffer(body)) {
+    return body;
+  }
+
+  const raw = Buffer.isBuffer(body) ? body.toString('utf8') : String(body);
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 module.exports = async function usageTrack(context, req) {
   context.log('[usage/track] request received');
 
-  if (!req.body || typeof req.body !== 'object') {
+  const payload = parseRequestBody(req.body);
+
+  if (!payload) {
     context.res = {
       status: 400,
       headers: { 'content-type': 'application/json' },
@@ -17,7 +37,7 @@ module.exports = async function usageTrack(context, req) {
   const userEmail = principal?.userDetails || 'anonymous';
 
   try {
-    const entity = await recordUsageEvent(req, req.body);
+    const entity = await recordUsageEvent(req, payload);
     context.res = {
       status: 204,
       body: '',

@@ -58,6 +58,13 @@ function getPrincipalEmail(principal) {
     .find((value) => value.includes('@')) || 'anonymous@local';
 }
 
+function getPayloadEmail(payload) {
+  const candidates = [payload?.userEmail, payload?.userDetails];
+  return candidates
+    .map((value) => normalizeEmail(value))
+    .find((value) => value.includes('@')) || '';
+}
+
 function normalizeEventKind(kind) {
   const value = String(kind ?? '').trim().toLowerCase();
   if (value === 'section' || value === 'link' || value === 'pageview') {
@@ -72,7 +79,7 @@ function buildEntityFromPayload(req, payload) {
   const timestamp = toIsoTimestamp(payload.timestamp || now);
   const date = toIsoDay(timestamp);
   const kind = normalizeEventKind(payload.kind);
-  const userEmail = getPrincipalEmail(principal);
+  const userEmail = principal ? getPrincipalEmail(principal) : getPayloadEmail(payload) || 'anonymous@local';
   const section = String(payload.section || payload.page || payload.route || 'Inicio').trim() || 'Inicio';
   const label = String(payload.label || payload.title || section).trim() || section;
   const href = String(payload.href || payload.url || '').trim();
@@ -92,8 +99,8 @@ function buildEntityFromPayload(req, payload) {
     referrer: String(req.headers.referer || req.headers.referrer || ''),
   };
 
-  if (principal?.userDetails) {
-    entity.userDetails = String(principal.userDetails);
+  if (principal?.userDetails || payload.userDetails) {
+    entity.userDetails = String(principal?.userDetails || payload.userDetails);
   }
 
   return entity;

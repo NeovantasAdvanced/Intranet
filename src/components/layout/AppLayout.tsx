@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { APP_VERSION } from '../../config/appVersion';
+import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
@@ -90,7 +91,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       }
 
       const href = anchor.getAttribute('href') ?? '';
-      if (!href || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+      if (!href || href.startsWith('javascript:')) {
         return;
       }
 
@@ -115,25 +116,27 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>
-      <div className="min-h-screen bg-neovantas-mist text-neovantas-ink">
-        <div className="sticky top-0 z-30">
-          <Header />
-          <PortalNavigation />
-        </div>
-
-        <main className="min-w-0 px-4 py-7 md:px-8 md:py-10">
-          <div className="mx-auto w-full max-w-[1200px]">{children}</div>
-        </main>
-
-        <footer className="px-4 pb-4 md:px-8">
-          <div className="mx-auto flex w-full max-w-[1200px] justify-end">
-            <span className="rounded-full border border-neovantas-line bg-white px-3 py-1 text-sm font-semibold text-neovantas-navy shadow-sm">
-              Version {APP_VERSION}
-            </span>
+    <AuthSessionProvider>
+      <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>
+        <div className="min-h-screen bg-neovantas-mist text-neovantas-ink">
+          <div className="sticky top-0 z-30">
+            <Header />
+            <PortalNavigation />
           </div>
-        </footer>
-      </div>
-    </PortalSearchProvider>
+
+          <main className="min-w-0 px-4 py-7 md:px-8 md:py-10">
+            <div className="mx-auto w-full max-w-[1200px]">{children}</div>
+          </main>
+
+          <footer className="px-4 pb-4 md:px-8">
+            <div className="mx-auto flex w-full max-w-[1200px] justify-end">
+              <span className="rounded-full border border-neovantas-line bg-white px-3 py-1 text-sm font-semibold text-neovantas-navy shadow-sm">
+                Version {APP_VERSION}
+              </span>
+            </div>
+          </footer>
+        </div>
+      </PortalSearchProvider>
+    </AuthSessionProvider>
   );
 }

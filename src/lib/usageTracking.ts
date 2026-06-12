@@ -8,11 +8,24 @@ export type UsageEventPayload = {
   route?: string;
   page?: string;
   timestamp?: string;
+  userDetails?: string;
+  userEmail?: string;
 };
 
+let trackingUserDetails = '';
+
+export function setUsageTrackingPrincipal(principal: { userDetails?: string } | null) {
+  trackingUserDetails = principal?.userDetails?.trim() ?? '';
+}
+
 function buildRequestBody(payload: UsageEventPayload) {
+  const userDetails = (payload.userDetails ?? trackingUserDetails) || undefined;
+  const userEmail = (payload.userEmail ?? trackingUserDetails) || undefined;
+
   return JSON.stringify({
     ...payload,
+    userDetails,
+    userEmail,
     timestamp: payload.timestamp ?? new Date().toISOString(),
   });
 }
@@ -48,4 +61,3 @@ export function trackUsageEvent(payload: UsageEventPayload) {
     // Tracking must never break the UI.
   });
 }
-

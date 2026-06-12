@@ -31,3 +31,38 @@ export async function fetchCurrentUserEmail() {
   const principal = await fetchClientPrincipal();
   return principal?.userDetails?.trim() ?? '';
 }
+
+function getClaimValue(principal: ClientPrincipal | null, patterns: string[]) {
+  const claims = principal?.claims ?? [];
+  const match = claims.find((claim) => {
+    const type = String(claim.typ ?? '').toLowerCase();
+    return patterns.some((pattern) => type.includes(pattern));
+  });
+
+  return match?.val?.trim() ?? '';
+}
+
+export function getClientPrincipalDisplayName(principal: ClientPrincipal | null) {
+  const claimName =
+    getClaimValue(principal, ['name']) ||
+    getClaimValue(principal, ['givenname']) ||
+    getClaimValue(principal, ['preferred_username']);
+
+  const fallback = principal?.userDetails?.trim() ?? '';
+  const value = claimName || fallback;
+
+  if (!value) {
+    return '';
+  }
+
+  if (value.includes('@')) {
+    const localPart = value.split('@')[0] ?? '';
+    return localPart
+      .split(/[._-]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
+  return value;
+}

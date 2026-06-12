@@ -35,6 +35,7 @@ import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { SearchBar } from '../components/ui/SearchBar';
+import { useAuthSession } from '../context/AuthSessionContext';
 import { usePortalSearch } from '../context/PortalSearchContext';
 import { EventsSection } from '../components/events/EventsSection';
 import { UpcomingEventsBlock } from '../components/events/UpcomingEventsBlock';
@@ -523,6 +524,7 @@ function getActivePortalTab(): PortalTabId {
 
 export function HomeDashboard() {
   const { searchValue, setSearchValue } = usePortalSearch();
+  const { authChecked, displayName } = useAuthSession();
   const [repositoryFilter, setRepositoryFilter] = useState<RepositoryFilterId>('all');
   const [projectFilter, setProjectFilter] = useState('all');
   const [activeTab, setActiveTab] = useState<PortalTabId>(getActivePortalTab);
@@ -776,6 +778,9 @@ export function HomeDashboard() {
       >
         <div className="home-hero-copy">
           <span className="home-eyebrow">Portal interno</span>
+          {authChecked && displayName ? (
+            <span className="home-user-greeting">Hola, {displayName}</span>
+          ) : null}
           <h1 id="home-title">El Workspace de Neovantas</h1>
           <p>
             Accede a los recursos más utilizados por bloque: asistentes IA, herramientas internas,
