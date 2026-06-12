@@ -32,17 +32,17 @@ export function Header() {
   const initials = getInitials(authLabel) || 'N';
 
   return (
-    <header className="bg-neovantas-navy px-4 text-white md:px-8">
-      <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-4 py-3">
+    <header className="border-b border-white/10 bg-neovantas-navy px-4 text-white shadow-[0_12px_32px_rgba(11,27,54,0.18)] md:px-8">
+      <div className="mx-auto flex min-h-[4.75rem] max-w-[1200px] items-center gap-4 py-3">
         <a href="#inicio" className="focus-ring flex shrink-0 items-center gap-3 rounded-lg">
-          <span className="flex h-10 items-center">
-            <img src={neovantasLogo} alt="Neovantas" className="h-7 w-auto max-w-[9rem] object-contain" />
+          <span className="flex h-12 items-center">
+            <img src={neovantasLogo} alt="Neovantas" className="h-9 w-auto max-w-[10.5rem] object-contain" />
           </span>
           <span className="hidden min-w-0 sm:block">
-            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
-              Neovantas
+            <span className="block text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-white/58">
+              Workspace interno
             </span>
-            <span className="block truncate text-base font-semibold leading-tight text-white">
+            <span className="block truncate text-[1rem] font-semibold leading-tight text-white">
               Portal corporativo
             </span>
           </span>
@@ -52,7 +52,7 @@ export function Header() {
           {isAdmin ? (
             <a
               href="/admin/usage"
-              className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/15 hover:text-white"
+              className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/18 hover:text-white"
               aria-label="Uso de la intranet"
               title="Uso de la intranet"
             >
@@ -61,7 +61,7 @@ export function Header() {
           ) : null}
           <button
             type="button"
-            className="focus-ring hidden h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/15 hover:text-white lg:grid"
+            className="focus-ring hidden h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/18 hover:text-white lg:grid"
             aria-label="Notificaciones"
           >
             <Bell className="h-4 w-4" aria-hidden="true" />
@@ -69,7 +69,7 @@ export function Header() {
           <a
             href={authHref}
             {...getLinkProps(authHref)}
-            className="focus-ring flex h-10 max-w-[12rem] items-center gap-2 rounded-full border border-white/10 bg-white/10 px-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-white/15 sm:max-w-60 sm:px-3"
+            className="focus-ring flex h-10 max-w-[12rem] items-center gap-2 rounded-full border border-white/10 bg-white/10 px-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-white/18 sm:max-w-60 sm:px-3"
             title={authTitle}
             aria-label={authTitle}
           >

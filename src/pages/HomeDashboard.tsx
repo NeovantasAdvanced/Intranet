@@ -823,8 +823,8 @@ export function HomeDashboard() {
   const employeeApps = filteredContent.apps.filter((app) => app.category === 'employee');
   const featuredToolApps = toolApps.filter((app) => app.id === 'keepass');
   const secondaryToolApps = toolApps.filter((app) => app.id !== 'keepass');
-  const featuredApps = employeeApps.slice(0, 1);
-  const secondaryApps = employeeApps.slice(1);
+  const featuredApps = employeeApps.filter((app) => app.id === 'factorial');
+  const secondaryApps = employeeApps.filter((app) => app.id !== 'factorial');
   const latestNewsSource = 'Noticias relevantes de hoy';
   const latestNewsItems = filteredContent.news.filter(
     (item) => item.rawMeta?.newsletterSource === latestNewsSource || item.source === latestNewsSource,
@@ -930,6 +930,9 @@ export function HomeDashboard() {
             <span className="home-user-greeting">Hola, {displayName}</span>
           ) : null}
           <h1 id="home-title">El Workspace de Neovantas</h1>
+          <p className="home-hero-claim">
+            The power of behavioral data
+          </p>
           <p>
             Accede a los recursos más utilizados por bloque: asistentes IA, herramientas internas,
             documentación, repositorios, noticias y eventos.

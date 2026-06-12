@@ -5,9 +5,9 @@
 @tailwind utilities;
 
 :root {
-  color: #1A2340;
-  background: #F5F6FA;
-  font-family: "DM Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #13213c;
+  background: #f7fbff;
+  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,6 +22,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background: linear-gradient(180deg, #f8fbff 0%, #f4f8fe 100%);
 }
 
 button,
@@ -37,13 +38,13 @@ a {
 
 @layer components {
   .focus-ring {
-    @apply outline-none ring-offset-2 ring-offset-white focus-visible:ring-2 focus-visible:ring-neovantas-accent;
+    @apply outline-none ring-offset-2 ring-offset-white focus-visible:ring-2 focus-visible:ring-[#2e7cf6];
   }
 
   .home-shell {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.75rem;
   }
 
   .home-compact-hero {
@@ -52,12 +53,15 @@ a {
     grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
     gap: 1.5rem;
     overflow: hidden;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: linear-gradient(135deg, #0d1831 0%, #112f5d 58%, #123d74 100%);
-    padding: 1.5rem;
+    border-radius: 24px;
+    border: 1px solid rgba(19, 33, 60, 0.08);
+    background:
+      radial-gradient(circle at top right, rgba(46, 124, 246, 0.3), transparent 26%),
+      radial-gradient(circle at left center, rgba(0, 195, 160, 0.2), transparent 22%),
+      linear-gradient(135deg, #07172d 0%, #12316a 50%, #1f63c9 100%);
+    padding: 1.9rem;
     color: #fff;
-    box-shadow: 0 24px 60px rgba(13, 30, 61, 0.18);
+    box-shadow: 0 26px 64px rgba(13, 30, 61, 0.2);
   }
 
   .home-compact-hero::before {
@@ -79,7 +83,7 @@ a {
   .home-hero-copy {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.15rem;
     justify-content: center;
   }
 
@@ -103,21 +107,35 @@ a {
     color: rgba(255, 255, 255, 0.9);
   }
 
-  .home-hero-copy h1 {
+  .home-hero-claim {
+    width: fit-content;
     margin: 0;
-    max-width: 14ch;
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(2.2rem, 4vw, 3.75rem);
-    line-height: 0.98;
-    letter-spacing: -0.02em;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.82);
   }
 
   .home-hero-copy p {
-    max-width: 62ch;
+    max-width: 58ch;
     margin: 0;
-    font-size: 0.96rem;
-    line-height: 1.7;
-    color: rgba(255, 255, 255, 0.78);
+    font-size: 1.06rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .home-hero-copy h1 {
+    margin: 0;
+    max-width: 12ch;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.45rem, 4.6vw, 4.5rem);
+    line-height: 0.96;
+    letter-spacing: -0.03em;
   }
 
   .home-search-box {
@@ -129,11 +147,11 @@ a {
     flex-direction: column;
     gap: 0.75rem;
     align-self: stretch;
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.08);
-    padding: 1rem;
-    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.15rem;
+    backdrop-filter: blur(16px);
   }
 
   .home-side-title {
@@ -149,9 +167,9 @@ a {
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.1);
     padding: 0.8rem 0.9rem;
     font-size: 0.93rem;
     font-weight: 600;
@@ -164,8 +182,8 @@ a {
 
   .home-side-link:hover {
     transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.24);
-    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.16);
   }
 
   .home-blocks-header {
@@ -178,9 +196,9 @@ a {
   .home-blocks-header h2 {
     margin: 0;
     font-family: 'DM Serif Display', serif;
-    font-size: 1.75rem;
-    line-height: 1.1;
-    color: #1a2340;
+    font-size: 2.1rem;
+    line-height: 1.02;
+    color: #11213f;
   }
 
   .home-blocks-header p {
@@ -202,11 +220,11 @@ a {
     flex-direction: column;
     gap: 0.9rem;
     overflow: hidden;
-    border-radius: 18px;
-    border: 1px solid #dbe3ee;
+    border-radius: 20px;
+    border: 1px solid #dfe8f4;
     background: #fff;
-    padding: 1.25rem;
-    box-shadow: 0 14px 34px rgba(13, 30, 61, 0.08);
+    padding: 1.5rem;
+    box-shadow: 0 18px 40px rgba(19, 33, 60, 0.08);
     transition:
       transform 160ms ease,
       box-shadow 160ms ease,
@@ -215,8 +233,8 @@ a {
 
   .home-block-card:hover {
     transform: translateY(-2px);
-    border-color: #a9c2e8;
-    box-shadow: 0 18px 40px rgba(13, 30, 61, 0.12);
+    border-color: #8eb3ef;
+    box-shadow: 0 24px 48px rgba(19, 33, 60, 0.12);
   }
 
   .home-block-top {
@@ -232,7 +250,8 @@ a {
     width: 42px;
     flex-shrink: 0;
     place-items: center;
-    border-radius: 12px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(31, 95, 208, 0.12), rgba(0, 195, 160, 0.14));
   }
 
   .home-block-open {
@@ -243,22 +262,22 @@ a {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #1a4a8a;
+    color: #1f5fd0;
   }
 
   .home-block-card h3 {
     margin: 0;
     font-family: 'DM Serif Display', serif;
-    font-size: 1.28rem;
+    font-size: 1.34rem;
     line-height: 1.15;
-    color: #1a2340;
+    color: #11213f;
   }
 
   .home-block-card p {
     margin: 0;
     font-size: 0.9rem;
     line-height: 1.55;
-    color: #667089;
+    color: #5f6d87;
   }
 
   .home-block-links {
@@ -273,12 +292,12 @@ a {
     align-items: center;
     gap: 0.35rem;
     border-radius: 999px;
-    border: 1px solid #dbe3ee;
-    background: #f7f9fc;
+    border: 1px solid #d7e0ec;
+    background: #f3f8ff;
     padding: 0.55rem 0.8rem;
     font-size: 0.82rem;
     font-weight: 700;
-    color: #1a2340;
+    color: #13213c;
     transition:
       transform 140ms ease,
       border-color 140ms ease,
@@ -287,13 +306,13 @@ a {
 
   .home-block-links a:hover {
     transform: translateY(-1px);
-    border-color: #a9c2e8;
-    background: #eef4ff;
+    border-color: #8fb6ee;
+    background: #e7f1ff;
   }
 
   .keepass-home-card {
     border-color: transparent;
-    background: linear-gradient(135deg, #0d1e3d 0%, #1a4a8a 100%);
+    background: linear-gradient(135deg, #0b1b36 0%, #15407f 55%, #1e5fd0 100%);
     color: #fff;
   }
 
@@ -321,10 +340,10 @@ a {
   }
 
   .widget {
-    border-radius: 18px;
-    border: 1px solid #dbe3ee;
+    border-radius: 20px;
+    border: 1px solid #d7e0ec;
     background: #fff;
-    box-shadow: 0 14px 34px rgba(13, 30, 61, 0.08);
+    box-shadow: 0 16px 36px rgba(19, 33, 60, 0.08);
   }
 
   .widget-title {
@@ -335,7 +354,7 @@ a {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: #1a4a8a;
+    color: #1f5fd0;
   }
 
   .section-action {
@@ -343,11 +362,11 @@ a {
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.04em;
-    color: #667089;
+    color: #48607f;
   }
 
   .home-news-section {
-    padding: 1rem;
+    padding: 1.1rem;
   }
 
   .home-news-section .widget-title {
@@ -355,7 +374,7 @@ a {
   }
 
   .home-news-section .section-action {
-    color: #1a4a8a;
+    color: #1f5fd0;
   }
 
   @media (max-width: 1200px) {
