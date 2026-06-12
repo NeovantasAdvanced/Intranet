@@ -94,14 +94,6 @@ type PortalSearchResult = {
 
 const homeQuickLinks: HomeLink[] = [
   {
-    title: 'ChatGPT',
-    description: 'Asistente de redacción, análisis y apoyo diario.',
-    href: 'https://chat.openai.com',
-    icon: BriefcaseBusiness,
-    tone: 'info',
-    actionLabel: 'Abrir',
-  },
-  {
     title: 'Factorial',
     description: 'Gestión de personas, vacaciones y solicitudes internas.',
     href: 'https://id.factorialhr.com/login?&return_to=https%3A%2F%2Fapp.factorialhr.com%2Fdashboard',
@@ -115,6 +107,14 @@ const homeQuickLinks: HomeLink[] = [
     href: 'https://irecursos.neovantas.com:8443',
     icon: Clock3,
     tone: 'warning',
+    actionLabel: 'Abrir',
+  },
+  {
+    title: 'ChatGPT',
+    description: 'Asistente de redacción, análisis y apoyo diario.',
+    href: 'https://chat.openai.com',
+    icon: Bot,
+    tone: 'info',
     actionLabel: 'Abrir',
   },
   {
@@ -135,28 +135,67 @@ const homeQuickLinks: HomeLink[] = [
   },
 ];
 
+/*
 const homeBlocks: HomeBlock[] = [
   {
-    title: 'Herramientas IA',
-    description: 'Asistentes y GPTs internos para acelerar trabajo operativo y entregables.',
-    href: '#aplicaciones',
-    actionLabel: 'Ir a Aplicaciones',
-    icon: BriefcaseBusiness,
+    title: 'Herramientas',
+    description: 'Catálogo de herramientas de productividad, diseño, formación y accesos.',
+    href: '#herramientas',
+    actionLabel: 'Ir a Herramientas',
+    icon: Bot,
     iconClassName: 'bg-[#EBF2FE] text-neovantas-blue',
     links: [
-      homeQuickLinks[0],
+      homeQuickLinks[2],
       homeQuickLinks[3],
+      homeQuickLinks[4],
     ],
   },
   {
-    title: 'Recursos y herramientas',
-    description: 'Aplicaciones internas, gestión, productividad, diseño y formación.',
-    href: '#aplicaciones',
-    actionLabel: 'Ir a Aplicaciones',
+    title: 'Recursos de empleado',
+    description: 'Accesos de empleado para gestión, dedicaciones y actividad comercial.',
+    href: '#recursos-empleado',
+    actionLabel: 'Ir a Recursos',
     icon: Users,
     iconClassName: 'bg-[#F0EEFF] text-[#5340B8]',
     links: [
+      homeQuickLinks[0],
       homeQuickLinks[1],
+      {
+        title: 'CRM comercial',
+        description: 'Acceso al CRM comercial de Neovantas en Zoho.',
+        href: 'https://crm.zoho.eu/crm/org20094658955/tab/Home/begin',
+        icon: BriefcaseBusiness,
+        tone: 'success',
+        actionLabel: 'Abrir',
+      },
+    ],
+  },
+  {
+    title: 'Documentación',
+    description: 'Código interno, calendario laboral, políticas y materiales internos.',
+    href: '#documentacion',
+    actionLabel: 'Ir a Documentación',
+    icon: FileText,
+    iconClassName: 'bg-[#E6F7F3] text-neovantas-teal',
+    links: [
+      {
+        title: 'Código interno',
+        description: 'PDF Código interno de uso febrero 2025.',
+        href: '#documentacion',
+        icon: FileText,
+        tone: 'warning',
+        actionLabel: 'Abrir',
+      },
+      {
+        title: 'Calendario laboral',
+        description: 'Acceso al calendario laboral.',
+        href: '#documentacion',
+        icon: CalendarDays,
+        tone: 'info',
+        actionLabel: 'Abrir',
+      },
+    ],
+  },
       homeQuickLinks[2],
     ],
   },
@@ -227,7 +266,110 @@ const homeBlocks: HomeBlock[] = [
   },
 ];
 
+*/
 const portalHomeBlocks: HomeBlock[] = [
+  {
+    title: 'Herramientas',
+    description: 'Catálogo de herramientas de productividad, diseño, formación, referencia y accesos.',
+    href: '#herramientas',
+    actionLabel: 'Ir a Herramientas',
+    icon: Bot,
+    iconClassName: 'bg-[#EBF2FE] text-neovantas-blue',
+    links: [homeQuickLinks[2], homeQuickLinks[3], homeQuickLinks[4]],
+  },
+  {
+    title: 'Recursos de empleado',
+    description: 'Accesos de empleado para gestión de personas, dedicaciones y actividad comercial.',
+    href: '#recursos-empleado',
+    actionLabel: 'Ir a Recursos',
+    icon: Users,
+    iconClassName: 'bg-[#F0EEFF] text-[#5340B8]',
+    links: [
+      homeQuickLinks[0],
+      homeQuickLinks[1],
+      {
+        title: 'CRM comercial',
+        description: 'Acceso al CRM comercial de Neovantas en Zoho.',
+        href: 'https://crm.zoho.eu/crm/org20094658955/tab/Home/begin',
+        icon: BriefcaseBusiness,
+        tone: 'success',
+        actionLabel: 'Abrir',
+      },
+    ],
+  },
+  {
+    title: 'Documentación',
+    description: 'Código interno, calendario laboral, políticas y materiales internos.',
+    href: '#documentacion',
+    actionLabel: 'Ir a Documentación',
+    icon: FileText,
+    iconClassName: 'bg-[#E6F7F3] text-neovantas-teal',
+    links: [
+      {
+        title: 'Código interno',
+        description: 'PDF Código interno de uso febrero 2025.',
+        href: '#documentacion',
+        icon: FileText,
+        tone: 'warning',
+        actionLabel: 'Abrir',
+      },
+      {
+        title: 'Calendario laboral',
+        description: 'Acceso al calendario laboral.',
+        href: '#documentacion',
+        icon: CalendarDays,
+        tone: 'info',
+        actionLabel: 'Abrir',
+      },
+    ],
+  },
+  {
+    title: 'Repositorios',
+    description: 'Acceso a conocimiento de banca y repositorio de proyectos.',
+    href: '#repositorios',
+    actionLabel: 'Ir a Repositorios',
+    icon: Files,
+    iconClassName: 'bg-[#FEF3E6] text-[#985D0F]',
+    links: [
+      {
+        title: 'Banca',
+        description: 'NotebookLM con conocimiento del área bancaria.',
+        href: 'https://notebooklm.google.com/notebook/cc6fd8d2-a08d-4235-9e9e-83008d66335a',
+        icon: Files,
+        tone: 'warning',
+        actionLabel: 'Abrir',
+      },
+      {
+        title: 'GPT proyectos',
+        description: 'Repositorio asistido para proyectos y entregables.',
+        href: 'https://chatgpt.com/g/g-68f7400f6c54819189ba2f836487dfea-repositorio',
+        icon: BriefcaseBusiness,
+        tone: 'info',
+        actionLabel: 'Abrir',
+      },
+    ],
+  },
+  {
+    title: 'Soporte AST',
+    description: 'Canal operativo para incidencias, accesos, equipamiento y soporte tecnológico.',
+    href: '#soporte-ast',
+    actionLabel: 'Ir a Soporte',
+    icon: LifeBuoy,
+    iconClassName: 'bg-[#E0FAF5] text-[#0A7A65]',
+    links: [
+      {
+        title: 'Abrir correo',
+        description: 'Contacto directo con Soporte AST.',
+        href: '#soporte-ast',
+        icon: LifeBuoy,
+        tone: 'info',
+        actionLabel: 'Abrir',
+      },
+    ],
+  },
+];
+
+const legacyPortalHomeBlocks: HomeBlock[] = [
   {
     title: 'KeePass',
     description: 'Gestor seguro de contraseñas recomendado para proteger accesos y credenciales de trabajo.',
@@ -249,18 +391,18 @@ const portalHomeBlocks: HomeBlock[] = [
     ],
   },
   {
-    title: 'Herramientas IA',
-    description: 'Asistentes y GPTs internos para acelerar trabajo operativo, research y entregables.',
-    href: '#herramientas-ia',
-    actionLabel: 'Ir a IA',
+    title: 'Herramientas',
+    description: 'Catálogo de herramientas de productividad, diseño, formación y accesos.',
+    href: '#herramientas',
+    actionLabel: 'Ir a Herramientas',
     icon: Bot,
     iconClassName: 'bg-[#EBF2FE] text-neovantas-blue',
     links: [homeQuickLinks[0], homeQuickLinks[3]],
   },
   {
-    title: 'Recursos y herramientas',
-    description: 'Aplicaciones internas, gestión, productividad, diseño y formación.',
-    href: '#recursos-herramientas',
+    title: 'Recursos de empleado',
+    description: 'Accesos de empleado para gestión, dedicaciones y actividad comercial.',
+    href: '#recursos-empleado',
     actionLabel: 'Ir a Recursos',
     icon: Wrench,
     iconClassName: 'bg-[#F0EEFF] text-[#5340B8]',
@@ -425,6 +567,8 @@ const iconMap = {
   briefcase: BriefcaseBusiness,
   clock: Clock3,
   database: Database,
+  files: Files,
+  'file-text': FileText,
   key: KeyRound,
   shield: ShieldCheck,
   wrench: Wrench,
@@ -502,8 +646,8 @@ function getLinkProps(href: string) {
 
 const portalTabIds = [
   'inicio',
-  'herramientas-ia',
-  'recursos-herramientas',
+  'herramientas',
+  'recursos-empleado',
   'documentacion',
   'repositorios',
   'eventos',
@@ -541,8 +685,8 @@ export function HomeDashboard() {
   const searchQuery = normalizeSearch(searchValue);
   const isSearching = searchQuery.length > 0;
   const showHome = activeTab === 'inicio';
-  const showIa = activeTab === 'herramientas-ia';
-  const showResources = activeTab === 'recursos-herramientas';
+  const showTools = activeTab === 'herramientas';
+  const showResources = activeTab === 'recursos-empleado';
   const showDocuments = activeTab === 'documentacion';
   const showRepositories = activeTab === 'repositorios';
   const showEvents = activeTab === 'eventos';
@@ -675,8 +819,12 @@ export function HomeDashboard() {
     .filter((event) => !isPastEvent(event, todayIso))
     .sort(sortEventsAscending);
   const documentItems = filteredContent.documents.slice(0, 4);
-  const featuredApps = filteredContent.apps.slice(0, 1);
-  const secondaryApps = filteredContent.apps.slice(1);
+  const toolApps = filteredContent.apps.filter((app) => app.category === 'tools');
+  const employeeApps = filteredContent.apps.filter((app) => app.category === 'employee');
+  const featuredToolApps = toolApps.filter((app) => app.id === 'keepass');
+  const secondaryToolApps = toolApps.filter((app) => app.id !== 'keepass');
+  const featuredApps = employeeApps.slice(0, 1);
+  const secondaryApps = employeeApps.slice(1);
   const latestNewsSource = 'Noticias relevantes de hoy';
   const latestNewsItems = filteredContent.news.filter(
     (item) => item.rawMeta?.newsletterSource === latestNewsSource || item.source === latestNewsSource,
@@ -708,7 +856,7 @@ export function HomeDashboard() {
         title: item.title,
         description: item.description,
         href: item.href,
-        section: 'Herramientas IA',
+        section: 'Herramientas',
         icon: Bot,
         tone: item.tone,
       })),
@@ -717,7 +865,7 @@ export function HomeDashboard() {
         title: item.title,
         description: item.description,
         href: item.href.includes('.kdbx') ? withDownloadParam(item.href) : item.href,
-        section: 'Recursos y herramientas',
+        section: item.category === 'employee' ? 'Recursos de empleado' : 'Herramientas',
         icon: iconMap[item.icon as keyof typeof iconMap] ?? BriefcaseBusiness,
         tone: item.tone,
       })),
@@ -725,7 +873,7 @@ export function HomeDashboard() {
         id: `document-${item.id}`,
         title: item.title,
         description: item.description,
-        href: item.href,
+        href: item.href === '#' ? '#documentacion' : item.href,
         section: 'Documentación',
         icon: FileText,
         tone: item.tone,
@@ -914,48 +1062,75 @@ export function HomeDashboard() {
       </section>
       ) : null}
 
-      {showIa && (!isSearching || filteredContent.assistants.length > 0) ? (
-        <section id="herramientas-ia" className="scroll-mt-40">
+      {showTools && (!isSearching || toolApps.length > 0) ? (
+        <section id="herramientas" className="scroll-mt-40">
           <SectionHeader
-            title="Herramientas IA"
-            description="Asistentes internos, GPTs y recursos para acelerar el trabajo diario con criterio Neovantas."
+            title="Herramientas"
+            description="Catálogo de herramientas reales para productividad, diseño, formación, referencia y gestión segura de contraseñas."
           />
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {filteredContent.assistants.map((assistant) => (
-              <Card key={assistant.id} className="p-5 transition hover:-translate-y-0.5 hover:border-neovantas-blue">
+          {featuredToolApps.map((app) => {
+            const Icon = iconMap[app.icon as keyof typeof iconMap] ?? KeyRound;
+            const href = withDownloadParam(app.href);
+
+            return (
+              <Card key={app.id} className="keepass-home-card p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="grid h-11 w-11 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-blue">
-                    <Bot className="h-5 w-5" aria-hidden="true" />
+                  <div className="grid h-12 w-12 place-items-center rounded-[12px] bg-white/15 text-white">
+                    <Icon className="h-6 w-6" aria-hidden="true" />
                   </div>
-                  <Badge tone={assistant.tone}>{assistant.status}</Badge>
+                  <Badge tone={app.tone}>{app.status}</Badge>
                 </div>
-                <h3 className="mt-4 text-base font-semibold text-neovantas-navy">{assistant.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-neovantas-muted">{assistant.description}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {assistant.tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-neovantas-mist px-2.5 py-1 text-xs text-neovantas-muted">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                <h3 className="mt-4 text-lg font-semibold">{app.title}</h3>
+                <p className="mt-2 text-sm leading-6">{app.description}</p>
                 <div className="mt-5 flex items-center justify-between gap-3 text-sm">
-                  <span className="font-medium text-neovantas-muted">{assistant.owner}</span>
+                  <span className="font-medium text-white/70">{app.group}</span>
                   <a
-                    href={assistant.href}
-                    {...getLinkProps(assistant.href)}
-                    className="inline-flex items-center gap-1.5 font-semibold text-neovantas-blue"
+                    href={href}
+                    {...getLinkProps(href)}
+                    download
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-2 font-semibold text-neovantas-navy"
                   >
-                    Abrir
-                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    Descargar
+                    <Download className="h-4 w-4" aria-hidden="true" />
                   </a>
                 </div>
               </Card>
-            ))}
+            );
+          })}
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {secondaryToolApps.map((app) => {
+              const Icon = iconMap[app.icon as keyof typeof iconMap] ?? BriefcaseBusiness;
+
+              return (
+                <Card key={app.id} className="p-5 transition hover:-translate-y-0.5 hover:border-neovantas-blue">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="grid h-11 w-11 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-blue">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <Badge tone={app.tone}>{app.status}</Badge>
+                  </div>
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-neovantas-muted">{app.group}</p>
+                  <h3 className="mt-2 text-base font-semibold text-neovantas-navy">{app.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-neovantas-muted">{app.description}</p>
+                  <div className="mt-5 flex items-center justify-between gap-3 text-sm">
+                    <span className="font-medium text-neovantas-muted">{app.owner}</span>
+                    <a
+                      href={app.href}
+                      {...getLinkProps(app.href)}
+                      className="inline-flex items-center gap-1.5 font-semibold text-neovantas-blue"
+                    >
+                      Abrir
+                      <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    </a>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </section>
       ) : null}
-
       {showHome && (!isSearching || upcomingEvents.length > 0) ? (
         <UpcomingEventsBlock events={upcomingEvents} todayIso={todayIso} />
       ) : null}
@@ -1005,7 +1180,12 @@ export function HomeDashboard() {
               </div>
               <div className="space-y-3">
                 {visibleDocumentItems.map((item) => (
-                  <div key={item.id} className="flex items-start gap-4 rounded-[14px] border border-neovantas-line bg-white px-4 py-4">
+                  <a
+                    key={item.id}
+                    href={item.href === '#' ? '#documentacion' : item.href}
+                    {...getLinkProps(item.href === '#' ? '#documentacion' : item.href)}
+                    className="flex items-start gap-4 rounded-[14px] border border-neovantas-line bg-white px-4 py-4 transition hover:-translate-y-0.5 hover:border-neovantas-blue"
+                  >
                     <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#EAFBF2] text-neovantas-teal">
                       <FileText className="h-5 w-5" aria-hidden="true" />
                     </div>
@@ -1018,7 +1198,7 @@ export function HomeDashboard() {
                       <h3 className="mt-2 text-sm font-semibold text-neovantas-navy">{item.title}</h3>
                       <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.description}</p>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
@@ -1220,11 +1400,11 @@ export function HomeDashboard() {
         </section>
       ) : null}
 
-      {showResources && (!isSearching || filteredContent.apps.length > 0) ? (
-        <section id="recursos-herramientas" className="scroll-mt-40">
+      {showResources && (!isSearching || employeeApps.length > 0) ? (
+        <section id="recursos-empleado" className="scroll-mt-40">
           <SectionHeader
-            title="Recursos y herramientas"
-            description="Aplicaciones internas, gestión, productividad, diseño, formación y accesos operativos."
+            title="Recursos de empleado"
+            description="CRM comercial, portal de empleado e imputación de horas."
           />
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
@@ -1234,7 +1414,7 @@ export function HomeDashboard() {
                   Destacado
                 </p>
                 <p className="mt-1 text-sm text-neovantas-muted">
-                  Acceso prioritario al archivo KeePass y a los recursos más sensibles del equipo.
+                  Acceso prioritario a los recursos de empleado más utilizados.
                 </p>
               </div>
 

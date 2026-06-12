@@ -21,8 +21,8 @@ type AppLayoutProps = {
 
 const navigation = [
   { label: 'Inicio', icon: Home, href: '#inicio' },
-  { label: 'Herramientas IA', icon: Bot, href: '#herramientas-ia' },
-  { label: 'Recursos y herramientas', icon: Wrench, href: '#recursos-herramientas' },
+  { label: 'Herramientas', icon: Bot, href: '#herramientas' },
+  { label: 'Recursos de empleado', icon: Wrench, href: '#recursos-empleado' },
   { label: 'Documentacion', icon: FileText, href: '#documentacion' },
   { label: 'Repositorios', icon: Files, href: '#repositorios' },
   { label: 'Eventos', icon: CalendarDays, href: '#eventos' },

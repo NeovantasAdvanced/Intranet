@@ -117,6 +117,8 @@ export type InternalApp = {
   status: string;
   tone: StatusTone;
   icon: string;
+  category?: 'tools' | 'employee';
+  group?: string;
 };
 
 export type EventWorkSchedule = 'laboral' | 'fuera_horario';

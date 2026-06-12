@@ -1,32 +1,42 @@
 [
   {
-    "id": "manual-empleado",
-    "title": "Manual del empleado",
-    "description": "Politicas corporativas, procedimientos internos y recursos basicos.",
+    "id": "codigo-interno-febrero-2025",
+    "title": "PDF Código interno de uso febrero 2025",
+    "description": "Documento de referencia interna para criterios de uso y funcionamiento corporativo.",
+    "area": "Corporativo",
+    "updatedAt": "2025-02-01",
+    "href": "#",
+    "status": "Pendiente de enlace",
+    "tone": "warning"
+  },
+  {
+    "id": "politicas",
+    "title": "Carpeta Políticas",
+    "description": "Acceso a la carpeta general de políticas corporativas.",
+    "area": "Corporativo",
+    "updatedAt": "2026-06-12",
+    "href": "#",
+    "status": "Pendiente de enlace",
+    "tone": "warning"
+  },
+  {
+    "id": "politica-movilidad-internacional",
+    "title": "Carpeta Política de movilidad internacional",
+    "description": "Carpeta de referencia para la política de movilidad internacional.",
     "area": "Personas",
-    "updatedAt": "2026-05-12",
-    "href": "#manual-empleado",
-    "status": "Vigente",
-    "tone": "success"
+    "updatedAt": "2026-06-12",
+    "href": "#",
+    "status": "Pendiente de enlace",
+    "tone": "warning"
   },
   {
-    "id": "kit-proyecto",
-    "title": "Kit de arranque de proyecto",
-    "description": "Plantillas, rituales y checklist para equipos de delivery.",
-    "area": "Delivery",
-    "updatedAt": "2026-04-28",
-    "href": "#kit-proyecto",
-    "status": "Revisado",
-    "tone": "info"
-  },
-  {
-    "id": "seguridad",
-    "title": "Politica de seguridad y datos",
-    "description": "Buenas practicas para manejo de informacion, clientes y herramientas.",
+    "id": "politicas-seguridad",
+    "title": "Carpetas de políticas de seguridad",
+    "description": "Carpetas con políticas y buenas prácticas de seguridad de la información.",
     "area": "IT",
-    "updatedAt": "2026-04-18",
-    "href": "#seguridad",
-    "status": "Critico",
-    "tone": "critical"
+    "updatedAt": "2026-06-12",
+    "href": "#",
+    "status": "Pendiente de enlace",
+    "tone": "warning"
   }
 ]
