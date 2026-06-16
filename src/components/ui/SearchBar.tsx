@@ -15,14 +15,14 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <label
-      className={`flex h-10 min-w-0 items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 text-white/60 transition focus-within:border-white/30 focus-within:bg-white/15 focus-within:ring-2 focus-within:ring-white/10 ${className}`}
+      className={`flex h-11 min-w-0 items-center gap-3 rounded-2xl border border-neovantas-line bg-white px-4 text-neovantas-muted shadow-sm transition focus-within:border-neovantas-blue focus-within:ring-2 focus-within:ring-neovantas-cyan/20 ${className}`}
     >
-      <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <Search className="h-4 w-4 shrink-0 text-neovantas-blue" aria-hidden="true" />
       <span className="sr-only">Buscar</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-w-0 flex-1 border-0 bg-transparent text-sm text-white outline-none placeholder:text-white/50"
+        className="min-w-0 flex-1 border-0 bg-transparent text-sm text-neovantas-navy outline-none placeholder:text-neovantas-muted"
         placeholder={placeholder}
         type="search"
       />

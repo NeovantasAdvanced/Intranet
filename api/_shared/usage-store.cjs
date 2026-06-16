@@ -1,4 +1,7 @@
 const crypto = require('node:crypto');
+const fs = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
 const { TableClient } = require('@azure/data-tables');
 const { getPrincipalFromRequest, normalizeEmail } = require('./auth.cjs');
 
@@ -6,9 +9,16 @@ const DEFAULT_TABLE_NAME = 'NeovantasUsageEvents';
 const DEFAULT_LOOKBACK_DAYS = 365;
 
 let tableClientPromise;
+let fileStorePromise;
+let fileWriteQueue = Promise.resolve();
 
 function getConnectionString() {
-  return process.env.AZURE_STORAGE_CONNECTION_STRING || '';
+  return (
+    process.env.AZURE_STORAGE_CONNECTION_STRING ||
+    process.env.AzureWebJobsStorage ||
+    process.env.AZURE_WEBJOBS_STORAGE ||
+    ''
+  );
 }
 
 function getTableName() {
@@ -17,12 +27,12 @@ function getTableName() {
 
 async function getTableClient() {
   const connectionString = getConnectionString();
-  if (!connectionString) {
-    throw new Error('Missing AZURE_STORAGE_CONNECTION_STRING. Configure Azure Table Storage for usage tracking.');
-  }
-
   if (!tableClientPromise) {
     tableClientPromise = (async () => {
+      if (!connectionString) {
+        return createFileStoreClient();
+      }
+
       const client = TableClient.fromConnectionString(connectionString, getTableName());
       await client.createTableIfNotExists();
       return client;
@@ -30,6 +40,71 @@ async function getTableClient() {
   }
 
   return tableClientPromise;
+}
+
+function getLocalStorePath() {
+  return process.env.USAGE_STORE_FILE || path.join(os.tmpdir(), 'neovantas-usage-events.json');
+}
+
+async function ensureFileStore() {
+  if (!fileStorePromise) {
+    fileStorePromise = (async () => {
+      const filePath = getLocalStorePath();
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+
+      try {
+        await fs.access(filePath);
+      } catch {
+        await fs.writeFile(filePath, '[]', 'utf8');
+      }
+
+      return { filePath };
+    })();
+  }
+
+  return fileStorePromise;
+}
+
+async function readFileStoreEntities(filePath) {
+  const raw = await fs.readFile(filePath, 'utf8');
+  if (!raw.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeFileStoreEntities(filePath, entities) {
+  await fs.writeFile(filePath, `${JSON.stringify(entities, null, 2)}\n`, 'utf8');
+}
+
+function createFileStoreClient() {
+  return {
+    async createTableIfNotExists() {
+      await ensureFileStore();
+    },
+    async createEntity(entity) {
+      const { filePath } = await ensureFileStore();
+      fileWriteQueue = fileWriteQueue.then(async () => {
+        const entities = await readFileStoreEntities(filePath);
+        entities.push(entity);
+        await writeFileStoreEntities(filePath, entities);
+      });
+      await fileWriteQueue;
+    },
+    async *listEntities() {
+      const { filePath } = await ensureFileStore();
+      const entities = await readFileStoreEntities(filePath);
+      for (const entity of entities) {
+        yield entity;
+      }
+    },
+  };
 }
 
 function toIsoDay(value) {
@@ -115,14 +190,18 @@ async function recordUsageEvent(req, payload) {
 
 async function listUsageEntities(daysBack = DEFAULT_LOOKBACK_DAYS) {
   const client = await getTableClient();
-  const filter = `PartitionKey ge '${getWindowStartIso(daysBack)}'`;
+  const windowStartIso = getWindowStartIso(daysBack);
+  const filter = `PartitionKey ge '${windowStartIso}'`;
   const entities = [];
 
   for await (const entity of client.listEntities({ queryOptions: { filter } })) {
     entities.push(entity);
   }
 
-  return entities;
+  return entities.filter((entity) => {
+    const entityDay = String(entity.partitionKey || entity.date || '').slice(0, 10);
+    return entityDay >= windowStartIso;
+  });
 }
 
 function countBy(items, keySelector) {
