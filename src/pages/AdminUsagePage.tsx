@@ -1,5 +1,6 @@
 import {
   Activity,
+  ArrowLeft,
   BarChart3,
   CalendarDays,
   ChartColumn,
@@ -200,6 +201,18 @@ function UnauthorizedState() {
   );
 }
 
+function AdminReturnLink() {
+  return (
+    <a
+      href="/"
+      className="focus-ring inline-flex items-center gap-2 rounded-full border border-neovantas-line bg-white px-4 py-2 text-sm font-semibold text-neovantas-navy shadow-sm transition hover:border-neovantas-blue hover:text-neovantas-blue"
+    >
+      <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+      Volver al inicio
+    </a>
+  );
+}
+
 export function AdminUsagePage() {
   const [authState, setAuthState] = useState<AuthState>('loading');
   const [userEmail, setUserEmail] = useState('');
@@ -290,6 +303,7 @@ export function AdminUsagePage() {
   if (authState === 'loading') {
     return (
       <div className="space-y-5">
+        <AdminReturnLink />
         <SectionHeader
           title="Uso de la intranet"
           description="Comprobando permisos de acceso a la analítica..."
@@ -302,6 +316,7 @@ export function AdminUsagePage() {
   if (authState === 'forbidden') {
     return (
       <div className="space-y-5">
+        <AdminReturnLink />
         <SectionHeader title="Uso de la intranet" description="Analítica privada para administradores." />
         <UnauthorizedState />
       </div>
@@ -310,6 +325,7 @@ export function AdminUsagePage() {
 
   return (
     <div className="space-y-6">
+      <AdminReturnLink />
       <SectionHeader
         title="Uso de la intranet"
         description="Analítica privada para administradores autorizados."
