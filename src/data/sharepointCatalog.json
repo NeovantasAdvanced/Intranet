@@ -1,6 +1,52 @@
 {
   "repositories": [
     {
+      "id": "gpt-repositorio",
+      "title": "GPT repositorio",
+      "description": "Agente de repositorio para buscar conocimiento, plantillas y referencias internas.",
+      "owner": "Knowledge",
+      "href": "https://chatgpt.com/g/g-68f7400f6c54819189ba2f836487dfea-repositorio",
+      "updatedAt": "2026-06-16",
+      "status": "Agente",
+      "tone": "info",
+      "resourceCount": 0,
+      "tags": [
+        "ia",
+        "repositorio",
+        "busqueda"
+      ]
+    },
+    {
+      "id": "repositorio-banca",
+      "title": "Repositorio de banca",
+      "description": "Acceso editable al espacio de banca. Pendiente de confirmar la URL exacta si debe apuntar a un destino distinto.",
+      "owner": "Knowledge",
+      "href": "#",
+      "updatedAt": "2026-06-16",
+      "status": "Pendiente de enlace",
+      "tone": "warning",
+      "resourceCount": 0,
+      "tags": [
+        "banca",
+        "pendiente"
+      ]
+    },
+    {
+      "id": "chatgpt",
+      "title": "ChatGPT",
+      "description": "Acceso directo a ChatGPT para trabajo general y apoyo de productividad.",
+      "owner": "Herramientas",
+      "href": "https://chat.openai.com",
+      "updatedAt": "2026-06-16",
+      "status": "Operativo",
+      "tone": "success",
+      "resourceCount": 0,
+      "tags": [
+        "ia",
+        "productividad"
+      ]
+    },
+    {
       "id": "equipo-neovantas",
       "title": "Carpetas equipo Neovantas",
       "description": "Documentacion operativa y recursos compartidos para el equipo Advanced Analytics.",

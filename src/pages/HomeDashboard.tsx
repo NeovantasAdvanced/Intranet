@@ -671,6 +671,7 @@ export function HomeDashboard() {
   const { authChecked, displayName } = useAuthSession();
   const [repositoryFilter, setRepositoryFilter] = useState<RepositoryFilterId>('all');
   const [projectFilter, setProjectFilter] = useState('all');
+  const [sharePointSearch, setSharePointSearch] = useState('');
   const [activeTab, setActiveTab] = useState<PortalTabId>(getActivePortalTab);
 
   useEffect(() => {
@@ -751,13 +752,31 @@ export function HomeDashboard() {
   const visibleSharePointResources = useMemo(() => {
     return filteredContent.sharePointResources.filter((item) => {
       const projectName = item.parentTitle ?? (item.scope === 'projects' && item.itemType === 'folder' ? item.title : '');
+      const repositorySearchTarget = [
+        item.title,
+        item.description,
+        item.repository,
+        item.category,
+        item.parentTitle,
+        item.path,
+        item.tags.join(' '),
+      ]
+        .filter(Boolean)
+        .join(' ');
 
       return (
         matchesRepositoryFilter(repositoryFilter, item) &&
-        (projectFilter === 'all' || projectName === projectFilter)
+        (projectFilter === 'all' || projectName === projectFilter) &&
+        matchesQuery(sharePointSearch, [repositorySearchTarget])
       );
     });
-  }, [filteredContent.sharePointResources, projectFilter, repositoryFilter]);
+  }, [filteredContent.sharePointResources, projectFilter, repositoryFilter, sharePointSearch]);
+
+  const visibleSharePointRepositories = useMemo(() => {
+    return sharePointRepositories.filter((repository) =>
+      matchesQuery(sharePointSearch, [repository.title, repository.description, repository.owner, repository.status, repository.tags]),
+    );
+  }, [sharePointSearch]);
 
   const projectFilterOptions = useMemo(() => {
     const projectNames = new Set<string>();
@@ -1220,6 +1239,14 @@ export function HomeDashboard() {
             description="Acceso centralizado a la documentación del equipo y al repositorio de proyectos."
           />
 
+          <div className="mb-4 max-w-2xl">
+            <SearchBar
+              value={sharePointSearch}
+              onChange={setSharePointSearch}
+              placeholder="Buscar carpetas, documentos o repositorios..."
+            />
+          </div>
+
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
             <Card className="overflow-hidden p-0">
               <div className="border-b border-neovantas-line bg-neovantas-mist px-5 py-4">
@@ -1357,7 +1384,7 @@ export function HomeDashboard() {
             </Card>
 
             <div className="space-y-4">
-              {sharePointRepositories.map((repository) => (
+              {visibleSharePointRepositories.map((repository) => (
                 <Card key={repository.id} className="p-5 transition hover:-translate-y-0.5 hover:border-neovantas-line">
                   <div className="flex items-start justify-between gap-4">
                     <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[#EEF8FF] text-neovantas-blue">
@@ -1393,7 +1420,7 @@ export function HomeDashboard() {
                     {...getLinkProps(repository.href)}
                     className="focus-ring mt-5 inline-flex h-9 w-fit items-center gap-2 rounded-full border border-neovantas-line bg-white px-3 text-sm font-semibold text-neovantas-muted"
                   >
-                    Abrir repositorio
+                    {repository.status === 'Pendiente de enlace' ? 'Pendiente de enlace' : 'Abrir repositorio'}
                     <ExternalLink className="h-4 w-4" aria-hidden="true" />
                   </a>
                 </Card>
