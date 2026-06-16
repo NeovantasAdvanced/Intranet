@@ -5,9 +5,9 @@
     "description": "Documento de uso interno y referencia corporativa.",
     "area": "Corporativo",
     "updatedAt": "2026-06-16",
-    "href": "#",
-    "status": "Pendiente de enlace",
-    "tone": "warning"
+    "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Forms/AllItems.aspx?viewid=049fd532%2D6068%2D46f4%2D84cc%2D2639f04849ad&FolderCTID=0x0120004C2F9E1C6A815D489BF7287902552F0A&id=%2Fsites%2FAdvancedAnalytics%2FDocumentos%20compartidos%2FCarpetas%20equipo%20Neovantas%2FC%C3%B3digo%20interno%20de%20uso%2FC%C3%93DIGO%20DE%20USO%20INTERNO%20%28ESP%29%20%2D%20FEB%202025%2Epdf&parent=%2Fsites%2FAdvancedAnalytics%2FDocumentos%20compartidos%2FCarpetas%20equipo%20Neovantas%2FC%C3%B3digo%20interno%20de%20uso",
+    "status": "Disponible",
+    "tone": "success"
   },
   {
     "id": "carpeta-politicas",
@@ -35,9 +35,9 @@
     "description": "Calendario laboral 2026 para Barcelona.",
     "area": "Personas",
     "updatedAt": "2026-06-16",
-    "href": "#",
-    "status": "Pendiente de enlace",
-    "tone": "warning"
+    "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Forms/AllItems.aspx?viewid=049fd532%2D6068%2D46f4%2D84cc%2D2639f04849ad&FolderCTID=0x0120004C2F9E1C6A815D489BF7287902552F0A&id=%2Fsites%2FAdvancedAnalytics%2FDocumentos%20compartidos%2FCarpetas%20equipo%20Neovantas%2FCalendario%2FCalendario%20Laboral%20Neovantas%20BCN%202026%2Epdf&parent=%2Fsites%2FAdvancedAnalytics%2FDocumentos%20compartidos%2FCarpetas%20equipo%20Neovantas%2FCalendario",
+    "status": "Disponible",
+    "tone": "success"
   },
   {
     "id": "calendario-laboral-madrid-2026",
@@ -45,8 +45,8 @@
     "description": "Calendario laboral 2026 para Madrid.",
     "area": "Personas",
     "updatedAt": "2026-06-16",
-    "href": "#",
-    "status": "Pendiente de enlace",
-    "tone": "warning"
+    "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Forms/AllItems.aspx?viewid=049fd532%2D6068%2D46f4%2D84cc%2D2639f04849ad&FolderCTID=0x0120004C2F9E1C6A815D489BF7287902552F0A&id=%2Fsites%2FAdvancedAnalytics%2FDocumentos%20compartidos%2FCarpetas%20equipo%20Neovantas%2FCalendario%2FCalendario%20Laboral%20Neovantas%20MADRID%202026%2Epdf&parent=%2Fsites%2FAdvancedAnalytics%2FDocumentos%20compartidos%2FCarpetas%20equipo%20Neovantas%2FCalendario",
+    "status": "Disponible",
+    "tone": "success"
   }
 ]
