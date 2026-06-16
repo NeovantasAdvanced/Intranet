@@ -168,6 +168,30 @@
     "group": "Personas"
   },
   {
+    "id": "goodhabitz",
+    "title": "GoodHabitz",
+    "description": "Plataforma de aprendizaje y desarrollo disponible para el equipo.",
+    "owner": "Personas",
+    "href": "https://my.goodhabitz.com/es-es/account/login?_gl=1*x6s7fa*_up*MQ..*_gs*MQ..&gclid=CjwKCAjw6MPRBhBTEiwAd-7Mr43Ie7NhZ85clFQXwWkWKHTl9CuGzs_lHI8hHX0g5quCNyp-OKrnkhoCpdcQAvD_BwE&gbraid=0AAAAAD0N3SVT9MyFioZez51fVOhtr3ryd",
+    "status": "Operativo",
+    "tone": "success",
+    "icon": "files",
+    "category": "employee",
+    "group": "Formación"
+  },
+  {
+    "id": "yambla",
+    "title": "Yambla",
+    "description": "Gestión de ideas y propuestas de mejora del equipo.",
+    "owner": "Innovación",
+    "href": "https://neovantas.yambla.com/",
+    "status": "Operativo",
+    "tone": "info",
+    "icon": "database",
+    "category": "employee",
+    "group": "Innovación"
+  },
+  {
     "id": "irecursos",
     "title": "iRecursos",
     "description": "Imputación de horas y seguimiento de dedicaciones.",
