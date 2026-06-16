@@ -12,6 +12,7 @@ import {
   FileSpreadsheet,
   Files,
   FolderOpen,
+  GraduationCap,
   KeyRound,
   LifeBuoy,
   Newspaper,
@@ -107,6 +108,14 @@ const homeQuickLinks: HomeLink[] = [
     href: 'https://irecursos.neovantas.com:8443',
     icon: Clock3,
     tone: 'warning',
+    actionLabel: 'Abrir',
+  },
+  {
+    title: 'GoodHabitz',
+    description: 'Plataforma de aprendizaje y formaciÃ³n online.',
+    href: 'https://my.goodhabitz.com/es-es/account/login?_gl=1*x6s7fa*_up*MQ..*_gs*MQ..&gclid=CjwKCAjw6MPRBhBTEiwAd-7Mr43Ie7NhZ85clFQXwWkWKHTl9CuGzs_lHI8hHX0g5quCNyp-OKrnkhoCpdcQAvD_BwE&gbraid=0AAAAAD0N3SVT9MyFioZez51fVOhtr3ryd',
+    icon: GraduationCap,
+    tone: 'info',
     actionLabel: 'Abrir',
   },
   {
