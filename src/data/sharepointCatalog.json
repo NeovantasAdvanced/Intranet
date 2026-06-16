@@ -1,49 +1,36 @@
 {
   "repositories": [
     {
-      "id": "gpt-repositorio",
-      "title": "GPT repositorio",
-      "description": "Agente de repositorio para buscar conocimiento, plantillas y referencias internas.",
+      "id": "rp-proyectos",
+      "title": "Repositorio de proyectos (RP)",
+      "description": "Documentos finales, fichas y carpetas de proyectos realizados para consulta del equipo.",
       "owner": "Knowledge",
-      "href": "https://chatgpt.com/g/g-68f7400f6c54819189ba2f836487dfea-repositorio",
-      "updatedAt": "2026-06-16",
-      "status": "Agente",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP",
+      "updatedAt": "2026-02-09",
+      "status": "Proyectos",
       "tone": "info",
-      "resourceCount": 0,
+      "resourceCount": 82,
       "tags": [
-        "ia",
-        "repositorio",
-        "busqueda"
+        "proyectos",
+        "fichas",
+        "documentos finales",
+        "clientes"
       ]
     },
     {
       "id": "repositorio-banca",
       "title": "Repositorio de banca",
-      "description": "Acceso editable al espacio de banca. Pendiente de confirmar la URL exacta si debe apuntar a un destino distinto.",
+      "description": "Acceso al cuaderno de banca disponible para consulta y referencia.",
       "owner": "Knowledge",
-      "href": "#",
-      "updatedAt": "2026-06-16",
-      "status": "Pendiente de enlace",
-      "tone": "warning",
-      "resourceCount": 0,
-      "tags": [
-        "banca",
-        "pendiente"
-      ]
-    },
-    {
-      "id": "chatgpt",
-      "title": "ChatGPT",
-      "description": "Acceso directo a ChatGPT para trabajo general y apoyo de productividad.",
-      "owner": "Herramientas",
-      "href": "https://chat.openai.com",
+      "href": "https://notebooklm.google.com/notebook/cc6fd8d2-a08d-4235-9e9e-83008d66335a",
       "updatedAt": "2026-06-16",
       "status": "Operativo",
       "tone": "success",
       "resourceCount": 0,
       "tags": [
-        "ia",
-        "productividad"
+        "banca",
+        "notebooklm",
+        "referencia"
       ]
     },
     {
@@ -61,23 +48,6 @@
         "equipo",
         "politicas",
         "seguridad"
-      ]
-    },
-    {
-      "id": "rp-proyectos",
-      "title": "Repositorio de proyectos (RP)",
-      "description": "Documentos finales, fichas y carpetas de proyectos realizados para consulta del equipo.",
-      "owner": "Knowledge",
-      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP",
-      "updatedAt": "2026-02-09",
-      "status": "Proyectos",
-      "tone": "info",
-      "resourceCount": 82,
-      "tags": [
-        "proyectos",
-        "fichas",
-        "documentos finales",
-        "clientes"
       ]
     }
   ],

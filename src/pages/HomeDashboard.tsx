@@ -1415,14 +1415,28 @@ export function HomeDashboard() {
                       <p className="mt-1 text-xs text-neovantas-muted">Revisión</p>
                     </div>
                   </div>
-                  <a
-                    href={repository.href}
-                    {...getLinkProps(repository.href)}
-                    className="focus-ring mt-5 inline-flex h-9 w-fit items-center gap-2 rounded-full border border-neovantas-line bg-white px-3 text-sm font-semibold text-neovantas-muted"
-                  >
-                    {repository.status === 'Pendiente de enlace' ? 'Pendiente de enlace' : 'Abrir repositorio'}
-                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                  </a>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <a
+                      href={repository.href}
+                      {...getLinkProps(repository.href)}
+                      className="focus-ring inline-flex h-9 w-fit items-center gap-2 rounded-full border border-neovantas-line bg-white px-3 text-sm font-semibold text-neovantas-muted"
+                    >
+                      {repository.status === 'Pendiente de enlace' ? 'Pendiente de enlace' : 'Abrir repositorio'}
+                      <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    </a>
+                    {repository.id === 'rp-proyectos' ? (
+                      <a
+                        href="https://chatgpt.com/g/g-68f7400f6c54819189ba2f836487dfea-repositorio"
+                        {...getLinkProps('https://chatgpt.com/g/g-68f7400f6c54819189ba2f836487dfea-repositorio')}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="focus-ring inline-flex h-9 w-fit items-center gap-2 rounded-full bg-neovantas-blue px-3 text-sm font-semibold text-white"
+                      >
+                        GPT Repositorio
+                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                      </a>
+                    ) : null}
+                  </div>
                 </Card>
               ))}
             </div>
