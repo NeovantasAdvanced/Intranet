@@ -216,6 +216,10 @@ function countBy(items, keySelector) {
     .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label, 'es'));
 }
 
+function getUserLabel(entity) {
+  return String(entity.userEmail || entity.userDetails || 'anonymous@local').trim() || 'anonymous@local';
+}
+
 function buildUsageSummary(entities) {
   const accessesTotal = entities.length;
   const uniqueUsers = new Set(
@@ -228,11 +232,61 @@ function buildUsageSummary(entities) {
   const linkRows = countBy(entities.filter((entity) => entity.kind === 'link'), (entity) => entity.label || entity.href);
   const activityByDay = countBy(entities, (entity) => entity.date);
   const activityByUser = countBy(entities, (entity) => entity.userEmail || entity.userDetails);
+  const usersByEmail = new Map();
+
+  for (const entity of entities) {
+    const label = getUserLabel(entity);
+    const key = label.toLowerCase();
+    const current = usersByEmail.get(key) || {
+      label,
+      count: 0,
+      pageviews: 0,
+      sectionViews: 0,
+      linkClicks: 0,
+      uniqueSections: new Set(),
+      uniqueLinks: new Set(),
+      lastSeen: '',
+    };
+
+    current.count += 1;
+    current.lastSeen = current.lastSeen > entity.timestamp ? current.lastSeen : String(entity.timestamp || current.lastSeen);
+
+    if (entity.kind === 'link') {
+      current.linkClicks += 1;
+      const linkKey = String(entity.href || entity.label || '').trim();
+      if (linkKey) {
+        current.uniqueLinks.add(linkKey);
+      }
+    } else if (entity.kind === 'section') {
+      current.sectionViews += 1;
+      const sectionKey = String(entity.section || '').trim();
+      if (sectionKey) {
+        current.uniqueSections.add(sectionKey);
+      }
+    } else {
+      current.pageviews += 1;
+    }
+
+    usersByEmail.set(key, current);
+  }
 
   const toMetricRow = (row) => ({
     label: row.label,
     count: row.count,
   });
+
+  const userRows = [...usersByEmail.values()]
+    .map((user) => ({
+      label: user.label,
+      count: user.count,
+      pageviews: user.pageviews,
+      sectionViews: user.sectionViews,
+      linkClicks: user.linkClicks,
+      uniqueSections: user.uniqueSections.size,
+      uniqueLinks: user.uniqueLinks.size,
+      lastSeen: user.lastSeen,
+    }))
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label, 'es'));
 
   return {
     totals: {
@@ -245,6 +299,8 @@ function buildUsageSummary(entities) {
     topLinks: linkRows.map(toMetricRow),
     activityByDay: activityByDay.map(toMetricRow),
     activityByUser: activityByUser.map(toMetricRow),
+    users: userRows,
+    usersByActivity: userRows,
   };
 }
 

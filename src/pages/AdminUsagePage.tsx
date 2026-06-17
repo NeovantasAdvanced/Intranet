@@ -23,6 +23,17 @@ type UsageMetricRow = {
   href?: string;
 };
 
+type UsageUserRow = {
+  label: string;
+  count: number;
+  pageviews?: number;
+  sectionViews?: number;
+  linkClicks?: number;
+  uniqueSections?: number;
+  uniqueLinks?: number;
+  lastSeen?: string;
+};
+
 type UsageSummary = {
   totals?: {
     accessesTotal?: number;
@@ -34,6 +45,8 @@ type UsageSummary = {
   links?: UsageMetricRow[];
   activityByDay?: UsageMetricRow[];
   activityByUser?: UsageMetricRow[];
+  users?: UsageUserRow[];
+  usersByActivity?: UsageUserRow[];
 };
 
 type AuthState = 'loading' | 'admin' | 'forbidden';
@@ -47,6 +60,8 @@ const DEFAULT_SUMMARY: UsageSummary = {
   topLinks: [],
   activityByDay: [],
   activityByUser: [],
+  users: [],
+  usersByActivity: [],
 };
 
 function formatNumber(value: number) {
@@ -187,6 +202,67 @@ function ActivityList({
   );
 }
 
+function UserStatsList({
+  title,
+  rows,
+  emptyLabel,
+}: {
+  title: string;
+  rows: UsageUserRow[];
+  emptyLabel: string;
+}) {
+  return (
+    <Card className="p-5">
+      <div className="flex items-center gap-2">
+        <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#F0EEFF] text-[#5340B8]">
+          <UserRound className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <h3 className="text-base font-semibold text-neovantas-navy">{title}</h3>
+      </div>
+
+      {rows.length > 0 ? (
+        <div className="mt-5 space-y-3">
+          {rows.map((row) => (
+            <div key={row.label} className="rounded-[12px] border border-neovantas-line bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-neovantas-navy">{row.label}</p>
+                  <p className="mt-1 text-xs text-neovantas-muted">
+                    Último acceso: {row.lastSeen ? formatDateLabel(row.lastSeen.slice(0, 10)) : 'Sin dato'}
+                  </p>
+                </div>
+                <Badge tone="neutral">{formatNumber(row.count)}</Badge>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+                <div className="rounded-[12px] bg-neovantas-mist px-3 py-2">
+                  <p className="text-xs text-neovantas-muted">Accesos</p>
+                  <p className="mt-1 font-semibold text-neovantas-navy">{formatNumber(row.count)}</p>
+                </div>
+                <div className="rounded-[12px] bg-neovantas-mist px-3 py-2">
+                  <p className="text-xs text-neovantas-muted">Enlaces</p>
+                  <p className="mt-1 font-semibold text-neovantas-navy">{formatNumber(row.linkClicks ?? 0)}</p>
+                </div>
+                <div className="rounded-[12px] bg-neovantas-mist px-3 py-2">
+                  <p className="text-xs text-neovantas-muted">Secciones</p>
+                  <p className="mt-1 font-semibold text-neovantas-navy">{formatNumber(row.sectionViews ?? 0)}</p>
+                </div>
+                <div className="rounded-[12px] bg-neovantas-mist px-3 py-2">
+                  <p className="text-xs text-neovantas-muted">Páginas</p>
+                  <p className="mt-1 font-semibold text-neovantas-navy">{formatNumber(row.pageviews ?? 0)}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 rounded-[12px] border border-dashed border-neovantas-line bg-neovantas-mist px-4 py-6 text-sm text-neovantas-muted">
+          {emptyLabel}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function UnauthorizedState() {
   return (
     <Card className="mx-auto max-w-2xl p-8 text-center">
@@ -299,6 +375,10 @@ export function AdminUsagePage() {
   const topLinks = useMemo(() => normalizeRows(resolvedSummary.links ?? resolvedSummary.topLinks), [resolvedSummary]);
   const activityByDay = useMemo(() => normalizeRows(resolvedSummary.activityByDay), [resolvedSummary]);
   const activityByUser = useMemo(() => normalizeRows(resolvedSummary.activityByUser), [resolvedSummary]);
+  const userStats = useMemo(
+    () => [...(resolvedSummary.users ?? resolvedSummary.usersByActivity ?? [])].sort((left, right) => right.count - left.count),
+    [resolvedSummary],
+  );
 
   if (authState === 'loading') {
     return (
@@ -391,6 +471,12 @@ export function AdminUsagePage() {
           emptyLabel="No hay actividad por usuario disponible."
         />
       </div>
+
+      <UserStatsList
+        title="Usuarios más activos"
+        rows={userStats}
+        emptyLabel="No hay actividad por usuario disponible."
+      />
 
       <Card className="p-5">
         <div className="flex items-start justify-between gap-4">
