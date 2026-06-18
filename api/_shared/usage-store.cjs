@@ -9,6 +9,7 @@ const DEFAULT_TABLE_NAME = 'NeovantasUsageEvents';
 const DEFAULT_LOOKBACK_DAYS = 365;
 
 let tableClientPromise;
+let tableClientKey = '';
 let fileStorePromise;
 let fileWriteQueue = Promise.resolve();
 
@@ -27,7 +28,14 @@ function getTableName() {
 
 async function getTableClient() {
   const connectionString = getConnectionString();
+  const clientKey = connectionString ? `table:${getTableName()}` : `file:${getLocalStorePath()}`;
+
+  if (tableClientPromise && tableClientKey !== clientKey) {
+    tableClientPromise = undefined;
+  }
+
   if (!tableClientPromise) {
+    tableClientKey = clientKey;
     tableClientPromise = (async () => {
       if (!connectionString) {
         return createFileStoreClient();
