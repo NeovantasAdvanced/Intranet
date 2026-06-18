@@ -7,6 +7,11 @@ on:
     # below skips the non-matching one.
     - cron: '30 7 * * *'
     - cron: '30 8 * * *'
+    # Second morning pass to catch the news email if it lands after 09:30.
+    # These entries map to 11:30 Europe/Madrid in summer time (09:30 UTC)
+    # and winter time (10:30 UTC).
+    - cron: '30 9 * * *'
+    - cron: '30 10 * * *'
   workflow_dispatch:
     inputs:
       mailbox_user_id:
@@ -66,8 +71,8 @@ jobs:
           fi
 
           madrid_offset="$(TZ=Europe/Madrid date +'%z')"
-          if { [ "$madrid_offset" = "+0200" ] && [ "$EVENT_SCHEDULE" = "30 7 * * *" ]; } || \
-             { [ "$madrid_offset" = "+0100" ] && [ "$EVENT_SCHEDULE" = "30 8 * * *" ]; }; then
+          if { [ "$madrid_offset" = "+0200" ] && { [ "$EVENT_SCHEDULE" = "30 7 * * *" ] || [ "$EVENT_SCHEDULE" = "30 9 * * *" ]; }; } || \
+             { [ "$madrid_offset" = "+0100" ] && { [ "$EVENT_SCHEDULE" = "30 8 * * *" ] || [ "$EVENT_SCHEDULE" = "30 10 * * *" ]; }; }; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
