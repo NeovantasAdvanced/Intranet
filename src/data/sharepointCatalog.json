@@ -23,10 +23,10 @@
       "description": "Documentos finales, fichas y carpetas de proyectos realizados para consulta del equipo.",
       "owner": "Knowledge",
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP",
-      "updatedAt": "2026-02-09",
+      "updatedAt": "2026-06-17",
       "status": "Proyectos",
       "tone": "info",
-      "resourceCount": 82,
+      "resourceCount": 93,
       "tags": [
         "proyectos",
         "fichas",
@@ -273,6 +273,26 @@
       ]
     },
     {
+      "id": "project-1-guia-del-procedimiento",
+      "title": "1. Guía del procedimiento",
+      "description": "Carpeta con fichas y entregables del proyecto para 1. Guía del procedimiento.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Proyecto realizado",
+      "itemType": "folder",
+      "itemCount": 1,
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/1.%20Gu%C3%ADa%20del%20procedimiento",
+      "status": "Proyecto",
+      "tone": "neutral",
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
+    },
+    {
       "id": "project-atento",
       "title": "Atento",
       "description": "Carpeta con fichas y entregables del proyecto para Atento.",
@@ -353,6 +373,26 @@
       ]
     },
     {
+      "id": "project-bcc",
+      "title": "BCC",
+      "description": "Carpeta con fichas y entregables del proyecto para BCC.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Proyecto realizado",
+      "itemType": "folder",
+      "itemCount": 1,
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/BCC",
+      "status": "Proyecto",
+      "tone": "neutral",
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
+    },
+    {
       "id": "project-bcp",
       "title": "BCP",
       "description": "Carpeta con fichas y entregables del proyecto para BCP.",
@@ -383,6 +423,26 @@
       "itemCount": 1,
       "updatedAt": "2026-02-09",
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Caixabank",
+      "status": "Proyecto",
+      "tone": "neutral",
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
+    },
+    {
+      "id": "project-caja-rural-de-navarra-crnavarra",
+      "title": "Caja Rural de Navarra (CRNavarra)",
+      "description": "Carpeta con fichas y entregables del proyecto para Caja Rural de Navarra (CRNavarra).",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Proyecto realizado",
+      "itemType": "folder",
+      "itemCount": 2,
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Caja%20Rural%20de%20Navarra%20(CRNavarra)",
       "status": "Proyecto",
       "tone": "neutral",
       "tags": [
@@ -871,6 +931,26 @@
       ]
     },
     {
+      "id": "project-unicaja",
+      "title": "Unicaja",
+      "description": "Carpeta con fichas y entregables del proyecto para Unicaja.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Proyecto realizado",
+      "itemType": "folder",
+      "itemCount": 1,
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Unicaja",
+      "status": "Proyecto",
+      "tone": "neutral",
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
+    },
+    {
       "id": "project-varios",
       "title": "Varios",
       "description": "Carpeta con fichas y entregables del proyecto para Varios.",
@@ -948,6 +1028,46 @@
         "ficha",
         "documento final",
         "cliente"
+      ]
+    },
+    {
+      "id": "project-vodafone",
+      "title": "Vodafone",
+      "description": "Carpeta con fichas y entregables del proyecto para Vodafone.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Proyecto realizado",
+      "itemType": "folder",
+      "itemCount": 2,
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/Vodafone",
+      "status": "Proyecto",
+      "tone": "neutral",
+      "tags": [
+        "proyecto",
+        "ficha",
+        "documento final",
+        "cliente"
+      ]
+    },
+    {
+      "id": "project-1-guia-del-procedimiento-guia-para-el-envio-de-los-casos-de-exito-de-proyecto-2026-pdf",
+      "title": "Guía para el envío de los casos de éxito de proyecto 2026.pdf",
+      "description": "Archivo del repositorio de proyectos: Guía para el envío de los casos de éxito de proyecto 2026.pdf.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Archivo",
+      "itemType": "file",
+      "parentTitle": "1. Guía del procedimiento",
+      "path": "1. Guía del procedimiento / Guía para el envío de los casos de éxito de proyecto 2026.pdf",
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/RP/1.%20Gu%C3%ADa%20del%20procedimiento/Gu%C3%ADa%20para%20el%20env%C3%ADo%20de%20los%20casos%20de%20%C3%A9xito%20de%20proyecto%202026.pdf",
+      "status": "PDF",
+      "tone": "neutral",
+      "tags": [
+        "proyecto",
+        "clientes",
+        "1. Guía del procedimiento"
       ]
     },
     {
@@ -1077,6 +1197,27 @@
       ]
     },
     {
+      "id": "project-bcc-ficha-proyecto-bcc-sesgos-conductuales-en-el-customer-journey-pptx",
+      "title": "Ficha proyecto - BCC - Sesgos conductuales en el customer journey.pptx",
+      "description": "Ficha del proyecto BCC.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Ficha proyecto",
+      "itemType": "file",
+      "parentTitle": "BCC",
+      "path": "BCC / Ficha proyecto - BCC - Sesgos conductuales en el customer journey.pptx",
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/_layouts/15/Doc.aspx?sourcedoc=%7BC0DD4FB9-C704-4F0C-A61F-890107406265%7D&file=Ficha%20proyecto%20-%20BCC%20-%20Sesgos%20conductuales%20en%20el%20customer%20journey.pptx&action=edit&mobileredirect=true",
+      "status": "Ficha",
+      "tone": "info",
+      "tags": [
+        "ficha",
+        "proyecto",
+        "clientes",
+        "BCC"
+      ]
+    },
+    {
       "id": "project-bcp-auditorias-automaticas-via-speech-analytics-presentacion-final-bcp-23-noviembre-pptx",
       "title": "Auditorías Automáticas vía Speech Analytics -Presentación final- BCP 23 Noviembre.pptx",
       "description": "Archivo del repositorio de proyectos: Auditorías Automáticas vía Speech Analytics -Presentación final- BCP 23 Noviembre.pptx.",
@@ -1136,6 +1277,48 @@
         "proyecto",
         "clientes",
         "BCP"
+      ]
+    },
+    {
+      "id": "project-caja-rural-de-navarra-crnavarra-doc-crnavarra-extension-e-impulso-del-modelo-de-gestion-de-banca-personal-pptx",
+      "title": "Doc - CRNavarra - Extensión e Impulso del Modelo de Gestión de Banca Personal.pptx",
+      "description": "Documento final del proyecto Caja Rural de Navarra (CRNavarra).",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Documento final",
+      "itemType": "file",
+      "parentTitle": "Caja Rural de Navarra (CRNavarra)",
+      "path": "Caja Rural de Navarra (CRNavarra) / Doc - CRNavarra - Extensión e Impulso del Modelo de Gestión de Banca Personal.pptx",
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/_layouts/15/Doc.aspx?sourcedoc=%7B6EB6603A-B118-45AC-929D-D87B732C6AFD%7D&file=Doc%20-%20CRNavarra%20-%20Extensi%C3%B3n%20e%20Impulso%20del%20Modelo%20de%20Gesti%C3%B3n%20de%20Banca%20Personal.pptx&action=edit&mobileredirect=true",
+      "status": "Doc final",
+      "tone": "success",
+      "tags": [
+        "documento final",
+        "proyecto",
+        "clientes",
+        "Caja Rural de Navarra (CRNavarra)"
+      ]
+    },
+    {
+      "id": "project-caja-rural-de-navarra-crnavarra-ficha-proyecto-crnavarra-extension-e-impulso-del-modelo-de-gestion-de-banca-personal-pptx",
+      "title": "Ficha Proyecto - CRNavarra - Extensión e Impulso del Modelo de Gestión de Banca Personal.pptx",
+      "description": "Ficha del proyecto Caja Rural de Navarra (CRNavarra).",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Ficha proyecto",
+      "itemType": "file",
+      "parentTitle": "Caja Rural de Navarra (CRNavarra)",
+      "path": "Caja Rural de Navarra (CRNavarra) / Ficha Proyecto - CRNavarra - Extensión e Impulso del Modelo de Gestión de Banca Personal.pptx",
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/_layouts/15/Doc.aspx?sourcedoc=%7B4C8F2540-06A5-4AF8-A00E-71B64343A4BB%7D&file=Ficha%20Proyecto%20-%20CRNavarra%20-%20Extensi%C3%B3n%20e%20Impulso%20del%20Modelo%20de%20Gesti%C3%B3n%20de%20Banca%20Personal.pptx&action=edit&mobileredirect=true",
+      "status": "Ficha",
+      "tone": "info",
+      "tags": [
+        "ficha",
+        "proyecto",
+        "clientes",
+        "Caja Rural de Navarra (CRNavarra)"
       ]
     },
     {
@@ -1950,6 +2133,48 @@
         "proyecto",
         "clientes",
         "Verti"
+      ]
+    },
+    {
+      "id": "project-vodafone-doc-vodafone-evaluar-el-nuevo-modelo-de-atencion-de-vodafone-presentacion-de-resultados-l-jimenez-16-de-abril-de-2019-pptx",
+      "title": "Doc - Vodafone - Evaluar el nuevo modelo de atención de Vodafone - Presentación de resultados - L JIMENEZ 16 de abril de 2019.pptx",
+      "description": "Documento final del proyecto Vodafone.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Documento final",
+      "itemType": "file",
+      "parentTitle": "Vodafone",
+      "path": "Vodafone / Doc - Vodafone - Evaluar el nuevo modelo de atención de Vodafone - Presentación de resultados - L JIMENEZ 16 de abril de 2019.pptx",
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/_layouts/15/Doc.aspx?sourcedoc=%7B0ACBCA03-7559-435D-8919-017B2FC467D0%7D&file=Doc%20-%20Vodafone%20-%20Evaluar%20el%20nuevo%20modelo%20de%20atenci%C3%B3n%20de%20Vodafone%20-%20Presentaci%C3%B3n%20de%20resultados%20-%20L%20JIMENEZ%2016%20de%20abril%20de%202019.pptx&action=edit&mobileredirect=true",
+      "status": "Doc final",
+      "tone": "success",
+      "tags": [
+        "documento final",
+        "proyecto",
+        "clientes",
+        "Vodafone"
+      ]
+    },
+    {
+      "id": "project-vodafone-ficha-proyecto-vodafone-evaluar-el-nuevo-modelo-de-atencion-y-su-expansion-en-el-servicio-de-vodafone-pptx",
+      "title": "Ficha proyecto - Vodafone - Evaluar el nuevo Modelo de Atención y su expansión en el servicio de Vodafone.pptx",
+      "description": "Ficha del proyecto Vodafone.",
+      "repository": "Repositorio de proyectos (RP)",
+      "scope": "projects",
+      "category": "Ficha proyecto",
+      "itemType": "file",
+      "parentTitle": "Vodafone",
+      "path": "Vodafone / Ficha proyecto - Vodafone - Evaluar el nuevo Modelo de Atención y su expansión en el servicio de Vodafone.pptx",
+      "updatedAt": "2026-06-17",
+      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/_layouts/15/Doc.aspx?sourcedoc=%7B2FE4DB72-2E91-4BA0-A876-E6EABF7194F1%7D&file=Ficha%20proyecto%20-%20Vodafone%20-%20Evaluar%20el%20nuevo%20Modelo%20de%20Atenci%C3%B3n%20y%20su%20expansi%C3%B3n%20en%20el%20servicio%20de%20Vodafone.pptx&action=edit&mobileredirect=true",
+      "status": "Ficha",
+      "tone": "info",
+      "tags": [
+        "ficha",
+        "proyecto",
+        "clientes",
+        "Vodafone"
       ]
     }
   ]
