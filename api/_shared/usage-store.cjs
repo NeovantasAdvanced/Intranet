@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { TableClient } = require('@azure/data-tables');
+const { TableClient, TableServiceClient } = require('@azure/data-tables');
 const { getPrincipalFromRequest, normalizeEmail } = require('./auth.cjs');
 
 const DEFAULT_TABLE_NAME = 'NeovantasUsageEvents';
@@ -33,9 +33,9 @@ async function getTableClient() {
         return createFileStoreClient();
       }
 
-      const client = TableClient.fromConnectionString(connectionString, getTableName());
-      await client.createTableIfNotExists();
-      return client;
+      const serviceClient = TableServiceClient.fromConnectionString(connectionString);
+      await serviceClient.createTableIfNotExists(getTableName());
+      return TableClient.fromConnectionString(connectionString, getTableName());
     })();
   }
 
