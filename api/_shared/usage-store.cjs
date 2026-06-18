@@ -232,6 +232,7 @@ function buildUsageSummary(entities) {
   const linkRows = countBy(entities.filter((entity) => entity.kind === 'link'), (entity) => entity.label || entity.href);
   const activityByDay = countBy(entities, (entity) => entity.date);
   const activityByUser = countBy(entities, (entity) => entity.userEmail || entity.userDetails);
+  const monthRows = countBy(entities, (entity) => String(entity.date || '').slice(0, 7));
   const usersByEmail = new Map();
 
   for (const entity of entities) {
@@ -299,14 +300,20 @@ function buildUsageSummary(entities) {
     topLinks: linkRows.map(toMetricRow),
     activityByDay: activityByDay.map(toMetricRow),
     activityByUser: activityByUser.map(toMetricRow),
+    months: monthRows.map(toMetricRow),
     users: userRows,
     usersByActivity: userRows,
   };
+}
+
+function getStorageMode() {
+  return getConnectionString() ? 'table' : 'file';
 }
 
 module.exports = {
   buildUsageSummary,
   getTableClient,
   listUsageEntities,
+  getStorageMode,
   recordUsageEvent,
 };

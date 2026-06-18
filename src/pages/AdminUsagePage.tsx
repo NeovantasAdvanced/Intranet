@@ -5,7 +5,9 @@ import {
   CalendarDays,
   ChartColumn,
   CircleSlash2,
+  Download,
   MousePointerClick,
+  RefreshCcw,
   ShieldAlert,
   UserRound,
   Users,
@@ -21,6 +23,11 @@ type UsageMetricRow = {
   label: string;
   count: number;
   href?: string;
+};
+
+type MonthOption = {
+  label: string;
+  count: number;
 };
 
 type UsageUserRow = {
@@ -45,6 +52,9 @@ type UsageSummary = {
   links?: UsageMetricRow[];
   activityByDay?: UsageMetricRow[];
   activityByUser?: UsageMetricRow[];
+  months?: MonthOption[];
+  selectedMonth?: string;
+  storageMode?: 'table' | 'file';
   users?: UsageUserRow[];
   usersByActivity?: UsageUserRow[];
 };
@@ -60,6 +70,9 @@ const DEFAULT_SUMMARY: UsageSummary = {
   topLinks: [],
   activityByDay: [],
   activityByUser: [],
+  months: [],
+  selectedMonth: 'all',
+  storageMode: 'file',
   users: [],
   usersByActivity: [],
 };
@@ -78,6 +91,23 @@ function formatDateLabel(value: string) {
     month: 'short',
     year: 'numeric',
   }).format(new Date(value));
+}
+
+function formatMonthLabel(value: string) {
+  if (!/^\d{4}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const [year, month] = value.split('-').map(Number);
+  return new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(new Date(year, month - 1, 1));
+}
+
+function escapeCsv(value: unknown) {
+  const text = String(value ?? '');
+  if (/[",\n;]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
 }
 
 function normalizeRows(rows?: UsageMetricRow[]) {
@@ -289,11 +319,22 @@ function AdminReturnLink() {
   );
 }
 
+function downloadTextFile(filename: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 export function AdminUsagePage() {
   const [authState, setAuthState] = useState<AuthState>('loading');
   const [userEmail, setUserEmail] = useState('');
   const [summary, setSummary] = useState<UsageSummary | null>(null);
   const [error, setError] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('all');
 
   useEffect(() => {
     let mounted = true;
@@ -329,7 +370,9 @@ export function AdminUsagePage() {
     let mounted = true;
     const controller = new AbortController();
 
-    fetch('/api/usage/summary', {
+    const monthQuery = selectedMonth === 'all' ? '' : `?month=${encodeURIComponent(selectedMonth)}`;
+
+    fetch(`/api/usage/summary${monthQuery}`, {
       cache: 'no-store',
       signal: controller.signal,
       headers: {
@@ -353,6 +396,7 @@ export function AdminUsagePage() {
       .then((payload) => {
         if (mounted) {
           setSummary(payload ?? DEFAULT_SUMMARY);
+          setError('');
         }
       })
       .catch((requestError) => {
@@ -366,7 +410,7 @@ export function AdminUsagePage() {
       mounted = false;
       controller.abort();
     };
-  }, [authState]);
+  }, [authState, selectedMonth]);
 
   const resolvedSummary = summary ?? DEFAULT_SUMMARY;
   const totalAccesses = resolvedSummary.totals?.accessesTotal ?? 0;
@@ -379,6 +423,42 @@ export function AdminUsagePage() {
     () => [...(resolvedSummary.users ?? resolvedSummary.usersByActivity ?? [])].sort((left, right) => right.count - left.count),
     [resolvedSummary],
   );
+  const monthOptions = useMemo(() => [...(resolvedSummary.months ?? [])], [resolvedSummary]);
+  const storageMode = resolvedSummary.storageMode ?? 'file';
+  const exportStamp = selectedMonth === 'all' ? 'all' : selectedMonth;
+
+  const handleDownloadJson = () => {
+    const payload = {
+      selectedMonth,
+      exportedAt: new Date().toISOString(),
+      summary: resolvedSummary,
+    };
+
+    downloadTextFile(
+      `usage-metrics-${exportStamp}.json`,
+      `${JSON.stringify(payload, null, 2)}\n`,
+      'application/json',
+    );
+  };
+
+  const handleDownloadUsersCsv = () => {
+    const rows = [
+      ['usuario', 'accesos', 'pageviews', 'secciones', 'enlaces', 'secciones_unicas', 'enlaces_unicos', 'ultimo_acceso'],
+      ...userStats.map((row) => [
+        row.label,
+        row.count,
+        row.pageviews ?? 0,
+        row.sectionViews ?? 0,
+        row.linkClicks ?? 0,
+        row.uniqueSections ?? 0,
+        row.uniqueLinks ?? 0,
+        row.lastSeen ?? '',
+      ]),
+    ];
+
+    const csv = `${rows.map((row) => row.map(escapeCsv).join(';')).join('\n')}\n`;
+    downloadTextFile(`usage-users-${exportStamp}.csv`, csv, 'text/csv;charset=utf-8');
+  };
 
   if (authState === 'loading') {
     return (
@@ -411,6 +491,56 @@ export function AdminUsagePage() {
         description="Analítica privada para administradores autorizados."
       />
 
+      <Card className="p-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="grid gap-2">
+            <label className="text-sm font-medium text-neovantas-muted" htmlFor="usage-month-filter">
+              Mes
+            </label>
+            <select
+              id="usage-month-filter"
+              value={selectedMonth}
+              onChange={(event) => setSelectedMonth(event.target.value)}
+              className="focus-ring h-10 min-w-[15rem] rounded-[12px] border border-neovantas-line bg-white px-3 text-sm text-neovantas-navy"
+            >
+              <option value="all">Todos los meses</option>
+              {monthOptions.map((month) => (
+                <option key={month.label} value={month.label}>
+                  {formatMonthLabel(month.label)} ({formatNumber(month.count)})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedMonth('all')}
+              className="focus-ring inline-flex items-center gap-2 rounded-full border border-neovantas-line bg-white px-4 py-2 text-sm font-semibold text-neovantas-navy shadow-sm transition hover:border-neovantas-blue hover:text-neovantas-blue"
+            >
+              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+              Ver todo
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadJson}
+              className="focus-ring inline-flex items-center gap-2 rounded-full bg-neovantas-blue px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neovantas-blue/90"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Descargar JSON
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadUsersCsv}
+              className="focus-ring inline-flex items-center gap-2 rounded-full border border-neovantas-line bg-white px-4 py-2 text-sm font-semibold text-neovantas-navy shadow-sm transition hover:border-neovantas-blue hover:text-neovantas-blue"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Descargar CSV
+            </button>
+          </div>
+        </div>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           title="Accesos totales"
@@ -441,6 +571,14 @@ export function AdminUsagePage() {
       {error ? (
         <Card className="border-[#FED7AA] bg-[#FFFBF5] p-4 text-sm text-[#9A3412]">
           {error}. Se muestra la página, pero no se han podido cargar las métricas del endpoint.
+        </Card>
+      ) : null}
+
+      {storageMode === 'file' ? (
+        <Card className="border-[#F8D7A6] bg-[#FFF8EE] p-4 text-sm text-[#8A4B00]">
+          El almacenamiento de estadísticas está usando un fichero temporal. Para que los datos persistan entre
+          reinicios del servicio, configura `AZURE_STORAGE_CONNECTION_STRING` o `AzureWebJobsStorage` con Azure
+          Table Storage.
         </Card>
       ) : null}
 
