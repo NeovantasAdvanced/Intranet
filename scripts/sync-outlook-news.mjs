@@ -35,6 +35,7 @@ const config = {
   source: process.env.NEWS_SOURCE ?? 'Noticias relevantes de hoy',
   lookbackDays: Number(process.env.NEWS_LOOKBACK_DAYS ?? '3'),
   maxItems: Number(process.env.NEWS_MAX_ITEMS ?? '10'),
+  allowUnfilteredInbox: String(process.env.NEWS_ALLOW_UNFILTERED_INBOX ?? 'false').toLowerCase() === 'true',
   htmlFixturePath: process.env.NEWS_HTML_FIXTURE_PATH,
 };
 
@@ -235,6 +236,22 @@ async function readExistingNews() {
   return JSON.parse(raw);
 }
 
+async function listMessagesFromFolder(accessToken, mailboxUserId, folderId, folderLabel) {
+  const messages = await listRecentMessagesFromFolder(
+    accessToken,
+    mailboxUserId,
+    folderId,
+    100,
+    undefined,
+    {
+      sinceIso: getSinceIso(),
+    },
+  );
+
+  console.log(`[Outlook news] Mensajes recuperados desde ${folderLabel}: ${messages.length}`);
+  return messages;
+}
+
 async function listNewsMessages(accessToken) {
   const resolvedFolder = await resolveMailFolderId(accessToken, {
     mailboxUserId: config.mailboxUserId,
@@ -244,32 +261,68 @@ async function listNewsMessages(accessToken) {
     folderLabel: 'news',
   });
 
-  const messages = await listRecentMessagesFromFolder(
+  console.log(`[Outlook news] ruta final resuelta: ${resolvedFolder.resolvedPath}`);
+
+  const primaryMessages = await listMessagesFromFolder(
     accessToken,
     config.mailboxUserId,
     resolvedFolder.folderId,
-    100,
-    undefined,
-    {
-      sinceIso: getSinceIso(),
-    },
+    resolvedFolder.resolvedPath,
   );
 
-  console.log(`[Outlook news] Numero de mensajes recuperados: ${messages.length}`);
-  console.log(`[Outlook news] ruta final resuelta: ${resolvedFolder.resolvedPath}`);
-  return messages;
+  if (resolvedFolder.folderId === 'inbox') {
+    return primaryMessages;
+  }
+
+  const inboxMessages = await listMessagesFromFolder(accessToken, config.mailboxUserId, 'inbox', 'Bandeja de entrada');
+  const merged = [...primaryMessages, ...inboxMessages];
+  const seenIds = new Set();
+
+  return merged.filter((message) => {
+    const key = message.id ?? message.internetMessageId ?? `${message.subject ?? ''}|${message.receivedDateTime ?? ''}`;
+    if (seenIds.has(key)) {
+      return false;
+    }
+
+    seenIds.add(key);
+    return true;
+  });
 }
 
-function messageMatches(message) {
+function messageMatches(message, options = {}) {
+  const { ignoreSender = false } = options;
   const sender = normalizeText(message.from?.emailAddress?.address ?? '');
   const subject = normalizeSubject(message.subject ?? '');
   const prefix = normalizeText(config.subjectPrefix);
 
-  if (config.sender && sender !== normalizeText(config.sender)) {
+  if (!ignoreSender && config.sender && sender !== normalizeText(config.sender)) {
     return false;
   }
 
   return subject.startsWith(prefix) || subject.includes(prefix);
+}
+
+function selectCandidateMessages(messages) {
+  const prefixedMessages = messages
+    .filter((message) => messageMatches(message, { ignoreSender: true }))
+    .sort((left, right) => new Date(right.receivedDateTime ?? 0).getTime() - new Date(left.receivedDateTime ?? 0).getTime());
+
+  if (!config.sender) {
+    return prefixedMessages;
+  }
+
+  const senderMatches = prefixedMessages.filter((message) => messageMatches(message));
+  if (senderMatches.length > 0) {
+    return senderMatches;
+  }
+
+  if (prefixedMessages.length > 0) {
+    console.log(
+      `[Outlook news] sender filter did not match any current message; falling back to subject prefix only for "${config.subjectPrefix}".`,
+    );
+  }
+
+  return prefixedMessages;
 }
 
 function toNewsItem(message) {
@@ -352,9 +405,7 @@ async function main() {
     const accessToken = await getAccessToken('NEWS', 'NEWS');
     const messages = await listNewsMessages(accessToken);
 
-    const candidateMessages = messages
-      .filter(messageMatches)
-      .sort((left, right) => new Date(right.receivedDateTime ?? 0).getTime() - new Date(left.receivedDateTime ?? 0).getTime());
+    const candidateMessages = selectCandidateMessages(messages);
 
     console.log(
       `[Outlook news] asuntos candidatos detectados: ${
