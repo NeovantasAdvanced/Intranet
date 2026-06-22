@@ -854,11 +854,14 @@ export function HomeDashboard() {
   const featuredApps = employeeApps.filter((app) => app.id === 'factorial');
   const secondaryApps = employeeApps.filter((app) => app.id !== 'factorial');
   const latestNewsSource = 'Noticias relevantes de hoy';
-  const latestNewsItems = filteredContent.news.filter(
+  const sortedNewsItems = [...filteredContent.news].sort(
+    (left, right) => new Date(right.date).getTime() - new Date(left.date).getTime(),
+  );
+  const latestNewsItems = sortedNewsItems.filter(
     (item) => item.rawMeta?.newsletterSource === latestNewsSource || item.source === latestNewsSource,
   );
   const newsItems = (latestNewsItems.length > 0 ? latestNewsItems : filteredContent.news).slice(0, 3);
-  const visibleNewsItems = showNews ? filteredContent.news : newsItems;
+  const visibleNewsItems = showNews ? sortedNewsItems : newsItems;
   const visibleDocumentItems = showDocuments ? filteredContent.documents : documentItems;
   const searchResults = useMemo<PortalSearchResult[]>(() => {
     if (!searchQuery) {
