@@ -151,5 +151,39 @@
     "tags": [],
     "dateText": "Miércoles 17 de junio 19:00 CEST",
     "timeText": "19:00 CEST"
+  },
+  {
+    "id": "event-gaabs-webinar-lessons-from-natwest-shaping-culture-one-behaviour-at-a-time-2026-06-22-2026-06-22-online-pending",
+    "title": "GAABS | Webinar - Lessons from NatWest: Shaping Culture, One Behaviour at a Time",
+    "organization": "GAABS",
+    "format": "online",
+    "category": "Horario laboral",
+    "startDate": "2026-06-22",
+    "endDate": "2026-06-22",
+    "timezone": "Europe/Madrid",
+    "workSchedule": "laboral",
+    "url": "#",
+    "cta": "Enlace pendiente",
+    "source": "Manual",
+    "tags": [],
+    "dateText": "Lunes 22 de junio 17:00 CEST",
+    "timeText": "17:00 CEST"
+  },
+  {
+    "id": "event-from-nudges-to-boosts-bits-president-lecture-2026-2026-06-23-2026-06-23-online-pending",
+    "title": "From nudges to boosts: BITs President Lecture 2026",
+    "organization": "BITs",
+    "format": "online",
+    "category": "Fuera de horario laboral",
+    "startDate": "2026-06-23",
+    "endDate": "2026-06-23",
+    "timezone": "Europe/Madrid",
+    "workSchedule": "fuera_horario",
+    "url": "#",
+    "cta": "Enlace pendiente",
+    "source": "Manual",
+    "tags": [],
+    "dateText": "Martes 23 de junio 19:00 CEST",
+    "timeText": "19:00 CEST"
   }
 ]
