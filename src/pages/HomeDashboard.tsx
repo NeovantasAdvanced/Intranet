@@ -1181,7 +1181,7 @@ export function HomeDashboard() {
 
       {(showHome || showNews || showDocuments) &&
       (!isSearching || visibleNewsItems.length > 0 || visibleDocumentItems.length > 0) ? (
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <section className={`grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] ${showNews ? 'news-page-shell' : ''}`}>
           {(showHome || showNews) && (!isSearching || visibleNewsItems.length > 0) ? (
             <div id="noticias" className={`home-news-section widget scroll-mt-40 ${showNews ? 'news-page-view' : ''}`}>
               <div className="widget-title">

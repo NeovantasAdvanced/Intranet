@@ -452,6 +452,16 @@ a {
     width: 100%;
   }
 
+  .news-page-shell {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+
+  .news-page-shell .home-news-section {
+    width: 100%;
+  }
+
   @media (max-width: 1200px) {
     .home-blocks-row {
       grid-template-columns: repeat(2, minmax(0, 1fr));
