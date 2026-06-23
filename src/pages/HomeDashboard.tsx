@@ -165,7 +165,7 @@ const homeBlocks: HomeBlock[] = [
     href: '#recursos-empleado',
     actionLabel: 'Ir a Recursos',
     icon: Users,
-    iconClassName: 'bg-[#F0EEFF] text-[#5340B8]',
+    iconClassName: 'bg-[#DFF8FE] text-neovantas-blue',
     links: [
       homeQuickLinks[0],
       homeQuickLinks[1],
@@ -233,7 +233,7 @@ const homeBlocks: HomeBlock[] = [
     href: '#repositorios',
     actionLabel: 'Ir a Repositorios',
     icon: Files,
-    iconClassName: 'bg-[#FEF3E6] text-[#985D0F]',
+    iconClassName: 'bg-[#EEF8FF] text-neovantas-blue',
     links: [
       {
         title: 'Banca',
@@ -259,7 +259,7 @@ const homeBlocks: HomeBlock[] = [
     href: 'https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Herramientas_Neovantas.kdbx?download=1',
     actionLabel: 'Descargar KeePass',
     icon: KeyRound,
-    iconClassName: 'bg-[#E0FAF5] text-[#0A7A65]',
+    iconClassName: 'bg-[#E0FAF5] text-neovantas-blue',
     panelClassName: 'keepass-home-card',
     links: [
       {
@@ -503,7 +503,17 @@ function HomeLinkCard({ item, compact = false }: { item: HomeLink; compact?: boo
         compact ? 'min-h-[112px]' : 'min-h-[132px]'
       }`}
     >
-      <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-[12px] ${item.tone === 'success' ? 'bg-[#EAFBF2] text-neovantas-teal' : item.tone === 'warning' ? 'bg-[#FEF3E6] text-[#985D0F]' : item.tone === 'critical' ? 'bg-[#FFF1E5] text-[#C2410C]' : 'bg-[#EEF8FF] text-neovantas-blue'}`}>
+      <div
+        className={`grid h-11 w-11 shrink-0 place-items-center rounded-[12px] ${
+          item.tone === 'success'
+            ? 'bg-[#EAFBF2] text-neovantas-teal'
+            : item.tone === 'warning'
+            ? 'bg-[#DFF8FE] text-neovantas-blue'
+            : item.tone === 'critical'
+            ? 'bg-[#EEF8FF] text-neovantas-blue'
+            : 'bg-[#EEF8FF] text-neovantas-blue'
+        }`}
+      >
         <Icon className="h-5 w-5" aria-hidden="true" />
       </div>
       <div className="min-w-0 flex-1">
@@ -692,8 +702,6 @@ export function HomeDashboard() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const [showAllNews, setShowAllNews] = useState(false);
-
   const searchQuery = normalizeSearch(searchValue);
   const isSearching = searchQuery.length > 0;
   const showHome = activeTab === 'inicio';
@@ -862,8 +870,8 @@ export function HomeDashboard() {
   const latestNewsItems = sortedNewsItems.filter(
     (item) => item.rawMeta?.newsletterSource === latestNewsSource || item.source === latestNewsSource,
   );
-  const newsItems = (latestNewsItems.length > 0 ? latestNewsItems : filteredContent.news).slice(0, 3);
-  const visibleNewsItems = showNews || showAllNews ? sortedNewsItems : newsItems;
+  const homeNewsItems = (latestNewsItems.length > 0 ? latestNewsItems : sortedNewsItems).slice(0, 4);
+  const visibleNewsItems = showNews ? sortedNewsItems : homeNewsItems;
   const visibleDocumentItems = showDocuments ? filteredContent.documents : documentItems;
   const searchResults = useMemo<PortalSearchResult[]>(() => {
     if (!searchQuery) {
@@ -1175,19 +1183,10 @@ export function HomeDashboard() {
       (!isSearching || visibleNewsItems.length > 0 || visibleDocumentItems.length > 0) ? (
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           {(showHome || showNews) && (!isSearching || visibleNewsItems.length > 0) ? (
-            <div id="noticias" className="home-news-section widget scroll-mt-40">
+            <div id="noticias" className={`home-news-section widget scroll-mt-40 ${showNews ? 'news-page-view' : ''}`}>
               <div className="widget-title">
                 <Newspaper className="h-4 w-4" aria-hidden="true" />
                 Noticias del correo
-                {!showNews && !showAllNews && sortedNewsItems.length > newsItems.length ? (
-                  <button
-                    type="button"
-                    className="section-action rounded-none border-0 bg-transparent p-0"
-                    onClick={() => setShowAllNews(true)}
-                  >
-                    Cargar todas
-                  </button>
-                ) : null}
                 <a href="#noticias" className="section-action">
                   Ver todas
                 </a>
@@ -1495,7 +1494,7 @@ export function HomeDashboard() {
                 return (
                   <div key={app.id} className="p-5">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="grid h-12 w-12 place-items-center rounded-[12px] bg-[#FFF1E5] text-[#C2410C]">
+                      <div className="grid h-12 w-12 place-items-center rounded-[12px] bg-[#DFF8FE] text-neovantas-blue">
                         <Icon className="h-6 w-6" aria-hidden="true" />
                       </div>
                       <Badge tone={app.tone}>{app.status}</Badge>

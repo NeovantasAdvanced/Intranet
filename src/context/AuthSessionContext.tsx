@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { fetchClientPrincipal, getClientPrincipalDisplayName, type ClientPrincipal } from '../lib/auth';
+import { fetchClientPrincipal, getUserFirstName, type ClientPrincipal } from '../lib/auth';
 import { setUsageTrackingPrincipal } from '../lib/usageTracking';
 
 type AuthSessionContextValue = {
@@ -49,7 +49,7 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     () => ({
       authChecked,
       clientPrincipal,
-      displayName: getClientPrincipalDisplayName(clientPrincipal),
+      displayName: getUserFirstName(clientPrincipal),
     }),
     [authChecked, clientPrincipal],
   );
