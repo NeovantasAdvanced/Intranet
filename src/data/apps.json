@@ -60,6 +60,18 @@
     "group": "Diseño y comunicación"
   },
   {
+    "id": "phosphor-icons",
+    "title": "Phosphor Icons",
+    "description": "Biblioteca de iconos flexible para interfaces, presentaciones y materiales digitales.",
+    "owner": "Diseño",
+    "href": "https://phosphoricons.com/",
+    "status": "Operativo",
+    "tone": "success",
+    "icon": "files",
+    "category": "tools",
+    "group": "Iconos"
+  },
+  {
     "id": "freepik-magnific",
     "title": "Freepik / Magnific",
     "description": "Edición y generación visual con Magnific para recursos gráficos.",

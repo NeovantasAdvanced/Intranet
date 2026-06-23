@@ -692,6 +692,8 @@ export function HomeDashboard() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  const [showAllNews, setShowAllNews] = useState(false);
+
   const searchQuery = normalizeSearch(searchValue);
   const isSearching = searchQuery.length > 0;
   const showHome = activeTab === 'inicio';
@@ -861,7 +863,7 @@ export function HomeDashboard() {
     (item) => item.rawMeta?.newsletterSource === latestNewsSource || item.source === latestNewsSource,
   );
   const newsItems = (latestNewsItems.length > 0 ? latestNewsItems : filteredContent.news).slice(0, 3);
-  const visibleNewsItems = showNews ? sortedNewsItems : newsItems;
+  const visibleNewsItems = showNews || showAllNews ? sortedNewsItems : newsItems;
   const visibleDocumentItems = showDocuments ? filteredContent.documents : documentItems;
   const searchResults = useMemo<PortalSearchResult[]>(() => {
     if (!searchQuery) {
@@ -1177,27 +1179,39 @@ export function HomeDashboard() {
               <div className="widget-title">
                 <Newspaper className="h-4 w-4" aria-hidden="true" />
                 Noticias del correo
-                <a href="#noticias" className="section-action">Ver todas</a>
+                {!showNews && !showAllNews && sortedNewsItems.length > newsItems.length ? (
+                  <button
+                    type="button"
+                    className="section-action rounded-none border-0 bg-transparent p-0"
+                    onClick={() => setShowAllNews(true)}
+                  >
+                    Cargar todas
+                  </button>
+                ) : null}
+                <a href="#noticias" className="section-action">
+                  Ver todas
+                </a>
               </div>
-              <div className="space-y-3">
+              <div className="news-grid">
                 {visibleNewsItems.map((item) => (
                   <a
                     key={item.id}
                     href={item.href ?? '#'}
                     {...getLinkProps(item.href ?? '#')}
-                    className="flex items-start gap-4 rounded-[14px] border border-neovantas-line bg-white px-4 py-4 transition hover:-translate-y-0.5 hover:border-neovantas-blue"
+                    className="news-card"
                   >
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#EEF8FF] text-neovantas-blue">
-                      <Newspaper className="h-5 w-5" aria-hidden="true" />
+                    <div className="news-card-icon">
+                      <Newspaper className="h-4 w-4" aria-hidden="true" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="news-card-meta">
                         <Badge tone={item.tone}>{item.status}</Badge>
                         <span className="text-xs font-medium text-neovantas-muted">{item.category}</span>
                         <span className="text-xs text-neovantas-muted">{formatDate(item.date)}</span>
+                        {item.source ? <span className="text-xs text-neovantas-muted">{item.source}</span> : null}
                       </div>
-                      <h3 className="mt-2 text-sm font-semibold text-neovantas-navy">{item.title}</h3>
-                      <p className="mt-1 text-sm leading-6 text-neovantas-muted">{item.excerpt}</p>
+                      <h3>{item.title}</h3>
+                      <p>{item.excerpt}</p>
                     </div>
                   </a>
                 ))}

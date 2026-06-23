@@ -6,15 +6,15 @@ export default {
     extend: {
       colors: {
         neovantas: {
-          ink: '#1A2340',
-          navy: '#0D1E3D',
-          blue: '#1A4A8A',
-          accent: '#2E7CF6',
+          ink: '#0A0A3F',
+          navy: '#0A0A3F',
+          blue: '#001F99',
+          accent: '#58DDFE',
           teal: '#00A98F',
           lime: '#84cc16',
-          mist: '#F5F6FA',
-          line: '#E2E6F0',
-          muted: '#6B7999',
+          mist: '#E6E8EB',
+          line: '#C8C8C8',
+          muted: '#958C86',
         },
       },
       boxShadow: {
@@ -22,8 +22,8 @@ export default {
         elevated: '0 18px 45px rgba(13, 30, 61, 0.12)',
       },
       fontFamily: {
-        sans: ['DM Sans', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['DM Serif Display', 'Georgia', 'serif'],
+        sans: ['Montserrat', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Poppins', 'Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

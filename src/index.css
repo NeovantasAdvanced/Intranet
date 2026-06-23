@@ -1,13 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color: #13213c;
-  background: #f7fbff;
-  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --midnight: #0a0a3f;
+  --deep-blue: #001f99;
+  --cyan: #58ddfe;
+  --white: #ffffff;
+  --black: #000000;
+  --gray-light: #c8c8c8;
+  --gray-dark: #958c86;
+  --off-white: #e6e8eb;
+  color: var(--midnight);
+  background: var(--white);
+  font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,7 +30,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background: linear-gradient(180deg, #f8fbff 0%, #f4f8fe 100%);
+  background: linear-gradient(180deg, var(--white) 0%, #f5f7fb 100%);
+  color: var(--midnight);
 }
 
 button,
@@ -38,7 +47,8 @@ a {
 
 @layer components {
   .focus-ring {
-    @apply outline-none ring-offset-2 ring-offset-white focus-visible:ring-2 focus-visible:ring-[#2e7cf6];
+    @apply outline-none ring-offset-2 ring-offset-white focus-visible:ring-2;
+    --tw-ring-color: var(--deep-blue);
   }
 
   .home-shell {
@@ -56,9 +66,9 @@ a {
     border-radius: 24px;
     border: 1px solid rgba(19, 33, 60, 0.08);
     background:
-      radial-gradient(circle at top right, rgba(46, 124, 246, 0.3), transparent 26%),
-      radial-gradient(circle at left center, rgba(0, 195, 160, 0.2), transparent 22%),
-      linear-gradient(135deg, #07172d 0%, #12316a 50%, #1f63c9 100%);
+      radial-gradient(circle at top right, rgba(88, 221, 254, 0.32), transparent 24%),
+      radial-gradient(circle at left center, rgba(88, 221, 254, 0.14), transparent 22%),
+      linear-gradient(135deg, #0a0a3f 0%, #001f99 52%, #0b5bd3 100%);
     padding: 1.9rem;
     color: #fff;
     box-shadow: 0 26px 64px rgba(13, 30, 61, 0.2);
@@ -107,20 +117,6 @@ a {
     color: rgba(255, 255, 255, 0.9);
   }
 
-  .home-hero-claim {
-    width: fit-content;
-    margin: 0;
-    padding: 0.38rem 0.8rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.82);
-  }
-
   .home-hero-copy p {
     max-width: 58ch;
     margin: 0;
@@ -129,13 +125,24 @@ a {
     color: rgba(255, 255, 255, 0.88);
   }
 
+  .home-hero-copy .home-hero-claim {
+    margin: 0;
+    max-width: 34rem;
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.7;
+    letter-spacing: 0;
+    text-transform: none;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
   .home-hero-copy h1 {
     margin: 0;
     max-width: 12ch;
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     font-size: clamp(2.45rem, 4.6vw, 4.5rem);
     line-height: 0.96;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
   }
 
   .home-search-box {
@@ -195,10 +202,10 @@ a {
 
   .home-blocks-header h2 {
     margin: 0;
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     font-size: 2.1rem;
     line-height: 1.02;
-    color: #11213f;
+    color: var(--midnight);
   }
 
   .home-blocks-header p {
@@ -267,10 +274,10 @@ a {
 
   .home-block-card h3 {
     margin: 0;
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     font-size: 1.34rem;
     line-height: 1.15;
-    color: #11213f;
+    color: var(--midnight);
   }
 
   .home-block-card p {
@@ -354,7 +361,7 @@ a {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: #1f5fd0;
+    color: var(--deep-blue);
   }
 
   .section-action {
@@ -374,7 +381,66 @@ a {
   }
 
   .home-news-section .section-action {
-    color: #1f5fd0;
+    color: var(--deep-blue);
+  }
+
+  .news-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .news-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    border: 1px solid var(--off-white);
+    border-radius: 14px;
+    background: #fff;
+    padding: 0.85rem;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .news-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 31, 153, 0.18);
+    box-shadow: 0 12px 24px rgba(10, 10, 63, 0.06);
+  }
+
+  .news-card h3 {
+    margin: 0.2rem 0 0;
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.96rem;
+    line-height: 1.25;
+    color: var(--midnight);
+  }
+
+  .news-card p {
+    margin: 0.25rem 0 0;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: #53617a;
+  }
+
+  .news-card .news-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    align-items: center;
+  }
+
+  .news-card .news-card-icon {
+    display: grid;
+    height: 38px;
+    width: 38px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(88, 221, 254, 0.14);
+    color: var(--deep-blue);
   }
 
   @media (max-width: 1200px) {
@@ -405,6 +471,10 @@ a {
     }
 
     .home-blocks-row {
+      grid-template-columns: 1fr;
+    }
+
+    .news-grid {
       grid-template-columns: 1fr;
     }
   }
