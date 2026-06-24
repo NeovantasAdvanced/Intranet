@@ -264,7 +264,7 @@ function parseItemBlock(block, context) {
   const dateIso = context.dateIso || '';
   const id = `news-${dateIso}-${slugify([context.category, block.title, dateIso].filter(Boolean).join(' '))}`;
 
-  if (!block.title || !url) {
+  if (!block.title) {
     return null;
   }
 
@@ -276,7 +276,7 @@ function parseItemBlock(block, context) {
     summary,
     excerpt: summary,
     url,
-    href: url,
+    href: url || '',
     date: dateIso,
     rawMeta: buildRawMeta({
       briefingTitle: context.briefingTitle,
