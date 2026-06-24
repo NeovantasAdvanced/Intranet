@@ -34,7 +34,7 @@ const config = {
   status: process.env.NEWS_STATUS ?? 'Nuevo',
   source: process.env.NEWS_SOURCE ?? 'Noticias relevantes de hoy',
   lookbackDays: Number(process.env.NEWS_LOOKBACK_DAYS ?? '3'),
-  maxItems: Number(process.env.NEWS_MAX_ITEMS ?? '10'),
+  maxItems: Number(process.env.NEWS_MAX_ITEMS ?? '0'),
   allowUnfilteredInbox: String(process.env.NEWS_ALLOW_UNFILTERED_INBOX ?? 'false').toLowerCase() === 'true',
   htmlFixturePath: process.env.NEWS_HTML_FIXTURE_PATH,
 };
@@ -371,6 +371,27 @@ function logNewsParseDebug(parsedEmail) {
   console.log(
     `[Outlook news] numbered lines: ${debugSnapshot.numberedLines.length > 0 ? debugSnapshot.numberedLines.join(' | ') : '(none)'}`,
   );
+  const sectionCounts = new Map();
+  for (const item of parsedEmail.items) {
+    const key = item.category || 'Noticias';
+    sectionCounts.set(key, (sectionCounts.get(key) ?? 0) + 1);
+  }
+  console.log(
+    `[Outlook news] secciones detectadas: ${
+      parsedEmail.categoriesDetected.length > 0
+        ? parsedEmail.categoriesDetected.map((item) => `${item.category}: ${item.expectedCount}`).join(' | ')
+        : '(ninguna)'
+    }`,
+  );
+  console.log(
+    `[Outlook news] noticias parseadas por sección: ${
+      sectionCounts.size > 0
+        ? Array.from(sectionCounts.entries())
+            .map(([section, count]) => `${section}: ${count}`)
+            .join(' | ')
+        : '(ninguna)'
+    }`,
+  );
 }
 
 async function main() {
@@ -452,6 +473,7 @@ async function main() {
     (item) => item.source !== config.source && item.rawMeta?.newsletterSource !== config.source,
   );
   const seenIds = new Set();
+  const newsLimit = Number.isFinite(config.maxItems) && config.maxItems > 0 ? config.maxItems : Number.POSITIVE_INFINITY;
   const mergedNews = [...parsedNews, ...manualNews]
     .filter((item) => {
       if (seenIds.has(item.id)) {
@@ -461,13 +483,16 @@ async function main() {
       seenIds.add(item.id);
       return true;
     })
-    .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime())
-    .slice(0, Math.max(config.maxItems, 10));
+    .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
 
-  await writeFile(outputPath, `${JSON.stringify(mergedNews, null, 2)}\n`, 'utf8');
+  const newsToWrite =
+    Number.isFinite(newsLimit) && newsLimit > 0 ? mergedNews.slice(0, newsLimit) : mergedNews;
+
+  await writeFile(outputPath, `${JSON.stringify(newsToWrite, null, 2)}\n`, 'utf8');
 
   console.log(`[Outlook news] numero de noticias extraidas: ${parsedNews.length}`);
-  console.log(`Outlook news synced: ${parsedNews.length} mail news, ${mergedNews.length} total news.`);
+  console.log(`[Outlook news] numero de noticias guardadas: ${newsToWrite.length}`);
+  console.log(`Outlook news synced: ${parsedNews.length} mail news, ${newsToWrite.length} total news.`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

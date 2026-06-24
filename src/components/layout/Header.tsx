@@ -1,4 +1,4 @@
-import { Bell, LogIn, LogOut, Settings2, ShieldCheck, UserRound } from 'lucide-react';
+import { LogIn, LogOut, Settings2, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
 import { useAuthSession } from '../../context/AuthSessionContext';
@@ -18,7 +18,7 @@ function getLinkProps(href: string) {
 }
 
 export function Header() {
-  const { authChecked, clientPrincipal } = useAuthSession();
+  const { authChecked, clientPrincipal, displayName } = useAuthSession();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -27,8 +27,11 @@ export function Header() {
 
   const isAuthenticated = Boolean(clientPrincipal);
   const authHref = isAuthenticated ? '/logout' : '/login';
-  const authLabel = isAuthenticated ? clientPrincipal?.userDetails ?? 'Sesion iniciada' : 'Microsoft 365';
-  const authTitle = isAuthenticated ? `Cerrar sesion: ${authLabel}` : 'Iniciar sesion con Microsoft 365';
+  const userEmail = clientPrincipal?.userDetails?.trim() ?? '';
+  const authLabel = isAuthenticated ? displayName || 'Sesion iniciada' : 'Microsoft 365';
+  const authTitle = isAuthenticated
+    ? `Cerrar sesion: ${userEmail || displayName || 'Sesion iniciada'}`
+    : 'Iniciar sesion con Microsoft 365';
   const initials = getInitials(authLabel) || 'N';
 
   return (
@@ -59,13 +62,6 @@ export function Header() {
               <Settings2 className="h-4 w-4" aria-hidden="true" />
             </a>
           ) : null}
-          <button
-            type="button"
-            className="focus-ring hidden h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/18 hover:text-white lg:grid"
-            aria-label="Notificaciones"
-          >
-            <Bell className="h-4 w-4" aria-hidden="true" />
-          </button>
           <a
             href={authHref}
             {...getLinkProps(authHref)}

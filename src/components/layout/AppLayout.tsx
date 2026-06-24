@@ -46,7 +46,7 @@ function PortalNavigation() {
 
   return (
     <nav
-      className="border-b border-neovantas-line bg-white/95 px-3 shadow-[0_1px_0_rgba(13,30,61,0.03)] backdrop-blur md:px-8"
+      className="border-b border-[#d8e3f1] bg-white/96 px-3 shadow-[0_1px_0_rgba(13,30,61,0.03)] backdrop-blur md:px-8"
       aria-label="Navegacion principal"
     >
       <div className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto py-2">
@@ -61,11 +61,11 @@ function PortalNavigation() {
               onClick={() => setActiveHash(item.href)}
               className={`focus-ring flex h-10 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-semibold transition ${
                 isActive
-                  ? 'bg-neovantas-navy text-white shadow-sm'
-                  : 'text-neovantas-muted hover:bg-neovantas-mist hover:text-neovantas-navy'
+                  ? 'border border-neovantas-blue bg-neovantas-navy text-white shadow-sm ring-1 ring-neovantas-cyan/35'
+                  : 'border border-transparent text-neovantas-ink/65 hover:border-neovantas-cyan/25 hover:bg-[#eef6ff] hover:text-neovantas-blue'
               }`}
             >
-              <Icon className="h-4 w-4" aria-hidden="true" />
+              <Icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-neovantas-ink/65'}`} aria-hidden="true" />
               <span>{item.label}</span>
             </a>
           );
@@ -118,13 +118,13 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <AuthSessionProvider>
       <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>
-        <div className="min-h-screen bg-neovantas-mist text-neovantas-ink">
+        <div className="min-h-screen bg-[#f7f9fc] text-neovantas-ink">
           <div className="sticky top-0 z-30">
             <Header />
             <PortalNavigation />
           </div>
 
-          <main className="min-w-0 px-4 py-7 md:px-8 md:py-10">
+          <main className="min-w-0 bg-transparent px-4 py-7 md:px-8 md:py-10">
             <div className="mx-auto w-full max-w-[1200px]">{children}</div>
           </main>
 
