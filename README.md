@@ -105,9 +105,20 @@ Configuracion actual:
 - `NEWS_SENDER` es opcional y solo conviene usarlo si quieres fijar un remitente concreto
 - `NEWS_MAIL_FOLDER_ID` en `secrets` o `vars` solo si quieres fijar el id exacto de la carpeta
 - `NEWS_HTML_FIXTURE_PATH` para probar el parser localmente con un `.mht`, HTML exportado de Outlook o un texto plano del briefing
+- `NEWS_TENANT_ID`, `NEWS_CLIENT_ID`, `NEWS_CLIENT_SECRET` en `secrets` para Graph
+- `NEWS_MAX_ITEMS` en `vars` solo si quieres limitar de forma expresa el total publicado; el valor por defecto del workflow ya es alto para no recortar secciones
 
 El workflow usa esas variables y filtra en JavaScript para excluir correos como `Noticias People de hoy`.
 En la Home, la seccion de noticias prioriza los items cuyo `rawMeta.newsletterSource` es `Noticias relevantes de hoy`, para mostrar solo las noticias extraidas del ultimo correo diario.
+
+Para que no dependa de una ejecucion manual, revisa que:
+
+- el workflow tenga `schedule` activo en GitHub Actions,
+- los secrets de Graph sigan vigentes,
+- `NEWS_MAILBOX_USER_ID` siga apuntando al buzón que recibe el correo diario,
+- el commit automatico pueda empujar a `main` sin bloqueos de permisos.
+
+Si cambias la cuenta o rotas credenciales, no hace falta tocar la UI: basta con actualizar los secrets del workflow y volver a ejecutar el sync programado.
 
 Si el parseo falla, el workflow deja artefactos de depuracion en `tmp/latest-news-email.txt` y `tmp/latest-news-parsed-debug.json`.
 Este sync se ejecuta cada dia a las 09:10 hora de Madrid, que en GitHub Actions corresponde a `07:10 UTC`. Tambien se puede lanzar manualmente. Ya no se dispara por `push` en `main`; se ejecuta por programacion o manualmente para evitar ciclos cuando hace commit de `news.json`.
