@@ -192,7 +192,7 @@ function isCategoryLine(line) {
 }
 
 function isItemLine(line) {
-  const match = normalizeSpaces(line).match(/^(\d+)\.\s+(.+)$/);
+  const match = normalizeSpaces(line).match(/^(\d+)\s*[.)-]?\s+(.+)$/);
   if (!match) {
     return null;
   }
