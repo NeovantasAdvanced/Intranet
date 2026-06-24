@@ -36,7 +36,7 @@ on:
       lookback_days:
         description: 'How many days back to search'
         required: false
-        default: '3'
+        default: '14'
         type: string
       max_items:
         description: 'Maximum Outlook news items to publish (use a high value to keep all)'
@@ -94,20 +94,21 @@ jobs:
         if: steps.madrid-schedule.outputs.should_run == 'true'
         env:
           RAW_NEWS_MAIL_FOLDER: ${{ vars.NEWS_MAIL_FOLDER }}
+          RAW_NEWS_MAIL_FOLDER_NAME: ${{ vars.NEWS_MAIL_FOLDER_NAME || inputs.mail_folder_name }}
         run: |
-          raw="${RAW_NEWS_MAIL_FOLDER:-}"
+          raw="${RAW_NEWS_MAIL_FOLDER_NAME:-${RAW_NEWS_MAIL_FOLDER:-}}"
           normalized="$(printf '%s' "$raw" | tr -d '\r' | sed 's#\\#/#g' | xargs)"
           case "$(printf '%s' "$normalized" | tr '[:upper:]' '[:lower:]')" in
             ""|"/mailfolders/inbox/childfolders"|"mailfolders/inbox/childfolders"|"inbox")
-              echo "NEWS_MAIL_FOLDER=sentitems" >> "$GITHUB_ENV"
-              echo "::notice::NEWS_MAIL_FOLDER invalid or empty; using sentitems."
+              echo "NEWS_MAIL_FOLDER=inbox/Neovantas" >> "$GITHUB_ENV"
+              echo "::notice::NEWS_MAIL_FOLDER invalid or empty; using inbox/Neovantas."
               ;;
             *)
               echo "NEWS_MAIL_FOLDER=$normalized" >> "$GITHUB_ENV"
               ;;
           esac
           echo "NEWS_MAIL_FOLDER_RAW=$raw" >> "$GITHUB_ENV"
-          echo "NEWS_SUBJECT_PREFIX=${{ vars.NEWS_SUBJECT_PREFIX || 'Noticias relevantes de hoy' }}" >> "$GITHUB_ENV"
+          echo "NEWS_SUBJECT_PREFIX=${{ vars.NEWS_SUBJECT_PREFIX || vars.NEWS_SUBJECT_CONTAINS || inputs.subject_contains || 'Noticias relevantes de hoy' }}" >> "$GITHUB_ENV"
 
       - name: Check news configuration
         if: steps.madrid-schedule.outputs.should_run == 'true'
@@ -130,14 +131,14 @@ jobs:
           NEWS_CLIENT_ID: ${{ secrets.NEWS_CLIENT_ID || secrets.SHAREPOINT_CLIENT_ID }}
           NEWS_CLIENT_SECRET: ${{ secrets.NEWS_CLIENT_SECRET || secrets.SHAREPOINT_CLIENT_SECRET }}
           NEWS_MAILBOX_USER_ID: ${{ inputs.mailbox_user_id || secrets.NEWS_MAILBOX_USER_ID }}
-          NEWS_MAIL_FOLDER_ID: ${{ vars.NEWS_MAIL_FOLDER_ID || secrets.NEWS_MAIL_FOLDER_ID }}
+          NEWS_MAIL_FOLDER: ${{ vars.NEWS_MAIL_FOLDER || vars.NEWS_MAIL_FOLDER_NAME || inputs.mail_folder_name || 'inbox/Neovantas' }}
           NEWS_SENDER: ${{ inputs.sender || vars.NEWS_SENDER || 'advanced.analytics@neovantas.com' }}
-          NEWS_SUBJECT_PREFIX: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_PREFIX || 'Noticias relevantes de hoy' }}
+          NEWS_SUBJECT_PREFIX: ${{ inputs.subject_contains || vars.NEWS_SUBJECT_PREFIX || vars.NEWS_SUBJECT_CONTAINS || 'Noticias relevantes de hoy' }}
           NEWS_CATEGORY: ${{ vars.NEWS_CATEGORY || 'Comunicacion' }}
           NEWS_STATUS: ${{ vars.NEWS_STATUS || 'Nuevo' }}
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Noticias relevantes de hoy' }}
           NEWS_ALLOW_UNFILTERED_INBOX: ${{ vars.NEWS_ALLOW_UNFILTERED_INBOX || 'false' }}
-          NEWS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.NEWS_LOOKBACK_DAYS || '3' }}
+          NEWS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.NEWS_LOOKBACK_DAYS || '14' }}
           NEWS_MAX_ITEMS: ${{ inputs.max_items || vars.NEWS_MAX_ITEMS || '1000' }}
 
       - name: Upload news debug artifacts

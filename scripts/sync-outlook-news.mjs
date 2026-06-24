@@ -20,20 +20,28 @@ import {
 const outputPath = path.resolve('src/data/news.json');
 
 const rawFolderReference =
-  process.env.NEWS_MAIL_FOLDER_RAW ?? process.env.NEWS_MAIL_FOLDER ?? process.env.NEWS_MAIL_FOLDER_NAME ?? '';
-const effectiveFolderReference = sanitizeFolderReference(process.env.NEWS_MAIL_FOLDER ?? rawFolderReference);
+  process.env.NEWS_MAIL_FOLDER_RAW ??
+  process.env.NEWS_MAIL_FOLDER ??
+  process.env.NEWS_MAIL_FOLDER_NAME ??
+  'inbox/Neovantas';
+const effectiveFolderReference = sanitizeFolderReference(
+  process.env.NEWS_MAIL_FOLDER ??
+  process.env.NEWS_MAIL_FOLDER_NAME ??
+  rawFolderReference ??
+  'inbox/Neovantas',
+);
 
 const config = {
   mailboxUserId: process.env.NEWS_MAILBOX_USER_ID,
   folderName: effectiveFolderReference,
   rawFolderReference,
-  folderId: process.env.NEWS_MAIL_FOLDER_ID,
+  folderId: '',
   subjectPrefix: process.env.NEWS_SUBJECT_PREFIX || process.env.NEWS_SUBJECT_CONTAINS || 'Noticias relevantes de hoy',
   sender: process.env.NEWS_SENDER,
   category: process.env.NEWS_CATEGORY ?? 'Comunicacion',
   status: process.env.NEWS_STATUS ?? 'Nuevo',
   source: process.env.NEWS_SOURCE ?? 'Noticias relevantes de hoy',
-  lookbackDays: Number(process.env.NEWS_LOOKBACK_DAYS ?? '3'),
+  lookbackDays: Number(process.env.NEWS_LOOKBACK_DAYS ?? '14'),
   maxItems: Number(process.env.NEWS_MAX_ITEMS ?? '0'),
   allowUnfilteredInbox: String(process.env.NEWS_ALLOW_UNFILTERED_INBOX ?? 'false').toLowerCase() === 'true',
   htmlFixturePath: process.env.NEWS_HTML_FIXTURE_PATH,
@@ -248,8 +256,22 @@ async function listMessagesFromFolder(accessToken, mailboxUserId, folderId, fold
     },
   );
 
-  console.log(`[Outlook news] Mensajes recuperados desde ${folderLabel}: ${messages.length}`);
+  console.log(`[Outlook news] mensajes recuperados desde ${folderLabel}: ${messages.length}`);
   return messages;
+}
+
+function maskMailboxUserId(value) {
+  const text = String(value ?? '').trim();
+  if (!text) {
+    return '(vacío)';
+  }
+
+  if (!text.includes('@')) {
+    return `${text.slice(0, 4)}***`;
+  }
+
+  const [local, domain] = text.split('@');
+  return `${local.slice(0, 2)}***@${domain}`;
 }
 
 async function listNewsMessages(accessToken) {
@@ -261,7 +283,9 @@ async function listNewsMessages(accessToken) {
     folderLabel: 'news',
   });
 
-  console.log(`[Outlook news] ruta final resuelta: ${resolvedFolder.resolvedPath}`);
+  console.log(`[Outlook news] buzón enmascarado: ${maskMailboxUserId(config.mailboxUserId)}`);
+  console.log(`[Outlook news] carpeta efectiva: ${config.folderName || 'inbox/Neovantas'}`);
+  console.log(`[Outlook news] ruta resuelta: ${resolvedFolder.resolvedPath}`);
 
   const primaryMessages = await listMessagesFromFolder(
     accessToken,
@@ -397,12 +421,16 @@ function logNewsParseDebug(parsedEmail) {
 async function main() {
   console.log(`[Outlook news] mailbox usado: ${config.mailboxUserId}`);
   console.log(`[Outlook news] NEWS_MAIL_FOLDER bruto: ${config.rawFolderReference || '(vacío)'}`);
+  if (process.env.NEWS_MAIL_FOLDER_ID) {
+    console.log('[Outlook news] NEWS_MAIL_FOLDER_ID presente pero ignorado; el flujo usa inbox/Neovantas.');
+  }
   if (config.folderName) {
     console.log(`[Outlook news] carpeta efectiva: ${config.folderName}`);
   } else {
-    console.log('[Outlook news] NEWS_MAIL_FOLDER no está definida; usando fallback inbox.');
+    console.log('[Outlook news] NEWS_MAIL_FOLDER no está definida; usando fallback inbox/Neovantas.');
   }
   console.log(`[Outlook news] prefijo de asunto: ${config.subjectPrefix}`);
+  console.log(`[Outlook news] lookback days: ${config.lookbackDays}`);
 
   const existingNews = await readExistingNews();
 
@@ -442,6 +470,9 @@ async function main() {
 
     const selectedMessage = candidateMessages[0];
     console.log(`[Outlook news] asunto seleccionado: ${selectedMessage.subject}`);
+    console.log(
+      `[Outlook news] fecha del briefing: ${selectedMessage.receivedDateTime ? toDateOnly(selectedMessage.receivedDateTime) : toDateOnly(new Date().toISOString())}`,
+    );
 
     const selectedMessageDetails = await getMessageDetails(accessToken, config.mailboxUserId, selectedMessage.id);
     const html = selectedMessageDetails.body?.content ?? selectedMessage.bodyPreview ?? '';

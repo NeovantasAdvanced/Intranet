@@ -16,9 +16,9 @@ La intranet puede regenerar `src/data/news.json` leyendo correos de Outlook con 
 Para los briefings actuales de Neovantas, la configuracion recomendada es leer el buzon que genera los correos y no los buzones personales de destinatarios:
 
 - Buzon: `AdvancedAnalytics@neovantas.com`
-- Carpeta: `sentitems`
+- Carpeta: `inbox/Neovantas`
 - Remitente: `advanced.analytics@neovantas.com`
-- Asunto contiene: `Noticias`
+- Asunto contiene: `Noticias relevantes de hoy`
 
 Asi se publican los envios originales y se evitan respuestas, reenvios o conversaciones personales.
 
@@ -28,13 +28,6 @@ Si mas adelante se prefiere aislarlo aun mas, lo mas seguro es crear una carpeta
 - Carpeta: `Intranet`
 
 Despues, crear una regla en Outlook o Exchange para mover el correo diario de noticias a esa carpeta. Asi se evita importar correos no deseados.
-
-En la revision inicial del correo conectado se ha encontrado una carpeta candidata:
-
-- Carpeta: `INFO-NEOVANTAS`
-- Folder id: `AAMkAGZkMDc3OTI2LTFiODUtNGQyOC05YjExLTU5MGUzMmY2MGM0YwAuAAAAAADYAFAgqiUITKtkPiPJzrA6AQDgZ5BpEs7DRIQFp4o3bFPcAAAMoarGAAA=`
-
-Esa carpeta contiene newsletters y correos comerciales mezclados. No debe usarse sin filtro; configura `NEWS_SENDER` y/o `NEWS_SUBJECT_CONTAINS`.
 
 ## Permisos Microsoft Graph
 
@@ -72,13 +65,12 @@ Si no se definen estos tres, el workflow intenta reutilizar:
 
 Configurar en `Settings > Secrets and variables > Actions > Variables`:
 
-- `NEWS_MAIL_FOLDER_ID`: carpeta a leer. Por defecto `sentitems`.
 - `NEWS_SENDER`: remitente permitido. Por defecto `advanced.analytics@neovantas.com`.
 - `NEWS_SUBJECT_CONTAINS`: texto que debe contener el asunto. Por defecto `Noticias relevantes de hoy`.
 - `NEWS_CATEGORY`: categoria visible en intranet. Por defecto `Comunicacion`.
 - `NEWS_STATUS`: badge visible. Por defecto `Nuevo`.
 - `NEWS_SOURCE`: origen visible. Por defecto `Outlook`.
-- `NEWS_LOOKBACK_DAYS`: ventana de busqueda. Por defecto `3`.
+- `NEWS_LOOKBACK_DAYS`: ventana de busqueda. Por defecto `14`.
 - `NEWS_MAX_ITEMS`: maximo de noticias de correo. Por defecto `1000`.
 - `NEWS_ALLOW_UNFILTERED_INBOX`: solo usar `true` si el Inbox del buzon contiene exclusivamente noticias publicables.
 
@@ -90,21 +82,21 @@ Para probar sin dejar todas las variables creadas:
 
 1. Configurar los permisos Graph y el secret `NEWS_MAILBOX_USER_ID`, o introducir el buzon en el formulario manual.
 2. Ejecutar `Actions > Sync Outlook news > Run workflow`.
-3. Rellenar `mailbox_user_id`, `mail_folder_id`, `sender` y/o `subject_contains`.
+3. Rellenar `mailbox_user_id`, `mail_folder_name`, `sender` y/o `subject_contains`.
 4. Revisar el log `Outlook news synced`.
 5. Si hay cambios, revisar el commit `chore: sync Outlook news`.
 
 Ejemplo de prueba recomendado:
 
 - `mailbox_user_id`: `AdvancedAnalytics@neovantas.com`
-- `mail_folder_id`: `sentitems`
+- `mail_folder_name`: `Neovantas`
 - `sender`: `advanced.analytics@neovantas.com`
 - `subject_contains`: `Noticias relevantes de hoy`
 
 Ejemplo de prueba con la carpeta candidata:
 
 - `mailbox_user_id`: buzon que contiene `INFO-NEOVANTAS`, por ejemplo `info@neovantas.com`
-- `mail_folder_id`: `AAMkAGZkMDc3OTI2LTFiODUtNGQyOC05YjExLTU5MGUzMmY2MGM0YwAuAAAAAADYAFAgqiUITKtkPiPJzrA6AQDgZ5BpEs7DRIQFp4o3bFPcAAAMoarGAAA=`
+- `mail_folder_name`: `Neovantas`
 - `subject_contains`: texto estable del correo diario de noticias
 - `sender`: remitente exacto si lo conocemos
 

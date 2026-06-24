@@ -100,10 +100,9 @@ El script ya no guarda el mensaje completo como una sola noticia. Extrae las not
 Configuracion actual:
 
 - `NEWS_MAILBOX_USER_ID` en `secrets`
-- `NEWS_MAIL_FOLDER=sentitems` en `vars`
+- `NEWS_MAIL_FOLDER=inbox/Neovantas` en `vars`
 - `NEWS_SUBJECT_PREFIX=Noticias relevantes de hoy` en `vars`
 - `NEWS_SENDER` es opcional y solo conviene usarlo si quieres fijar un remitente concreto
-- `NEWS_MAIL_FOLDER_ID` en `secrets` o `vars` solo si quieres fijar el id exacto de la carpeta
 - `NEWS_HTML_FIXTURE_PATH` para probar el parser localmente con un `.mht`, HTML exportado de Outlook o un texto plano del briefing
 - `NEWS_TENANT_ID`, `NEWS_CLIENT_ID`, `NEWS_CLIENT_SECRET` en `secrets` para Graph
 - `NEWS_MAX_ITEMS` en `vars` solo si quieres limitar de forma expresa el total publicado; el valor por defecto del workflow ya es alto para no recortar secciones
