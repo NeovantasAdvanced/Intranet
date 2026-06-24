@@ -39,9 +39,9 @@ on:
         default: '3'
         type: string
       max_items:
-        description: 'Maximum Outlook news items to publish'
+        description: 'Maximum Outlook news items to publish (use a high value to keep all)'
         required: false
-        default: '10'
+        default: '1000'
         type: string
 
 permissions:
@@ -137,7 +137,7 @@ jobs:
           NEWS_SOURCE: ${{ vars.NEWS_SOURCE || 'Noticias relevantes de hoy' }}
           NEWS_ALLOW_UNFILTERED_INBOX: ${{ vars.NEWS_ALLOW_UNFILTERED_INBOX || 'false' }}
           NEWS_LOOKBACK_DAYS: ${{ inputs.lookback_days || vars.NEWS_LOOKBACK_DAYS || '3' }}
-          NEWS_MAX_ITEMS: ${{ inputs.max_items || vars.NEWS_MAX_ITEMS || '10' }}
+          NEWS_MAX_ITEMS: ${{ inputs.max_items || vars.NEWS_MAX_ITEMS || '1000' }}
 
       - name: Upload news debug artifacts
         if: failure()
