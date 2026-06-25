@@ -1,4 +1,5 @@
 import { AppLayout } from './components/layout/AppLayout';
+import { AdminCenterPage } from './pages/AdminCenterPage';
 import { AdminUsagePage } from './pages/AdminUsagePage';
 import { HomeDashboard } from './pages/HomeDashboard';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,10 @@ function getRouteName() {
 
   const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
   const hash = window.location.hash.replace(/^#\/?/, '/').replace(/\/+$/, '');
+
+  if (pathname === '/admin' || pathname.startsWith('/admin?')) {
+    return 'admin-center';
+  }
 
   if (pathname === '/admin/usage' || hash === '/admin/usage') {
     return 'admin-usage';
@@ -35,7 +40,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const label = routeName === 'admin-usage' ? 'Uso de la intranet' : 'Inicio';
+    const label =
+      routeName === 'admin-center' ? 'Centro de Administración' : routeName === 'admin-usage' ? 'Uso de la intranet' : 'Inicio';
     trackUsageEvent({
       kind: 'pageview',
       label,
@@ -47,7 +53,13 @@ export default function App() {
 
   return (
     <AppLayout>
-      {routeName === 'admin-usage' ? <AdminUsagePage /> : <HomeDashboard />}
+      {routeName === 'admin-center' ? (
+        <AdminCenterPage />
+      ) : routeName === 'admin-usage' ? (
+        <AdminUsagePage />
+      ) : (
+        <HomeDashboard />
+      )}
     </AppLayout>
   );
 }

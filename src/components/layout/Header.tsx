@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
 import { useAuthSession } from '../../context/AuthSessionContext';
 import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
+import { isAdmin as isAdminAllowed } from '../../lib/accessControl';
 
 function getInitials(value: string) {
   return value
@@ -22,7 +23,14 @@ export function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    setIsAdmin(Boolean(clientPrincipal && (isAdminUser(clientPrincipal.userDetails) || isOffice365AdminPrincipal(clientPrincipal))));
+    setIsAdmin(
+      Boolean(
+        clientPrincipal &&
+          (isAdminAllowed(clientPrincipal.userDetails) ||
+            isAdminUser(clientPrincipal.userDetails) ||
+            isOffice365AdminPrincipal(clientPrincipal)),
+      ),
+    );
   }, [clientPrincipal]);
 
   const isAuthenticated = Boolean(clientPrincipal);
@@ -54,10 +62,10 @@ export function Header() {
         <div className="ml-auto flex items-center gap-2">
           {isAdmin ? (
             <a
-              href="/admin/usage"
+              href="/admin"
               className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/75 transition hover:bg-white/18 hover:text-white"
-              aria-label="Uso de la intranet"
-              title="Uso de la intranet"
+              aria-label="Administración"
+              title="Administración"
             >
               <Settings2 className="h-4 w-4" aria-hidden="true" />
             </a>

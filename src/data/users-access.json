@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Fernando Macías",
+    "email": "fmacias@neovantas.com",
+    "department": "Advanced Analytics",
+    "jobTitle": "Manager",
+    "permissions": {
+      "admin": true,
+      "repositories": true
+    }
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "admins": {
+    "allowedEmails": [
+      "fmacias@neovantas.com"
+    ]
+  },
+  "repositories": {
+    "allowedEmails": [
+      "fmacias@neovantas.com"
+    ]
+  }
+}

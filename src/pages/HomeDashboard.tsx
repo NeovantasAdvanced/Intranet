@@ -38,6 +38,7 @@ import { SectionHeader } from '../components/ui/SectionHeader';
 import { SearchBar } from '../components/ui/SearchBar';
 import { useAuthSession } from '../context/AuthSessionContext';
 import { usePortalSearch } from '../context/PortalSearchContext';
+import { canAccessFeature } from '../lib/accessControl';
 import { EventsSection } from '../components/events/EventsSection';
 import { UpcomingEventsBlock } from '../components/events/UpcomingEventsBlock';
 import { getTodayIso, isPastEvent, sortEventsAscending } from '../lib/events';
@@ -691,7 +692,7 @@ function getActivePortalTab(): PortalTabId {
 
 export function HomeDashboard() {
   const { searchValue, setSearchValue } = usePortalSearch();
-  const { authChecked, displayName } = useAuthSession();
+  const { authChecked, displayName, clientPrincipal } = useAuthSession();
   const [repositoryFilter, setRepositoryFilter] = useState<RepositoryFilterId>('all');
   const [projectFilter, setProjectFilter] = useState('all');
   const [sharePointSearch, setSharePointSearch] = useState('');
@@ -716,6 +717,7 @@ export function HomeDashboard() {
   const showEvents = activeTab === 'eventos';
   const showNews = activeTab === 'noticias';
   const showSupport = activeTab === 'soporte-ast';
+  const canViewRepositories = canAccessFeature('repositories', clientPrincipal?.userDetails ?? '');
 
   const filteredContent = useMemo(
     () => ({
@@ -1260,7 +1262,7 @@ export function HomeDashboard() {
         <EventsSection events={filteredContent.events} todayIso={todayIso} />
       ) : null}
 
-      {showRepositories && (!isSearching || filteredContent.sharePointResources.length > 0) ? (
+      {showRepositories && canViewRepositories && (!isSearching || filteredContent.sharePointResources.length > 0) ? (
         <section id="repositorios" className="scroll-mt-40">
           <SectionHeader
             title="Repositorios SharePoint"
@@ -1470,6 +1472,12 @@ export function HomeDashboard() {
             </div>
           </div>
         </section>
+      ) : null}
+      {showRepositories && !canViewRepositories ? (
+        <Card className="p-8 text-center">
+          <h2 className="text-lg font-semibold text-neovantas-navy">No tienes permisos para acceder a Repositorios.</h2>
+          <p className="mt-2 text-sm text-neovantas-muted">Contacta con Administración si necesitas acceso.</p>
+        </Card>
       ) : null}
 
       {showResources && (!isSearching || employeeApps.length > 0) ? (

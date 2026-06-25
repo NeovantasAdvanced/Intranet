@@ -12,6 +12,8 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { APP_VERSION } from '../../config/appVersion';
 import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
+import { useAuthSession } from '../../context/AuthSessionContext';
+import { canAccessFeature } from '../../lib/accessControl';
 import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
 
@@ -31,6 +33,7 @@ const navigation = [
 ];
 
 function PortalNavigation() {
+  const { clientPrincipal } = useAuthSession();
   const [activeHash, setActiveHash] = useState(() =>
     typeof window === 'undefined' ? '#inicio' : window.location.hash || '#inicio',
   );
@@ -44,13 +47,18 @@ function PortalNavigation() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  const userEmail = clientPrincipal?.userDetails ?? '';
+  const visibleNavigation = navigation.filter((item) =>
+    item.href === '#repositorios' ? canAccessFeature('repositories', userEmail) : true,
+  );
+
   return (
     <nav
       className="border-b border-[#d8e3f1] bg-white/96 px-3 shadow-[0_1px_0_rgba(13,30,61,0.03)] backdrop-blur md:px-8"
       aria-label="Navegacion principal"
     >
       <div className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto py-2">
-        {navigation.map((item) => {
+        {visibleNavigation.map((item) => {
           const Icon = item.icon;
           const isActive = activeHash === item.href;
 
