@@ -663,6 +663,10 @@ function getLinkProps(href: string) {
     : { target: '_blank', rel: 'noreferrer' as const };
 }
 
+function shouldShowStatusBadge(status?: string) {
+  return Boolean(status && !['Operativo', 'Disponible'].includes(status));
+}
+
 const portalTabIds = [
   'inicio',
   'herramientas',
@@ -1123,7 +1127,6 @@ export function HomeDashboard() {
                   <div className="grid h-12 w-12 place-items-center rounded-[12px] bg-white/15 text-white">
                     <Icon className="h-6 w-6" aria-hidden="true" />
                   </div>
-                  <Badge tone={app.tone}>{app.status}</Badge>
                 </div>
                 <h3 className="mt-4 text-lg font-semibold">{app.title}</h3>
                 <p className="mt-2 text-sm leading-6">{app.description}</p>
@@ -1153,7 +1156,7 @@ export function HomeDashboard() {
                     <div className="grid h-11 w-11 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-blue">
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </div>
-                    <Badge tone={app.tone}>{app.status}</Badge>
+                    {shouldShowStatusBadge(app.status) ? <Badge tone={app.tone}>{app.status}</Badge> : null}
                   </div>
                   <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-neovantas-muted">{app.group}</p>
                   <h3 className="mt-2 text-base font-semibold text-neovantas-navy">{app.title}</h3>
@@ -1370,7 +1373,7 @@ export function HomeDashboard() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <Badge tone={item.tone}>{item.status}</Badge>
+                            {shouldShowStatusBadge(item.status) ? <Badge tone={item.tone}>{item.status}</Badge> : null}
                             <span className="text-xs font-medium text-neovantas-muted">{item.category}</span>
                             <span className="text-xs text-neovantas-muted">
                               {item.parentTitle ? `${item.repository} / ${item.parentTitle}` : item.repository}
