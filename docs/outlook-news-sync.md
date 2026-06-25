@@ -5,7 +5,7 @@ La intranet puede regenerar `src/data/news.json` leyendo correos de Outlook con 
 ## Flujo
 
 1. Llega el correo diario de noticias a un buzon o carpeta de Outlook.
-2. El workflow `Sync Outlook news` se ejecuta cada dia a las 07:30/08:30 UTC y tambien manualmente.
+2. El workflow `Sync Outlook news` se ejecuta cada dia a las 09:10 de Madrid y tambien manualmente.
 3. El script `scripts/sync-outlook-news.mjs` lee los mensajes recientes.
 4. Se filtra por remitente, asunto o carpeta.
 5. Se actualiza `src/data/news.json`.
