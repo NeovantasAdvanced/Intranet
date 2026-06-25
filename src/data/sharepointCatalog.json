@@ -9,7 +9,7 @@
       "updatedAt": "2026-05-23",
       "status": "Equipo",
       "tone": "success",
-      "resourceCount": 12,
+      "resourceCount": 11,
       "tags": [
         "documentacion",
         "equipo",
@@ -62,7 +62,7 @@
       "scope": "team",
       "category": "Equipo",
       "itemType": "folder",
-      "itemCount": 6,
+      "itemCount": 2,
       "updatedAt": "2026-05-23",
       "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Calendario",
       "status": "Carpeta",
@@ -175,25 +175,6 @@
       "tags": [
         "prl",
         "prevencion",
-        "personas"
-      ]
-    },
-    {
-      "id": "team-retorno-gradual-a-los-puestos-de-trabajo",
-      "title": "Retorno gradual a los puestos de trabajo",
-      "description": "Recursos para retorno, organizacion y trabajo presencial.",
-      "repository": "Carpetas equipo Neovantas",
-      "scope": "team",
-      "category": "Personas",
-      "itemType": "folder",
-      "itemCount": 7,
-      "updatedAt": "2026-05-23",
-      "href": "https://neovantas.sharepoint.com/sites/AdvancedAnalytics/Documentos%20compartidos/Carpetas%20equipo%20Neovantas/Retorno%20gradual%20a%20los%20puestos%20de%20trabajo",
-      "status": "Carpeta",
-      "tone": "neutral",
-      "tags": [
-        "retorno",
-        "oficina",
         "personas"
       ]
     },
