@@ -22,7 +22,7 @@ git add -- "${paths[@]}"
 git commit -m "$commit_message"
 echo "Commit created: $(git rev-parse --short HEAD)"
 
-for attempt in 1 2; do
+for attempt in 1 2 3; do
   echo "Push attempt ${attempt}/2: fetching origin/main..."
   git fetch origin main
 
@@ -40,12 +40,17 @@ for attempt in 1 2; do
 
   echo "Push attempt ${attempt}/2: pushing HEAD to main..."
   if git push origin HEAD:main; then
-    echo "Push completed successfully."
-    exit 0
+    git fetch origin main
+    if git merge-base --is-ancestor HEAD origin/main; then
+      echo "Push completed successfully and HEAD is present on origin/main."
+      exit 0
+    fi
+
+    echo "Push reported success but HEAD is not yet visible on origin/main; retrying."
   fi
 
-  if [ "$attempt" -eq 2 ]; then
-    echo "Push failed after 2 attempts." >&2
+  if [ "$attempt" -eq 3 ]; then
+    echo "Push failed after 3 attempts." >&2
     exit 1
   fi
 
