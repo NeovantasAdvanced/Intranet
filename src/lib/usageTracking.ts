@@ -35,6 +35,10 @@ export function trackUsageEvent(payload: UsageEventPayload) {
     return;
   }
 
+  if (import.meta.env.DEV) {
+    return;
+  }
+
   const body = buildRequestBody(payload);
   const url = '/api/usage/track';
 

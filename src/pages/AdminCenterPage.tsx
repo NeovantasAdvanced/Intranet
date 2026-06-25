@@ -93,22 +93,13 @@ export function AdminCenterPage() {
   const [activeTab, setActiveTab] = useState<AdminTabId>(getInitialTab);
   const [userSearch, setUserSearch] = useState('');
   const [permissionFilter, setPermissionFilter] = useState<'all' | 'admin' | 'repositories'>('all');
+  const adminAllowed = isAdmin(userEmail);
 
   useEffect(() => {
     const syncTabFromUrl = () => setActiveTab(getInitialTab());
     window.addEventListener('popstate', syncTabFromUrl);
     return () => window.removeEventListener('popstate', syncTabFromUrl);
   }, []);
-
-  const adminAllowed = isAdmin(userEmail);
-
-  if (!adminAllowed) {
-    return (
-      <div className="rounded-[24px] border border-neovantas-line bg-white p-8 text-neovantas-navy">
-        No tienes permisos para acceder a esta sección.
-      </div>
-    );
-  }
 
   const lastNewsDate = news[0]?.rawMeta?.dateText ?? formatDate(news[0]?.date);
   const lastNewsCount = news.length;
@@ -150,6 +141,14 @@ export function AdminCenterPage() {
   }, [permissionFilter, userSearch]);
 
   const adminCanViewStatistics = canAccessStatistics(userEmail);
+
+  if (!adminAllowed) {
+    return (
+      <div className="rounded-[24px] border border-neovantas-line bg-white p-8 text-neovantas-navy">
+        No tienes permisos para acceder a esta sección.
+      </div>
+    );
+  }
 
   return (
     <section className="space-y-6">
