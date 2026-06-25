@@ -12,6 +12,27 @@ export type AuthPayload = {
   clientPrincipal: ClientPrincipal | null;
 };
 
+const DEV_ADMIN_PRINCIPAL: ClientPrincipal & {
+  givenName: string;
+  displayName: string;
+  email: string;
+  userPrincipalName: string;
+} = {
+  userDetails: 'fmacias@neovantas.com',
+  identityProvider: 'dev',
+  userRoles: ['authenticated'],
+  claims: [
+    { typ: 'name', val: 'Fernando Macías' },
+    { typ: 'given_name', val: 'Fernando' },
+    { typ: 'preferred_username', val: 'fmacias@neovantas.com' },
+    { typ: 'email', val: 'fmacias@neovantas.com' },
+  ],
+  givenName: 'Fernando',
+  displayName: 'Fernando Macías',
+  email: 'fmacias@neovantas.com',
+  userPrincipalName: 'fmacias@neovantas.com',
+};
+
 type UserIdentity = Partial<ClientPrincipal> & {
   givenName?: string;
   displayName?: string;
@@ -26,13 +47,13 @@ export async function fetchClientPrincipal() {
     const response = await fetch('/.auth/me', { cache: 'no-store' });
 
     if (!response.ok) {
-      return null;
+      return import.meta.env.DEV ? DEV_ADMIN_PRINCIPAL : null;
     }
 
     const payload = (await response.json()) as AuthPayload;
-    return payload.clientPrincipal ?? null;
+    return payload.clientPrincipal ?? (import.meta.env.DEV ? DEV_ADMIN_PRINCIPAL : null);
   } catch {
-    return null;
+    return import.meta.env.DEV ? DEV_ADMIN_PRINCIPAL : null;
   }
 }
 

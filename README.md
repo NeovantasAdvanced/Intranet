@@ -119,6 +119,18 @@ Para que no dependa de una ejecucion manual, revisa que:
 
 Si cambias la cuenta o rotas credenciales, no hace falta tocar la UI: basta con actualizar los secrets del workflow y volver a ejecutar el sync programado.
 
+## Probar Admin en local
+
+Para probar el Centro de Administración sin autenticacion real de Office, ejecuta `npm run dev` y abre `/admin`.
+
+En desarrollo, si `/.auth/me` no devuelve usuario autenticado, la app usa temporalmente este perfil:
+
+- `fmacias@neovantas.com`
+- `Fernando Macías`
+- `Fernando`
+
+Con ese fallback puedes probar también `/admin/usage` y el acceso a Repositorios desde la navegacion. Este comportamiento solo existe en `import.meta.env.DEV` y no se activa en produccion.
+
 Si el parseo falla, el workflow deja artefactos de depuracion en `tmp/latest-news-email.txt` y `tmp/latest-news-parsed-debug.json`.
 Este sync se ejecuta cada dia a las 09:10 hora de Madrid, que en GitHub Actions corresponde a `07:10 UTC`. Tambien se puede lanzar manualmente. Ya no se dispara por `push` en `main`; se ejecuta por programacion o manualmente para evitar ciclos cuando hace commit de `news.json`.
 
