@@ -39,3 +39,7 @@ export function canAccessFeature(featureKey: FeatureKey, userEmail: string) {
 
   return getConfiguredEmails(featureKey).includes(normalized);
 }
+
+export function canAccessStatistics(userEmail: string) {
+  return isAdmin(userEmail);
+}
