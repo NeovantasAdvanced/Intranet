@@ -66,7 +66,7 @@ function formatDate(value?: string) {
 }
 
 function formatAppVersion() {
-  return APP_VERSION && APP_VERSION !== '0' ? APP_VERSION : 'v0.1.0';
+  return APP_VERSION && APP_VERSION !== '0' ? APP_VERSION : '';
 }
 
 function StatCard({ title, value, note }: { title: string; value: string; note: string }) {
@@ -117,6 +117,7 @@ export function AdminCenterPage() {
     events: events.length,
   };
   const sharePointItems = sharePointCatalog.resources.length + sharePointCatalog.repositories.length;
+  const versionLabel = formatAppVersion();
 
   const filteredUsers = useMemo(() => {
     const query = userSearch.trim().toLowerCase();
@@ -191,7 +192,7 @@ export function AdminCenterPage() {
           />
           <StatCard title="Usuarios con permisos" value={String(users.length)} note={`${adminUsers} administradores detectados`} />
           <StatCard title="Repositorios" value={String(authorizedUsers)} note="Usuarios autorizados para Repositorios." />
-          <StatCard title="Versión" value={formatAppVersion()} note="Versión del portal desde package.json." />
+          {versionLabel ? <StatCard title="Versión" value={versionLabel} note="Versión del portal desde package.json." /> : null}
         </div>
       ) : null}
 
@@ -317,7 +318,7 @@ export function AdminCenterPage() {
             {
               title: 'Deploy Azure',
               note: `Versión visible: ${formatAppVersion()}`,
-              detail: 'Pendiente de integración automática',
+              detail: 'Estado calculado desde los catálogos actuales. Ejecución manual prevista en fase 2.',
             },
           ].map((item) => (
             <Card key={item.title} className="border border-neovantas-line bg-white p-5 shadow-[0_8px_24px_rgba(11,27,54,0.04)]">
@@ -329,7 +330,7 @@ export function AdminCenterPage() {
                 <Badge tone="neutral">Lectura informativa</Badge>
               </div>
               <p className="mt-4 text-sm text-neovantas-blue">{item.detail}</p>
-              <p className="mt-2 text-xs text-neovantas-muted">Pendiente de integración automática</p>
+              <p className="mt-2 text-xs text-neovantas-muted">Lectura informativa</p>
             </Card>
           ))}
         </div>
@@ -348,7 +349,9 @@ export function AdminCenterPage() {
             <Card key={item.title} className="border border-neovantas-line bg-white p-5 shadow-[0_8px_24px_rgba(11,27,54,0.04)]">
               <p className="text-base font-semibold text-neovantas-navy">{item.title}</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-neovantas-blue">{item.count}</p>
-              <p className="mt-2 text-sm text-neovantas-muted">Próximamente editable desde la consola.</p>
+              <p className="mt-2 text-sm text-neovantas-muted">
+                Lectura actual desde catálogo JSON. Edición desde consola prevista en fase 2.
+              </p>
             </Card>
           ))}
         </div>

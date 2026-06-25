@@ -427,6 +427,7 @@ export function AdminUsagePage() {
   const monthOptions = useMemo(() => [...(resolvedSummary.months ?? [])], [resolvedSummary]);
   const storageMode = resolvedSummary.storageMode ?? 'file';
   const exportStamp = selectedMonth === 'all' ? 'all' : selectedMonth;
+  const isLocalDev = import.meta.env.DEV;
 
   const handleDownloadJson = () => {
     const payload = {
@@ -570,16 +571,37 @@ export function AdminUsagePage() {
       </div>
 
       {error ? (
-        <Card className="border-[#FED7AA] bg-[#FFFBF5] p-4 text-sm text-[#9A3412]">
-          {error}. Se muestra la página, pero no se han podido cargar las métricas del endpoint.
+        <Card className="border-[#D6EAF8] bg-[#F6FBFF] p-4 text-sm text-neovantas-navy">
+          <div className="flex items-start gap-3">
+            <CircleSlash2 className="mt-0.5 h-4 w-4 shrink-0 text-neovantas-blue" aria-hidden="true" />
+            <div className="space-y-1">
+              <p className="font-semibold text-neovantas-navy">
+                {isLocalDev
+                  ? 'Las métricas reales estarán disponibles en Azure cuando esté configurado el almacenamiento.'
+                  : 'Las métricas no están disponibles todavía en este entorno.'}
+              </p>
+              <p className="text-sm text-neovantas-muted">
+                {isLocalDev
+                  ? 'En desarrollo local no se consulta /api/usage para evitar errores de infraestructura.'
+                  : 'La página sigue disponible mientras se prepara el backend de analítica.'}
+              </p>
+            </div>
+          </div>
         </Card>
       ) : null}
 
       {storageMode === 'file' ? (
-        <Card className="border-[#F8D7A6] bg-[#FFF8EE] p-4 text-sm text-[#8A4B00]">
-          El almacenamiento de estadísticas está usando un fichero temporal. Para que los datos persistan entre
-          reinicios del servicio, configura `AZURE_STORAGE_CONNECTION_STRING` o `AzureWebJobsStorage` con Azure
-          Table Storage.
+        <Card className="border-[#D6EAF8] bg-[#F6FBFF] p-4 text-sm text-neovantas-navy">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-neovantas-blue" aria-hidden="true" />
+            <div className="space-y-1">
+              <p className="font-semibold text-neovantas-navy">Diagnóstico de almacenamiento</p>
+              <p className="text-sm text-neovantas-muted">
+                El almacenamiento de estadísticas está usando un fichero temporal. Para persistencia en Azure, configura
+                `AZURE_STORAGE_CONNECTION_STRING` o `AzureWebJobsStorage` con Table Storage.
+              </p>
+            </div>
+          </div>
         </Card>
       ) : null}
 

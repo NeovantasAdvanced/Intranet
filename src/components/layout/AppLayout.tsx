@@ -136,13 +136,15 @@ export function AppLayout({ children }: AppLayoutProps) {
             <div className="mx-auto w-full max-w-[1200px]">{children}</div>
           </main>
 
-          <footer className="px-4 pb-4 md:px-8">
-            <div className="mx-auto flex w-full max-w-[1200px] justify-end">
-              <span className="rounded-full border border-neovantas-line bg-white px-3 py-1 text-sm font-semibold text-neovantas-navy shadow-sm">
-                Version {APP_VERSION}
-              </span>
-            </div>
-          </footer>
+          {APP_VERSION && APP_VERSION !== '0' ? (
+            <footer className="px-4 pb-4 md:px-8">
+              <div className="mx-auto flex w-full max-w-[1200px] justify-end">
+                <span className="rounded-full border border-neovantas-line bg-white px-3 py-1 text-sm font-semibold text-neovantas-navy shadow-sm">
+                  Version {APP_VERSION}
+                </span>
+              </div>
+            </footer>
+          ) : null}
         </div>
       </PortalSearchProvider>
     </AuthSessionProvider>
