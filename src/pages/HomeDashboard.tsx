@@ -1152,7 +1152,7 @@ export function HomeDashboard() {
 
               return (
                 <Card key={app.id} className="p-5 transition hover:-translate-y-0.5 hover:border-neovantas-blue">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className={`flex items-start gap-3 ${shouldShowStatusBadge(app.status) ? 'justify-between' : 'justify-start'}`}>
                     <div className="grid h-11 w-11 place-items-center rounded-[12px] bg-[#EBF2FE] text-neovantas-blue">
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </div>
