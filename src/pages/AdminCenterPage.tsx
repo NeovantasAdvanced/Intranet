@@ -119,6 +119,7 @@ export function AdminCenterPage() {
   const [contentState, setContentState] = useState<ManagedContentData | null>(null);
   const [contentRowsState, setContentRowsState] = useState<EditableContentRow[]>([]);
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveMessage, setSaveMessage] = useState('');
   const [storageNotice, setStorageNotice] = useState('');
   const adminAllowed = isAdmin(userEmail);
 
@@ -302,6 +303,7 @@ export function AdminCenterPage() {
 
   const saveUsers = async (nextUsers: UserAccessRow[]) => {
     setSavingState('saving');
+    setSaveMessage('Guardando...');
     try {
       const nextAccessControl: AccessControlData = {
         admins: {
@@ -315,19 +317,26 @@ export function AdminCenterPage() {
       setAccessControlData(nextAccessControl);
       await Promise.all([updateUserAccess(nextUsers as StoredUserAccessRow[]), updateAccessControl(nextAccessControl)]);
       setSavingState('saved');
-    } catch {
+      setSaveMessage('Guardado correctamente');
+    } catch (error) {
+      console.error('[admin/users] save failed', error);
       setSavingState('error');
+      setSaveMessage(`Error al guardar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
   };
 
   const saveContent = async (nextContent: ManagedContentData) => {
     setSavingState('saving');
+    setSaveMessage('Guardando...');
     try {
       setContentState(nextContent);
       await updateManagedContent(nextContent);
       setSavingState('saved');
-    } catch {
+      setSaveMessage('Guardado correctamente');
+    } catch (error) {
+      console.error('[admin/content] save failed', error);
       setSavingState('error');
+      setSaveMessage(`Error al guardar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
   };
 
@@ -378,6 +387,9 @@ export function AdminCenterPage() {
       quickLinks: contentRows.filter((row) => row.section === 'quickLinks' && row.visible).map((row) => toLink(row)),
     });
   };
+
+  const saveTone =
+    savingState === 'error' ? 'critical' : savingState === 'saved' ? 'success' : savingState === 'saving' ? 'warning' : 'neutral';
 
   if (!adminAllowed) {
     return (
@@ -460,6 +472,18 @@ export function AdminCenterPage() {
           {storageNotice ? (
             <div className="border-b border-neovantas-line bg-[#eef6ff] px-5 py-3 text-sm text-neovantas-navy">
               {storageNotice}
+            </div>
+          ) : null}
+          {saveMessage ? (
+            <div className="border-b border-neovantas-line bg-white px-5 py-3">
+              <Badge tone={saveTone}>{savingState === 'saving' ? 'Guardando...' : savingState === 'saved' ? 'Guardado' : savingState === 'error' ? 'Error' : 'Estado'}</Badge>
+              <span className="ml-3 text-sm text-neovantas-navy">{saveMessage}</span>
+            </div>
+          ) : null}
+          {saveMessage ? (
+            <div className="border-b border-neovantas-line bg-white px-5 py-3">
+              <Badge tone={saveTone}>{savingState === 'saving' ? 'Guardando...' : savingState === 'saved' ? 'Guardado' : savingState === 'error' ? 'Error' : 'Estado'}</Badge>
+              <span className="ml-3 text-sm text-neovantas-navy">{saveMessage}</span>
             </div>
           ) : null}
 

@@ -139,11 +139,28 @@ async function requestJson(path: string, init?: RequestInit) {
     ...init,
   });
 
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
+  const text = await response.text();
+  let payload: Partial<AdminStoragePayload> = {};
+
+  if (text.trim()) {
+    try {
+      payload = JSON.parse(text) as Partial<AdminStoragePayload>;
+    } catch {
+      payload = {} as Partial<AdminStoragePayload>;
+    }
   }
 
-  return response.json() as Promise<Partial<AdminStoragePayload>>;
+  if (!response.ok) {
+    const error = new Error(`Request failed: ${response.status} ${response.statusText || ''}`.trim()) as Error & {
+      status?: number;
+      responseBody?: string;
+    };
+    error.status = response.status;
+    error.responseBody = text;
+    throw error;
+  }
+
+  return payload;
 }
 
 export async function getAccessControl() {
@@ -177,8 +194,14 @@ export async function updateAccessControl(accessControl: AccessControlData) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ accessControl: payload.accessControl }),
     });
-  } catch {
-    // Local cache remains the fallback.
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'No se pudo guardar el control de acceso.';
+    const wrapped = new Error(detail) as Error & { status?: number; responseBody?: string };
+    if (error && typeof error === 'object') {
+      wrapped.status = (error as { status?: number }).status;
+      wrapped.responseBody = (error as { responseBody?: string }).responseBody;
+    }
+    throw wrapped;
   }
 
   return payload.accessControl;
@@ -215,8 +238,14 @@ export async function updateUserAccess(usersAccess: UserAccessRow[]) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ usersAccess: payload.usersAccess }),
     });
-  } catch {
-    // Local cache remains the fallback.
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'No se pudo guardar los permisos de usuarios.';
+    const wrapped = new Error(detail) as Error & { status?: number; responseBody?: string };
+    if (error && typeof error === 'object') {
+      wrapped.status = (error as { status?: number }).status;
+      wrapped.responseBody = (error as { responseBody?: string }).responseBody;
+    }
+    throw wrapped;
   }
 
   return payload.usersAccess;
@@ -253,8 +282,14 @@ export async function updateManagedContent(content: ManagedContentData) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ content: payload.content }),
     });
-  } catch {
-    // Local cache remains the fallback.
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'No se pudo guardar el contenido administrado.';
+    const wrapped = new Error(detail) as Error & { status?: number; responseBody?: string };
+    if (error && typeof error === 'object') {
+      wrapped.status = (error as { status?: number }).status;
+      wrapped.responseBody = (error as { responseBody?: string }).responseBody;
+    }
+    throw wrapped;
   }
 
   return payload.content;

@@ -21,7 +21,13 @@ function parseBody(body) {
 
 module.exports = async function adminAccess(context, req) {
   const principal = getPrincipalFromRequest(req);
+  context.log(
+    `[admin/access] ${req.method} request from ${principal?.userDetails || 'anonymous'} using storage=${
+      process.env.AZURE_STORAGE_CONNECTION_STRING || process.env.AzureWebJobsStorage ? 'azure-table' : 'local-fallback'
+    }`,
+  );
   if (!isAdminPrincipal(principal)) {
+    context.log.warn('[admin/access] forbidden request rejected');
     context.res = {
       status: 403,
       headers: { 'content-type': 'application/json' },
@@ -32,6 +38,7 @@ module.exports = async function adminAccess(context, req) {
 
   if (req.method === 'GET') {
     const state = await readAdminState();
+    context.log(`[admin/access] GET ok`);
     context.res = {
       status: 200,
       headers: { 'content-type': 'application/json' },
@@ -42,6 +49,7 @@ module.exports = async function adminAccess(context, req) {
 
   const payload = parseBody(req.body);
   if (!payload) {
+    context.log.warn('[admin/access] invalid JSON payload');
     context.res = {
       status: 400,
       headers: { 'content-type': 'application/json' },
@@ -57,10 +65,23 @@ module.exports = async function adminAccess(context, req) {
     content: payload.content ?? current.content,
   };
 
-  const saved = await writeAdminState(nextState);
-  context.res = {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ ok: true, ...saved }),
-  };
+  try {
+    const saved = await writeAdminState(nextState);
+    context.log('[admin/access] write ok');
+    context.res = {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ok: true, ...saved }),
+    };
+  } catch (error) {
+    context.log.error('[admin/access] write failed', error);
+    context.res = {
+      status: 500,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        ok: false,
+        error: error instanceof Error ? error.message : 'Admin storage write failed.',
+      }),
+    };
+  }
 };
