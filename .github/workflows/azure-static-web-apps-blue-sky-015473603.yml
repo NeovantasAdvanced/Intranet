@@ -43,9 +43,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_SKY_015473603 || secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: dist
+          app_location: "/"
           api_location: api
-          output_location: ''
+          output_location: "dist"
           skip_app_build: true
           skip_deploy_on_missing_secrets: true
 
