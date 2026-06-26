@@ -146,7 +146,27 @@ async function ensureTables() {
     return null;
   }
 
-  await Promise.all([clients.accessControl.createTable(), clients.usersAccess.createTable(), clients.content.createTable()]);
+  const createTable = async (client) => {
+    if (typeof client.createTableIfNotExists === 'function') {
+      await client.createTableIfNotExists();
+      return;
+    }
+
+    if (typeof client.createTable === 'function') {
+      try {
+        await client.createTable();
+      } catch (error) {
+        if (error?.statusCode === 409 || error?.status === 409) {
+          return;
+        }
+        throw error;
+      }
+    }
+  };
+
+  await createTable(clients.accessControl);
+  await createTable(clients.usersAccess);
+  await createTable(clients.content);
   return clients;
 }
 
@@ -178,18 +198,23 @@ async function readAdminState() {
     return ensureLocalState();
   }
 
-  const [accessEntity, usersEntity, contentEntity] = await Promise.all([
-    readSingleEntity(clients.accessControl, 'admin', 'state'),
-    readSingleEntity(clients.usersAccess, 'admin', 'state'),
-    readSingleEntity(clients.content, 'admin', 'state'),
-  ]);
+  try {
+    const [accessEntity, usersEntity, contentEntity] = await Promise.all([
+      readSingleEntity(clients.accessControl, 'admin', 'state'),
+      readSingleEntity(clients.usersAccess, 'admin', 'state'),
+      readSingleEntity(clients.content, 'admin', 'state'),
+    ]);
 
-  const seed = getSeedState();
-  return mergeState({
-    accessControl: accessEntity?.payload ? JSON.parse(accessEntity.payload) : seed.accessControl,
-    usersAccess: usersEntity?.payload ? JSON.parse(usersEntity.payload) : seed.usersAccess,
-    content: contentEntity?.payload ? JSON.parse(contentEntity.payload) : seed.content,
-  });
+    const seed = getSeedState();
+    return mergeState({
+      accessControl: accessEntity?.payload ? JSON.parse(accessEntity.payload) : seed.accessControl,
+      usersAccess: usersEntity?.payload ? JSON.parse(usersEntity.payload) : seed.usersAccess,
+      content: contentEntity?.payload ? JSON.parse(contentEntity.payload) : seed.content,
+    });
+  } catch (error) {
+    console.error('[admin-store] read failed', error?.message || error);
+    return ensureLocalState();
+  }
 }
 
 async function writeAdminState(state) {
@@ -200,23 +225,28 @@ async function writeAdminState(state) {
     return writeLocalState(payload);
   }
 
-  await Promise.all([
-    upsertEntity(clients.accessControl, {
-      partitionKey: 'admin',
-      rowKey: 'state',
-      payload: JSON.stringify(payload.accessControl),
-    }),
-    upsertEntity(clients.usersAccess, {
-      partitionKey: 'admin',
-      rowKey: 'state',
-      payload: JSON.stringify(payload.usersAccess),
-    }),
-    upsertEntity(clients.content, {
-      partitionKey: 'admin',
-      rowKey: 'state',
-      payload: JSON.stringify(payload.content),
-    }),
-  ]);
+  try {
+    await Promise.all([
+      upsertEntity(clients.accessControl, {
+        partitionKey: 'admin',
+        rowKey: 'state',
+        payload: JSON.stringify(payload.accessControl),
+      }),
+      upsertEntity(clients.usersAccess, {
+        partitionKey: 'admin',
+        rowKey: 'state',
+        payload: JSON.stringify(payload.usersAccess),
+      }),
+      upsertEntity(clients.content, {
+        partitionKey: 'admin',
+        rowKey: 'state',
+        payload: JSON.stringify(payload.content),
+      }),
+    ]);
+  } catch (error) {
+    console.error('[admin-store] write failed', error?.message || error);
+    throw error;
+  }
 
   return payload;
 }
