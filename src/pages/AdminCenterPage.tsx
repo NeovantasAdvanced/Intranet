@@ -6,6 +6,17 @@ import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { useAuthSession } from '../context/AuthSessionContext';
 import { canAccessStatistics, isAdmin } from '../lib/accessControl';
+import {
+  getAccessControl,
+  getManagedContent,
+  getUsersAccess,
+  updateAccessControl,
+  updateManagedContent,
+  updateUserAccess,
+  type AccessControlData,
+  type ManagedContentData,
+  type UserAccessRow as StoredUserAccessRow,
+} from '../lib/adminStorage';
 import { AdminUsagePage } from './AdminUsagePage';
 import usersAccessData from '../data/users-access.json';
 import newsData from '../data/news.json';
@@ -26,6 +37,16 @@ type UserAccessRow = {
     admin: boolean;
     repositories: boolean;
   };
+};
+
+type EditableContentRow = {
+  id: string;
+  section: 'tools' | 'employeeResources' | 'documents' | 'quickLinks';
+  title: string;
+  description: string;
+  href: string;
+  category: string;
+  visible: boolean;
 };
 
 const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = [
@@ -93,12 +114,86 @@ export function AdminCenterPage() {
   const [activeTab, setActiveTab] = useState<AdminTabId>(getInitialTab);
   const [userSearch, setUserSearch] = useState('');
   const [permissionFilter, setPermissionFilter] = useState<'all' | 'admin' | 'repositories'>('all');
+  const [accessControlData, setAccessControlData] = useState<AccessControlData | null>(null);
+  const [usersState, setUsersState] = useState<UserAccessRow[]>(users);
+  const [contentState, setContentState] = useState<ManagedContentData | null>(null);
+  const [contentRowsState, setContentRowsState] = useState<EditableContentRow[]>([]);
+  const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [storageNotice, setStorageNotice] = useState('');
   const adminAllowed = isAdmin(userEmail);
 
   useEffect(() => {
     const syncTabFromUrl = () => setActiveTab(getInitialTab());
     window.addEventListener('popstate', syncTabFromUrl);
     return () => window.removeEventListener('popstate', syncTabFromUrl);
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    Promise.all([getAccessControl(), getUsersAccess(), getManagedContent()])
+      .then(([accessControl, usersAccess, content]) => {
+        if (!mounted) {
+          return;
+        }
+
+        setAccessControlData(accessControl);
+        setUsersState(usersAccess as UserAccessRow[]);
+        setContentState(content);
+        setContentRowsState([
+          ...content.tools.map((item) => ({
+            section: 'tools' as const,
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            href: item.href,
+            category: item.category ?? item.group ?? 'tools',
+            visible: (item as { visible?: boolean }).visible !== false,
+          })),
+          ...content.employeeResources.map((item) => ({
+            section: 'employeeResources' as const,
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            href: item.href,
+            category: item.category ?? item.group ?? 'employee',
+            visible: (item as { visible?: boolean }).visible !== false,
+          })),
+          ...content.documents.map((item) => ({
+            section: 'documents' as const,
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            href: item.href,
+            category: item.area ?? 'documents',
+            visible: true,
+          })),
+          ...content.quickLinks.map((item) => ({
+            section: 'quickLinks' as const,
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            href: item.href,
+            category: item.icon,
+            visible: true,
+          })),
+        ]);
+        setStorageNotice(import.meta.env.DEV ? 'Cambios en modo local/desarrollo. Para persistencia real configurar Azure Storage.' : '');
+      })
+      .catch(() => {
+        if (!mounted) {
+          return;
+        }
+
+        setAccessControlData(null);
+        setUsersState(users);
+        setContentState(null);
+        setContentRowsState([]);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const lastNewsDate = news[0]?.rawMeta?.dateText ?? formatDate(news[0]?.date);
@@ -118,11 +213,71 @@ export function AdminCenterPage() {
   };
   const sharePointItems = sharePointCatalog.resources.length + sharePointCatalog.repositories.length;
   const versionLabel = formatAppVersion();
+  const effectiveAccessControl = accessControlData ?? {
+    admins: { allowedEmails: ['fmacias@neovantas.com'] },
+    repositories: { allowedEmails: ['fmacias@neovantas.com'] },
+  };
+  const effectiveContent = contentState ?? {
+    tools: apps.filter((item) => item.category === 'tools'),
+    employeeResources: apps.filter((item) => item.category === 'employee'),
+    documents,
+    quickLinks: [
+      {
+        id: 'home',
+        title: 'Inicio',
+        description: 'Acceso rápido al panel principal.',
+        href: '#inicio',
+        icon: 'home',
+        status: 'Activo',
+        tone: 'info',
+      },
+    ],
+  };
+  const contentRows = contentRowsState.length
+    ? contentRowsState
+    : [
+        ...effectiveContent.tools.map((item) => ({
+          section: 'tools' as const,
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          href: item.href,
+          category: item.category ?? item.group ?? 'tools',
+          visible: true,
+        })),
+        ...effectiveContent.employeeResources.map((item) => ({
+          section: 'employeeResources' as const,
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          href: item.href,
+          category: item.category ?? item.group ?? 'employee',
+          visible: true,
+        })),
+        ...effectiveContent.documents.map((item) => ({
+          section: 'documents' as const,
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          href: item.href,
+          category: item.area ?? 'documents',
+          visible: true,
+        })),
+        ...effectiveContent.quickLinks.map((item) => ({
+          section: 'quickLinks' as const,
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          href: item.href,
+          category: item.icon,
+          visible: true,
+        })),
+      ];
 
   const filteredUsers = useMemo(() => {
     const query = userSearch.trim().toLowerCase();
 
-    return users.filter((user) => {
+    return usersState.filter((user) => {
       const matchesQuery =
         !query ||
         [user.name, user.email, user.department, user.jobTitle]
@@ -139,9 +294,90 @@ export function AdminCenterPage() {
 
       return matchesQuery && matchesPermission;
     });
-  }, [permissionFilter, userSearch]);
+  }, [permissionFilter, userSearch, usersState]);
 
   const adminCanViewStatistics = canAccessStatistics(userEmail);
+  const adminEmails = effectiveAccessControl.admins.allowedEmails;
+  const repositoryEmails = effectiveAccessControl.repositories.allowedEmails;
+
+  const saveUsers = async (nextUsers: UserAccessRow[]) => {
+    setSavingState('saving');
+    try {
+      const nextAccessControl: AccessControlData = {
+        admins: {
+          allowedEmails: nextUsers.filter((item) => item.permissions.admin).map((item) => item.email),
+        },
+        repositories: {
+          allowedEmails: nextUsers.filter((item) => item.permissions.repositories).map((item) => item.email),
+        },
+      };
+      setUsersState(nextUsers);
+      setAccessControlData(nextAccessControl);
+      await Promise.all([updateUserAccess(nextUsers as StoredUserAccessRow[]), updateAccessControl(nextAccessControl)]);
+      setSavingState('saved');
+    } catch {
+      setSavingState('error');
+    }
+  };
+
+  const saveContent = async (nextContent: ManagedContentData) => {
+    setSavingState('saving');
+    try {
+      setContentState(nextContent);
+      await updateManagedContent(nextContent);
+      setSavingState('saved');
+    } catch {
+      setSavingState('error');
+    }
+  };
+
+  const updateContentRow = (rowId: string, field: keyof EditableContentRow, value: string | boolean) => {
+    setContentRowsState((current) => current.map((row) => (row.id === rowId ? { ...row, [field]: value } : row)));
+  };
+
+  const persistContent = () => {
+    const toApp = (row: EditableContentRow, category: 'tools' | 'employee') => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      owner: 'Admin',
+      href: row.href,
+      status: '',
+      tone: 'info' as const,
+      icon: 'files',
+      category,
+    });
+
+    const toDoc = (row: EditableContentRow) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      area: row.category,
+      updatedAt: new Date().toISOString().slice(0, 10),
+      href: row.href,
+      status: row.visible ? 'Disponible' : 'Oculto',
+      tone: 'info' as const,
+    });
+
+    const toLink = (row: EditableContentRow) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      href: row.href,
+      icon: row.category || 'home',
+      status: row.visible ? 'Activo' : 'Oculto',
+      tone: 'info' as const,
+    });
+
+    void saveContent({
+      tools: contentRows.filter((row) => row.section === 'tools' && row.visible).map((row) => toApp(row, 'tools')),
+      employeeResources: contentRows
+        .filter((row) => row.section === 'employeeResources' && row.visible)
+        .map((row) => toApp(row, 'employee')),
+      documents: contentRows.filter((row) => row.section === 'documents' && row.visible).map((row) => toDoc(row)),
+      quickLinks: contentRows.filter((row) => row.section === 'quickLinks' && row.visible).map((row) => toLink(row)),
+    });
+  };
 
   if (!adminAllowed) {
     return (
@@ -216,11 +452,16 @@ export function AdminCenterPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <SectionPill>{`${users.length} usuarios`}</SectionPill>
-                <SectionPill>{`${adminUsers} admins`}</SectionPill>
-                <SectionPill>{`${authorizedUsers} repositorios`}</SectionPill>
+                <SectionPill>{`${adminEmails.length} admins`}</SectionPill>
+                <SectionPill>{`${repositoryEmails.length} repositorios`}</SectionPill>
               </div>
             </div>
           </div>
+          {storageNotice ? (
+            <div className="border-b border-neovantas-line bg-[#eef6ff] px-5 py-3 text-sm text-neovantas-navy">
+              {storageNotice}
+            </div>
+          ) : null}
 
           <div className="border-b border-neovantas-line bg-white px-5 py-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -280,19 +521,65 @@ export function AdminCenterPage() {
                     <td className="px-5 py-4 text-sm text-neovantas-muted">{user.department}</td>
                     <td className="px-5 py-4 text-sm text-neovantas-muted">{user.jobTitle}</td>
                     <td className="px-5 py-4">
-                      {user.permissions.admin ? <Badge tone="info">Admin</Badge> : <span className="text-sm text-neovantas-muted">No</span>}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUsersState((current) =>
+                            current.map((row) =>
+                              row.email === user.email
+                                ? { ...row, permissions: { ...row.permissions, admin: !row.permissions.admin } }
+                                : row,
+                            ),
+                          )
+                        }
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          user.permissions.admin
+                            ? 'bg-neovantas-navy text-white'
+                            : 'border border-neovantas-line bg-white text-neovantas-muted'
+                        }`}
+                      >
+                        {user.permissions.admin ? 'Admin' : 'Sin admin'}
+                      </button>
                     </td>
                     <td className="px-5 py-4">
-                      {user.permissions.repositories ? (
-                        <Badge tone="info">Repositorios</Badge>
-                      ) : (
-                        <span className="text-sm text-neovantas-muted">No</span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUsersState((current) =>
+                            current.map((row) =>
+                              row.email === user.email
+                                ? { ...row, permissions: { ...row.permissions, repositories: !row.permissions.repositories } }
+                                : row,
+                            ),
+                          )
+                        }
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          user.permissions.repositories
+                            ? 'bg-neovantas-blue text-white'
+                            : 'border border-neovantas-line bg-white text-neovantas-muted'
+                        }`}
+                      >
+                        {user.permissions.repositories ? 'Repositorios' : 'Sin acceso'}
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="border-t border-neovantas-line bg-[#f7f9fc] px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-neovantas-muted">
+                Cambios en modo local/desarrollo. Para persistencia real configurar Azure Storage.
+              </p>
+              <button
+                type="button"
+                onClick={() => void saveUsers(usersState)}
+                className="rounded-full bg-neovantas-navy px-4 py-2 text-sm font-semibold text-white"
+              >
+                Guardar permisos
+              </button>
+            </div>
           </div>
         </Card>
       ) : null}
@@ -337,23 +624,59 @@ export function AdminCenterPage() {
       ) : null}
 
       {activeTab === 'content' ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {[
-            { title: 'Accesos rápidos', count: 6 },
-            { title: 'Herramientas', count: apps.filter((item) => item.category === 'tools').length },
-            { title: 'Recursos de empleado', count: apps.filter((item) => item.category === 'employee').length },
-            { title: 'Documentos destacados', count: documents.length },
-            { title: 'Noticias', count: news.length },
-            { title: 'Eventos', count: events.length },
-          ].map((item) => (
-            <Card key={item.title} className="border border-neovantas-line bg-white p-5 shadow-[0_8px_24px_rgba(11,27,54,0.04)]">
-              <p className="text-base font-semibold text-neovantas-navy">{item.title}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-neovantas-blue">{item.count}</p>
-              <p className="mt-2 text-sm text-neovantas-muted">
-                Lectura actual desde catálogo JSON. Edición desde consola prevista en fase 2.
-              </p>
-            </Card>
-          ))}
+        <div className="space-y-4">
+          <Card className="border border-neovantas-line bg-[#eef6ff] p-4 text-sm text-neovantas-navy">
+            Lectura actual desde cat�logo JSON. Edici�n desde consola prevista en fase 2.
+          </Card>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {contentRows.map((item) => (
+              <Card key={item.section + '-' + item.id} className="border border-neovantas-line bg-white p-4 shadow-[0_8px_24px_rgba(11,27,54,0.04)]">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <input
+                      value={item.title}
+                      onChange={(event) => updateContentRow(item.id, 'title', event.target.value)}
+                      className="w-full border-0 bg-transparent text-base font-semibold text-neovantas-navy outline-none"
+                    />
+                    <input
+                      value={item.description}
+                      onChange={(event) => updateContentRow(item.id, 'description', event.target.value)}
+                      className="mt-2 w-full border-0 bg-transparent text-sm text-neovantas-muted outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateContentRow(item.id, 'visible', !item.visible)}
+                    className={item.visible ? 'rounded-full bg-neovantas-navy px-3 py-1 text-xs font-semibold text-white' : 'rounded-full border border-neovantas-line bg-white px-3 py-1 text-xs font-semibold text-neovantas-muted'}
+                  >
+                    {item.visible ? 'Visible' : 'Oculto'}
+                  </button>
+                </div>
+                <input
+                  value={item.href}
+                  onChange={(event) => updateContentRow(item.id, 'href', event.target.value)}
+                  className="mt-3 w-full rounded-lg border border-neovantas-line bg-white px-3 py-2 text-sm text-neovantas-navy"
+                />
+                <div className="mt-3 flex items-center justify-between gap-3 text-xs text-neovantas-muted">
+                  <span>{item.section}</span>
+                  <input
+                    value={item.category}
+                    onChange={(event) => updateContentRow(item.id, 'category', event.target.value)}
+                    className="w-36 rounded-full border border-neovantas-line bg-white px-3 py-1 text-xs text-neovantas-navy"
+                  />
+                </div>
+              </Card>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={persistContent}
+              className="rounded-full bg-neovantas-navy px-4 py-2 text-sm font-semibold text-white"
+            >
+              Guardar contenido
+            </button>
+          </div>
         </div>
       ) : null}
     </section>
