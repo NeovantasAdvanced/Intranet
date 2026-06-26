@@ -229,6 +229,46 @@ La pagina espera un endpoint de resumen en `/api/usage/summary` para cargar:
 - actividad por dia
 - actividad por usuario
 
+## Persistencia de administración
+
+El Centro de Administración usa una capa abstracta en `src/lib/adminStorage.ts`.
+
+Orden de lectura:
+
+1. API `/api/admin/access` si está disponible.
+2. Caché local del navegador para desarrollo.
+3. JSON semilla en `src/data/access-control.json`, `src/data/users-access.json`, `src/data/apps.json`, `src/data/documents.json` y `src/data/quickLinks.json`.
+
+La API está preparada para persistir en Azure Table Storage o, en una fase posterior, en una lista de SharePoint.
+
+Variables previstas para la fase Azure:
+
+- `AZURE_STORAGE_CONNECTION_STRING`
+- `AzureWebJobsStorage`
+
+### Añadir un admin
+
+1. Abre `src/data/access-control.json`.
+2. Añade el correo en `admins.allowedEmails`.
+3. Si también debe ver Repositorios, añádelo en `repositories.allowedEmails`.
+
+### Añadir acceso a Repositorios
+
+1. Abre `src/data/users-access.json`.
+2. Marca `permissions.repositories = true` para el usuario.
+3. Si quieres que el permiso sea persistente, actualiza también `src/data/access-control.json` o usa `/api/admin/access` cuando la persistencia esté configurada.
+
+### Edición de contenido
+
+La pestaña `Contenido` trabaja sobre:
+
+- Herramientas
+- Recursos de empleado
+- Documentos destacados
+- Accesos rápidos
+
+En esta fase permite editar título, descripción, URL, categoría y visibilidad. Si no hay almacenamiento real configurado, los cambios se mantienen en modo local/desarrollo.
+
 ## Despliegue en Azure Static Web Apps
 
 El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, necesario para una SPA. Tambien incluye el directorio `api/` para la analitica de uso y `.github/workflows/azure-static-web-apps-blue-sky-015473603.yml` como workflow base de GitHub Actions.
