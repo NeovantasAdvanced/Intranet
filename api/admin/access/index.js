@@ -1,3 +1,5 @@
+console.log('admin access function loaded');
+
 const { getPrincipalFromRequest, isAdminPrincipal } = require('../../_shared/auth.cjs');
 const { readAdminState, writeAdminState } = require('../../_shared/admin-store.cjs');
 
@@ -19,13 +21,16 @@ function parseBody(body) {
   }
 }
 
-module.exports = async function adminAccess(context, req) {
+module.exports = async function (context, req) {
+  console.log('admin access handler invoked');
   const principal = getPrincipalFromRequest(req);
+  const hasStorageConnection = Boolean(process.env.AZURE_STORAGE_CONNECTION_STRING || process.env.AzureWebJobsStorage);
   context.log(
-    `[admin/access] ${req.method} request from ${principal?.userDetails || 'anonymous'} using storage=${
-      process.env.AZURE_STORAGE_CONNECTION_STRING || process.env.AzureWebJobsStorage ? 'azure-table' : 'local-fallback'
-    }`,
+    `[admin/access] ${req.method} request from ${principal?.userDetails || 'anonymous'} storage=${
+      hasStorageConnection ? 'azure-table' : 'fallback'
+    } tables=IntranetAccessControl,IntranetUsersAccess,IntranetManagedContent`,
   );
+
   try {
     if (!isAdminPrincipal(principal)) {
       context.log.warn('[admin/access] forbidden request rejected');
@@ -74,7 +79,7 @@ module.exports = async function adminAccess(context, req) {
       body: JSON.stringify({ ok: true, ...saved }),
     };
   } catch (error) {
-    context.log.error('[admin/access] write failed', error);
+    context.log.error('[admin/access] failed', error);
     context.res = {
       status: 500,
       headers: { 'content-type': 'application/json' },

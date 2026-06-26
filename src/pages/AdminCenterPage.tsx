@@ -64,6 +64,23 @@ const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
 const apps = appsData as InternalApp[];
 const documents = documentsData as DocumentItem[];
 
+function getAdminSaveErrorMessage(error: unknown) {
+  const status = error && typeof error === 'object' ? (error as { status?: number; responseStatus?: number; response?: { status?: number } }).status || (error as { status?: number; responseStatus?: number; response?: { status?: number } }).responseStatus || (error as { status?: number; responseStatus?: number; response?: { status?: number } }).response?.status : undefined;
+  if (status === 500 || status === 503) {
+    return 'El servicio de administraci?n no est? disponible temporalmente.';
+  }
+
+  if (status === 404) {
+    return 'El endpoint de administraci?n no est? disponible.';
+  }
+
+  if (status === 401 || status === 403) {
+    return 'No tienes permisos para realizar esta acci?n.';
+  }
+
+  return error instanceof Error ? error.message : 'Error desconocido';
+}
+
 function getInitialTab() {
   if (typeof window === 'undefined') {
     return 'dashboard';
@@ -321,7 +338,7 @@ export function AdminCenterPage() {
     } catch (error) {
       console.error('[admin/users] save failed', error);
       setSavingState('error');
-      setSaveMessage(`Error al guardar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      setSaveMessage(`Error al guardar: ${getAdminSaveErrorMessage(error)}`);
     }
   };
 
@@ -336,7 +353,7 @@ export function AdminCenterPage() {
     } catch (error) {
       console.error('[admin/content] save failed', error);
       setSavingState('error');
-      setSaveMessage(`Error al guardar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      setSaveMessage(`Error al guardar: ${getAdminSaveErrorMessage(error)}`);
     }
   };
 
