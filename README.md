@@ -246,6 +246,14 @@ Variables previstas para la fase Azure:
 - `AZURE_STORAGE_CONNECTION_STRING`
 - `AzureWebJobsStorage`
 
+Tablas usadas en Azure Table Storage:
+
+- `IntranetAccessControl`
+- `IntranetUsersAccess`
+- `IntranetManagedContent`
+
+Si no existe ninguna de esas variables, la app usa el fallback local del navegador en desarrollo y un fichero temporal en la función para mantener la experiencia operativa.
+
 ### Añadir un admin
 
 1. Abre `src/data/access-control.json`.
@@ -279,7 +287,7 @@ El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, nece
 4. El workflow activo se llama `Deploy Intranet - Azure Static Web Apps`.
 5. El despliegue de produccion vigente es `https://blue-sky-015473603.7.azurestaticapps.net/`.
 6. El workflow construye `dist` antes de desplegar y publica tambien la carpeta `api/`.
-7. En Azure Static Web Apps añade `AZURE_STORAGE_CONNECTION_STRING` y, si quieres, `USAGE_TABLE_NAME` para la analitica de uso.
+7. En Azure Static Web Apps añade `AZURE_STORAGE_CONNECTION_STRING` o `AzureWebJobsStorage` para la persistencia del admin, y `USAGE_TABLE_NAME` si quieres para la analitica de uso.
 
 ## Notas de diseno tecnico
 
