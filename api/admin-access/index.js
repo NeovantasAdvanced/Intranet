@@ -1,7 +1,7 @@
 console.log('admin access function loaded');
 
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../../_shared/auth.cjs');
-const { readAdminState, writeAdminState } = require('../../_shared/admin-store.cjs');
+const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { readAdminState, writeAdminState } = require('../_shared/admin-store.cjs');
 
 function parseBody(body) {
   if (!body) {
