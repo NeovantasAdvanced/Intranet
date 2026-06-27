@@ -1,13 +1,14 @@
 import { BarChart3, Boxes, LayoutDashboard, RefreshCcw, ShieldCheck, Users2, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { APP_VERSION } from '../config/appVersion';
+import accessControlData from '../data/access-control.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { useAuthSession } from '../context/AuthSessionContext';
 import { canAccessStatistics, isAdmin } from '../lib/accessControl';
 import { AdminUsagePage } from './AdminUsagePage';
-import usersAccessData from '../data/users-access.json';
+import organizationUsersData from '../data/organization-users.json';
 import newsData from '../data/news.json';
 import eventsData from '../data/events.json';
 import sharePointCatalogData from '../data/sharepointCatalog.json';
@@ -17,14 +18,21 @@ import { type EventItem, type InternalApp, type DocumentItem, type NewsItem, typ
 
 type AdminTabId = 'dashboard' | 'statistics' | 'users' | 'sync' | 'content';
 
-type UserAccessRow = {
-  name: string;
+type OrganizationUserRow = {
+  displayName: string;
   email: string;
-  department: string;
+  userPrincipalName: string;
   jobTitle: string;
-  permissions: {
-    admin: boolean;
-    repositories: boolean;
+  department: string;
+};
+
+type AccessControlDraft = {
+  admins: {
+    allowedEmails: string[];
+  };
+  repositories: {
+    allowedEmails: string[];
+    blockedEmails: string[];
   };
 };
 
@@ -36,7 +44,8 @@ const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = 
   { id: 'content', label: 'Contenido', icon: Boxes },
 ];
 
-const users = usersAccessData as UserAccessRow[];
+const organizationUsers = organizationUsersData as OrganizationUserRow[];
+const accessControl = accessControlData as AccessControlDraft;
 const news = newsData as NewsItem[];
 const events = eventsData as EventItem[];
 const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
@@ -92,7 +101,7 @@ export function AdminCenterPage() {
   const userEmail = clientPrincipal?.userDetails ?? '';
   const [activeTab, setActiveTab] = useState<AdminTabId>(getInitialTab);
   const [userSearch, setUserSearch] = useState('');
-  const [permissionFilter, setPermissionFilter] = useState<'all' | 'admin' | 'repositories'>('all');
+  const [permissionFilter, setPermissionFilter] = useState<'all' | 'repositories' | 'no-access' | 'admins'>('all');
   const adminAllowed = isAdmin(userEmail);
 
   useEffect(() => {
@@ -105,41 +114,88 @@ export function AdminCenterPage() {
   const lastNewsCount = news.length;
   const lastEvent = events[0];
   const portalStatus = 'Operativo';
-  const authorizedUsers = users.filter((item) => item.permissions.repositories).length;
-  const adminUsers = users.filter((item) => item.permissions.admin).length;
-  const uniqueUsers = new Set(users.map((item) => item.email)).size;
-  const accessibleSections = {
-    quickLinks: 6,
-    tools: apps.filter((item) => item.category === 'tools').length,
-    employeeApps: apps.filter((item) => item.category === 'employee').length,
-    documents: documents.length,
-    news: news.length,
-    events: events.length,
-  };
+  const repositoryAllowedEmails = accessControl.repositories.allowedEmails ?? [];
+  const adminAllowedEmails = accessControl.admins.allowedEmails ?? [];
+  const [repositoryDraftEmails, setRepositoryDraftEmails] = useState<string[]>(repositoryAllowedEmails);
+  const authorizedUsers = repositoryAllowedEmails.length;
+  const adminUsers = adminAllowedEmails.length;
   const sharePointItems = sharePointCatalog.resources.length + sharePointCatalog.repositories.length;
   const versionLabel = formatAppVersion();
 
-  const filteredUsers = useMemo(() => {
+
+  const organizationRows = useMemo(() => {
+    const repositorySet = new Set(repositoryDraftEmails.map((email) => email.trim().toLowerCase()).filter(Boolean));
+    const adminSet = new Set(adminAllowedEmails.map((email) => email.trim().toLowerCase()).filter(Boolean));
     const query = userSearch.trim().toLowerCase();
 
-    return users.filter((user) => {
-      const matchesQuery =
-        !query ||
-        [user.name, user.email, user.department, user.jobTitle]
-          .join(' ')
-          .toLowerCase()
-          .includes(query);
+    return organizationUsers
+      .map((user) => {
+        const normalizedEmail = user.email.trim().toLowerCase();
+        return {
+          ...user,
+          admin: adminSet.has(normalizedEmail),
+          repositories: repositorySet.has(normalizedEmail),
+        };
+      })
+      .filter((user) => {
+        const matchesQuery =
+          !query ||
+          [user.displayName, user.email, user.department, user.jobTitle]
+            .join(' ')
+            .toLowerCase()
+            .includes(query);
 
-      const matchesPermission =
-        permissionFilter === 'all'
-          ? true
-          : permissionFilter === 'admin'
-          ? user.permissions.admin
-          : user.permissions.repositories;
+        const matchesFilter =
+          permissionFilter === 'all'
+            ? true
+            : permissionFilter === 'admins'
+            ? user.admin
+            : permissionFilter === 'repositories'
+            ? user.repositories
+            : permissionFilter === 'no-access'
+            ? !user.repositories && !user.admin
+            : true;
 
-      return matchesQuery && matchesPermission;
-    });
-  }, [permissionFilter, userSearch]);
+        return matchesQuery && matchesFilter;
+      });
+  }, [adminAllowedEmails, permissionFilter, repositoryDraftEmails, userSearch]);
+
+  const pendingAccessControlJson = useMemo(
+    () =>
+      JSON.stringify(
+        {
+          admins: {
+            allowedEmails: adminAllowedEmails,
+          },
+          repositories: {
+            allowedEmails: repositoryDraftEmails,
+            blockedEmails: organizationUsers
+              .map((user) => user.email)
+              .filter((email) => !repositoryDraftEmails.map((item) => item.toLowerCase()).includes(email.toLowerCase())),
+          },
+        },
+        null,
+        2,
+      ),
+    [adminAllowedEmails, organizationUsers, repositoryDraftEmails],
+  );
+
+  const repositoryDraftSet = useMemo(
+    () => new Set(repositoryDraftEmails.map((email) => email.trim().toLowerCase()).filter(Boolean)),
+    [repositoryDraftEmails],
+  );
+
+  const toggleRepositoryAccess = (email: string) => {
+    const normalized = email.trim().toLowerCase();
+    setRepositoryDraftEmails((current) =>
+      current.some((item) => item.trim().toLowerCase() === normalized)
+        ? current.filter((item) => item.trim().toLowerCase() !== normalized)
+        : [...current, normalized],
+    );
+  };
+
+  const hasPendingChanges =
+    JSON.stringify(repositoryDraftEmails.slice().sort()) !== JSON.stringify(repositoryAllowedEmails.slice().sort());
 
   const adminCanViewStatistics = canAccessStatistics(userEmail);
 
@@ -196,7 +252,7 @@ export function AdminCenterPage() {
             value={String(events.length)}
             note={lastEvent ? `Pr贸ximo/煤ltimo evento: ${lastEvent.title}` : 'Sin eventos cargados.'}
           />
-          <StatCard title="Usuarios con permisos" value={String(users.length)} note={`${adminUsers} administradores detectados`} />
+          <StatCard title="Usuarios con permisos" value={String(organizationUsers.length)} note={`${adminUsers} administradores detectados`} />
           <StatCard title="Repositorios" value={String(authorizedUsers)} note="Usuarios autorizados para Repositorios." />
           {versionLabel ? <StatCard title="Versi贸n" value={versionLabel} note="Versi贸n del portal desde package.json." /> : null}
         </div>
@@ -217,11 +273,11 @@ export function AdminCenterPage() {
               <div>
                 <h3 className="text-base font-semibold text-neovantas-navy">Usuarios y permisos</h3>
                 <p className="mt-1 text-sm text-neovantas-muted">
-                  Gesti贸n inicial desde JSON local. En una fase posterior se conectar谩 con Microsoft Graph y almacenamiento persistente.
+                  Carga inicial desde `organization-users.json`. Los cambios se guardan solo en el borrador local.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <SectionPill>{`${users.length} usuarios`}</SectionPill>
+                <SectionPill>{`${organizationUsers.length} usuarios`}</SectionPill>
                 <SectionPill>{`${adminUsers} admins`}</SectionPill>
                 <SectionPill>{`${authorizedUsers} repositorios`}</SectionPill>
               </div>
@@ -243,8 +299,9 @@ export function AdminCenterPage() {
               <div className="flex flex-wrap gap-2">
                 {[
                   { id: 'all', label: 'Todos' },
-                  { id: 'admin', label: 'Admin' },
-                  { id: 'repositories', label: 'Repositorios' },
+                  { id: 'repositories', label: 'Con acceso a Repositorios' },
+                  { id: 'no-access', label: 'Sin acceso' },
+                  { id: 'admins', label: 'Admins' },
                 ].map((filter) => {
                   const active = permissionFilter === filter.id;
                   return (
@@ -272,33 +329,65 @@ export function AdminCenterPage() {
                 <tr className="text-left text-xs font-semibold uppercase tracking-[0.12em] text-neovantas-muted">
                   <th className="px-5 py-4">Nombre</th>
                   <th className="px-5 py-4">Email</th>
-                  <th className="px-5 py-4">Departamento</th>
                   <th className="px-5 py-4">Cargo</th>
+                  <th className="px-5 py-4">Departamento</th>
+                  <th className="px-5 py-4">Acceso a Repositorios</th>
                   <th className="px-5 py-4">Admin</th>
-                  <th className="px-5 py-4">Repositorios</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neovantas-line bg-white">
-                {filteredUsers.map((user) => (
+                {organizationRows.map((user) => (
                   <tr key={user.email}>
-                    <td className="px-5 py-4 text-sm font-semibold text-neovantas-navy">{user.name}</td>
+                    <td className="px-5 py-4 text-sm font-semibold text-neovantas-navy">{user.displayName}</td>
                     <td className="px-5 py-4 text-sm text-neovantas-muted">{user.email}</td>
-                    <td className="px-5 py-4 text-sm text-neovantas-muted">{user.department}</td>
-                    <td className="px-5 py-4 text-sm text-neovantas-muted">{user.jobTitle}</td>
+                    <td className="px-5 py-4 text-sm text-neovantas-muted">{user.jobTitle || 'Sin datos'}</td>
+                    <td className="px-5 py-4 text-sm text-neovantas-muted">{user.department || 'Sin datos'}</td>
                     <td className="px-5 py-4">
-                      {user.permissions.admin ? <Badge tone="info">Admin</Badge> : <span className="text-sm text-neovantas-muted">No</span>}
+                      <button
+                        type="button"
+                        onClick={() => toggleRepositoryAccess(user.email)}
+                        className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+                          repositoryDraftSet.has(user.email.trim().toLowerCase())
+                            ? 'border-neovantas-blue bg-neovantas-navy text-white'
+                            : 'border-neovantas-line bg-white text-neovantas-muted hover:border-neovantas-cyan/30 hover:text-neovantas-blue'
+                        }`}
+                      >
+                        {repositoryDraftSet.has(user.email.trim().toLowerCase()) ? 'Con acceso' : 'Sin acceso'}
+                      </button>
                     </td>
                     <td className="px-5 py-4">
-                      {user.permissions.repositories ? (
-                        <Badge tone="info">Repositorios</Badge>
-                      ) : (
-                        <span className="text-sm text-neovantas-muted">No</span>
-                      )}
+                      {user.admin ? <Badge tone="info">Admin</Badge> : <span className="text-sm text-neovantas-muted">No</span>}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="border-t border-neovantas-line bg-[#f7f9fc] p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <h3 className="text-base font-semibold text-neovantas-navy">Cambios pendientes</h3>
+                <p className="mt-1 text-sm text-neovantas-muted">
+                  Genera el JSON para copiar y pegar en `access-control.json`. Todav韆 no hay guardado persistente.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <SectionPill>{hasPendingChanges ? 'Cambios locales' : 'Sin cambios'}</SectionPill>
+                  <SectionPill>{`${repositoryDraftEmails.length} usuarios con acceso`}</SectionPill>
+                  <SectionPill>{`${organizationUsers.length - repositoryDraftEmails.length} bloqueados`}</SectionPill>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={async () => { await navigator.clipboard.writeText(pendingAccessControlJson); }}
+                className="focus-ring inline-flex items-center justify-center rounded-full border border-neovantas-blue bg-neovantas-navy px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neovantas-blue"
+              >
+                Copiar JSON
+              </button>
+            </div>
+            <pre className="mt-4 overflow-x-auto rounded-2xl bg-[#0A0A3F] p-4 text-xs leading-6 text-white">
+              {pendingAccessControlJson}
+            </pre>
           </div>
         </Card>
       ) : null}

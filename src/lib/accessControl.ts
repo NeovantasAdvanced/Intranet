@@ -6,6 +6,7 @@ type AccessControlData = {
   };
   repositories?: {
     allowedEmails?: string[];
+    blockedEmails?: string[];
   };
 };
 
