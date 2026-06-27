@@ -135,14 +135,6 @@ const homeQuickLinks: HomeLink[] = [
     tone: 'info',
     actionLabel: 'Abrir',
   },
-  {
-    title: 'Evaluador de documentos',
-    description: 'Audita estructura, claridad y calidad de documentos.',
-    href: 'https://chatgpt.com/g/g-6a0ee263171c8191b155edbddf1332a2-auditor-de-calidad-de-documentos-neovantas',
-    icon: FileText,
-    tone: 'critical',
-    actionLabel: 'Abrir',
-  },
 ];
 
 /*

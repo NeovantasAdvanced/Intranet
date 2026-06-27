@@ -9,7 +9,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
-import { APP_VERSION } from '../../config/appVersion';
+import { RELEASE_VERSION } from '../../config/releaseInfo';
 import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
@@ -136,15 +136,13 @@ export function AppLayout({ children }: AppLayoutProps) {
             <div className="mx-auto w-full max-w-[1200px]">{children}</div>
           </main>
 
-          {APP_VERSION && APP_VERSION !== '0' ? (
-            <footer className="px-4 pb-4 md:px-8">
-              <div className="mx-auto flex w-full max-w-[1200px] justify-end">
-                <span className="rounded-full border border-neovantas-line bg-white px-3 py-1 text-sm font-semibold text-neovantas-navy shadow-sm">
-                  Version {APP_VERSION}
-                </span>
-              </div>
-            </footer>
-          ) : null}
+          <footer className="px-4 pb-4 md:px-8">
+            <div className="mx-auto flex w-full max-w-[1200px] justify-end">
+              <span className="text-xs font-semibold tracking-[0.12em] text-neovantas-muted">
+                Workspace {RELEASE_VERSION}
+              </span>
+            </div>
+          </footer>
         </div>
       </PortalSearchProvider>
     </AuthSessionProvider>

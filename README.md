@@ -253,3 +253,90 @@ El proyecto incluye `staticwebapp.config.json` con fallback a `index.html`, nece
 
 - `news`: ejecucion diaria a las 09:10 hora de Madrid y ventana de busqueda limitada a 3 dias.
 - `events`: ejecucion quincenal los dias 1 y 16 a las 06:20 UTC y ventana de busqueda limitada a 45 dias.
+
+## Release v1.0.0
+
+Para publicar la primera version oficial:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### Arquitectura
+
+- SPA en React + TypeScript + Vite.
+- Estilos con Tailwind CSS.
+- Datos iniciales y catalogos en JSON versionado.
+- Azure Static Web Apps para hosting y funciones.
+- Azure Functions para tracking de uso y sincronizaciones.
+
+### Stack tecnologico
+
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- lucide-react
+- Azure Static Web Apps
+- Azure Functions
+
+### Despliegue
+
+- La app se publica desde `main`.
+- El frontend compila en `dist`.
+- El workflow de Azure Static Web Apps construye la SPA y publica `api/` cuando existe.
+
+### Configuracion de Azure
+
+- Crear una Static Web App vinculada al repositorio.
+- Configurar el deployment token de Azure Static Web Apps en GitHub.
+- Configurar `AZURE_STORAGE_CONNECTION_STRING` si se usa persistencia o tracking con Table Storage.
+
+### Configuracion de GitHub
+
+- Definir los secrets del despliegue.
+- Mantener activos los workflows de sincronizacion de noticias, eventos y SharePoint.
+- Asegurar que `main` sea la rama de despliegue.
+
+### Actualizar noticias
+
+- Revisar `.github/workflows/sync-outlook-news.yml`.
+- Ejecutar manualmente el workflow si hace falta.
+- El resultado se guarda en `src/data/news.json`.
+
+### Actualizar eventos
+
+- Revisar `.github/workflows/sync-outlook-events.yml`.
+- Ejecutar manualmente el workflow si hace falta.
+- El resultado se guarda en `src/data/events.json`.
+
+### Variables necesarias
+
+- `AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_SKY_015473603`
+- `AZURE_STORAGE_CONNECTION_STRING`
+- `VITE_ADMIN_EMAILS`
+- `SHAREPOINT_TENANT_ID`
+- `SHAREPOINT_CLIENT_ID`
+- `SHAREPOINT_CLIENT_SECRET`
+- `SHAREPOINT_SITE_ID`
+- `NEWS_MAILBOX_USER_ID`
+- `NEWS_MAIL_FOLDER`
+- `NEWS_SUBJECT_PREFIX`
+- `EVENTS_MAILBOX_USER_ID`
+- `EVENTS_MAIL_FOLDER`
+- `EVENTS_SUBJECT_PREFIX`
+
+### Limitaciones conocidas
+
+- Parte del contenido sigue viniendo de JSON local.
+- La persistencia avanzada de administracion queda para fases posteriores.
+- Algunas secciones dependen de sincronizaciones programadas.
+
+### Roadmap
+
+- Persistencia avanzada
+- Microsoft Graph completo
+- Gestion de usuarios desde la interfaz
+- Gestion de herramientas desde la interfaz
+- Sincronizaciones desde la interfaz
