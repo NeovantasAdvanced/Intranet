@@ -116,12 +116,13 @@ export function AdminCenterPage() {
   const portalStatus = 'Operativo';
   const repositoryAllowedEmails = accessControl.repositories.allowedEmails ?? [];
   const adminAllowedEmails = accessControl.admins.allowedEmails ?? [];
+  const repositoryInitialSet = useMemo(() => new Set(repositoryAllowedEmails.map((email) => email.trim().toLowerCase()).filter(Boolean)), []);
   const [repositoryDraftEmails, setRepositoryDraftEmails] = useState<string[]>(repositoryAllowedEmails);
+  const [repositoryChangeSource, setRepositoryChangeSource] = useState<Record<string, 'pilot' | 'manual'>>({});
   const authorizedUsers = repositoryAllowedEmails.length;
   const adminUsers = adminAllowedEmails.length;
   const sharePointItems = sharePointCatalog.resources.length + sharePointCatalog.repositories.length;
   const versionLabel = formatAppVersion();
-
 
   const organizationRows = useMemo(() => {
     const repositorySet = new Set(repositoryDraftEmails.map((email) => email.trim().toLowerCase()).filter(Boolean));
@@ -183,6 +184,18 @@ export function AdminCenterPage() {
     [repositoryDraftEmails],
   );
 
+  const repositoryOriginFor = (email: string) => {
+    const normalized = email.trim().toLowerCase();
+    const initial = repositoryInitialSet.has(normalized);
+    const current = repositoryDraftSet.has(normalized);
+
+    if (!current) {
+      return initial ? 'Pilot' : 'Sin acceso';
+    }
+
+    return repositoryChangeSource[normalized] === 'manual' || !initial ? 'Manual' : 'Pilot';
+  };
+
   const toggleRepositoryAccess = (email: string) => {
     const normalized = email.trim().toLowerCase();
     setRepositoryDraftEmails((current) =>
@@ -190,10 +203,12 @@ export function AdminCenterPage() {
         ? current.filter((item) => item.trim().toLowerCase() !== normalized)
         : [...current, normalized],
     );
+    setRepositoryChangeSource((current) => ({ ...current, [normalized]: 'manual' }));
   };
 
   const hasPendingChanges =
-    JSON.stringify(repositoryDraftEmails.slice().sort()) !== JSON.stringify(repositoryAllowedEmails.slice().sort());
+    JSON.stringify(repositoryDraftEmails.slice().sort()) !== JSON.stringify(repositoryAllowedEmails.slice().sort()) ||
+    Object.keys(repositoryChangeSource).length > 0;
 
   const adminCanViewStatistics = canAccessStatistics(userEmail);
 
@@ -329,7 +344,8 @@ export function AdminCenterPage() {
                   <th className="px-5 py-4">Email</th>
                   <th className="px-5 py-4">Cargo</th>
                   <th className="px-5 py-4">Departamento</th>
-                  <th className="px-5 py-4">Acceso a Repositorios</th>
+                  <th className="px-5 py-4">Repositorios</th>
+                  <th className="px-5 py-4">Origen</th>
                   <th className="px-5 py-4">Admin</th>
                 </tr>
               </thead>
@@ -344,14 +360,18 @@ export function AdminCenterPage() {
                       <button
                         type="button"
                         onClick={() => toggleRepositoryAccess(user.email)}
-                        className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
                           repositoryDraftSet.has(user.email.trim().toLowerCase())
                             ? 'border-neovantas-blue bg-neovantas-navy text-white'
                             : 'border-neovantas-line bg-white text-neovantas-muted hover:border-neovantas-cyan/30 hover:text-neovantas-blue'
                         }`}
                       >
+                        <span className={`h-2.5 w-2.5 rounded-full ${repositoryDraftSet.has(user.email.trim().toLowerCase()) ? 'bg-neovantas-cyan' : 'bg-neovantas-muted'}`} />
                         {repositoryDraftSet.has(user.email.trim().toLowerCase()) ? 'Con acceso' : 'Sin acceso'}
                       </button>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-sm font-semibold text-neovantas-blue">{repositoryOriginFor(user.email)}</span>
                     </td>
                     <td className="px-5 py-4">
                       {user.admin ? <Badge tone="info">Admin</Badge> : <span className="text-sm text-neovantas-muted">No</span>}
@@ -368,6 +388,7 @@ export function AdminCenterPage() {
                 <h3 className="text-base font-semibold text-neovantas-navy">Cambios pendientes</h3>
                 <p className="mt-1 text-sm text-neovantas-muted">
                   Los cambios se preparan como JSON para actualizar access-control.json.
+                  Origen inicial: Piloto. Los cambios posteriores se marcan como Manual.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <SectionPill>{`${repositoryDraftSet.size} usuarios con acceso`}</SectionPill>

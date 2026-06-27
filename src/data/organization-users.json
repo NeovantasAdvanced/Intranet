@@ -1,408 +1,401 @@
 [
-    {
-        "displayName":  "Amgonzalez",
-        "email":  "amgonzalez@neovantas.com",
-        "userPrincipalName":  "amgonzalez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Palonso",
-        "email":  "palonso@neovantas.com",
-        "userPrincipalName":  "palonso@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Vsanz",
-        "email":  "vsanz@neovantas.com",
-        "userPrincipalName":  "vsanz@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jgomez",
-        "email":  "jgomez@neovantas.com",
-        "userPrincipalName":  "jgomez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mortiz",
-        "email":  "mortiz@neovantas.com",
-        "userPrincipalName":  "mortiz@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Ipastor",
-        "email":  "ipastor@neovantas.com",
-        "userPrincipalName":  "ipastor@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mwodka",
-        "email":  "mwodka@neovantas.com",
-        "userPrincipalName":  "mwodka@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Molivares",
-        "email":  "molivares@neovantas.com",
-        "userPrincipalName":  "molivares@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Oarango",
-        "email":  "oarango@neovantas.com",
-        "userPrincipalName":  "oarango@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Roliver",
-        "email":  "roliver@neovantas.com",
-        "userPrincipalName":  "roliver@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Msantillan",
-        "email":  "msantillan@neovantas.com",
-        "userPrincipalName":  "msantillan@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Enishizawa",
-        "email":  "enishizawa@neovantas.com",
-        "userPrincipalName":  "enishizawa@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Iestefan",
-        "email":  "iestefan@neovantas.com",
-        "userPrincipalName":  "iestefan@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Aboluda",
-        "email":  "aboluda@neovantas.com",
-        "userPrincipalName":  "aboluda@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jsquassini",
-        "email":  "jsquassini@neovantas.com",
-        "userPrincipalName":  "jsquassini@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Smartin",
-        "email":  "smartin@neovantas.com",
-        "userPrincipalName":  "smartin@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Dgomez",
-        "email":  "dgomez@neovantas.com",
-        "userPrincipalName":  "dgomez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Calvarez",
-        "email":  "calvarez@neovantas.com",
-        "userPrincipalName":  "calvarez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mlopez",
-        "email":  "mlopez@neovantas.com",
-        "userPrincipalName":  "mlopez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Gfernandez",
-        "email":  "gfernandez@neovantas.com",
-        "userPrincipalName":  "gfernandez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mdsantos",
-        "email":  "mdsantos@neovantas.com",
-        "userPrincipalName":  "mdsantos@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mguerrero",
-        "email":  "mguerrero@neovantas.com",
-        "userPrincipalName":  "mguerrero@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Kvaldes",
-        "email":  "kvaldes@neovantas.com",
-        "userPrincipalName":  "kvaldes@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jjimenez",
-        "email":  "jjimenez@neovantas.com",
-        "userPrincipalName":  "jjimenez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Bgonzalez",
-        "email":  "bgonzalez@neovantas.com",
-        "userPrincipalName":  "bgonzalez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Dgarrido",
-        "email":  "dgarrido@neovantas.com",
-        "userPrincipalName":  "dgarrido@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Fbaez",
-        "email":  "fbaez@neovantas.com",
-        "userPrincipalName":  "fbaez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jmgonzalez",
-        "email":  "jmgonzalez@neovantas.com",
-        "userPrincipalName":  "jmgonzalez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mrodriguez",
-        "email":  "mrodriguez@neovantas.com",
-        "userPrincipalName":  "mrodriguez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Ngarcia",
-        "email":  "ngarcia@neovantas.com",
-        "userPrincipalName":  "ngarcia@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Pschietekat",
-        "email":  "pschietekat@neovantas.com",
-        "userPrincipalName":  "pschietekat@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Drodriguez",
-        "email":  "drodriguez@neovantas.com",
-        "userPrincipalName":  "drodriguez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Eruizdevaldivia",
-        "email":  "eruizdevaldivia@neovantas.com",
-        "userPrincipalName":  "eruizdevaldivia@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Fcarbonell",
-        "email":  "fcarbonell@neovantas.com",
-        "userPrincipalName":  "fcarbonell@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mmendez",
-        "email":  "mmendez@neovantas.com",
-        "userPrincipalName":  "mmendez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Vgiraldi",
-        "email":  "vgiraldi@neovantas.com",
-        "userPrincipalName":  "vgiraldi@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Msalom",
-        "email":  "msalom@neovantas.com",
-        "userPrincipalName":  "msalom@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Pespinosa",
-        "email":  "pespinosa@neovantas.com",
-        "userPrincipalName":  "pespinosa@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jderus",
-        "email":  "jderus@neovantas.com",
-        "userPrincipalName":  "jderus@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jbresnan",
-        "email":  "jbresnan@neovantas.com",
-        "userPrincipalName":  "jbresnan@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Aalvarez",
-        "email":  "aalvarez@neovantas.com",
-        "userPrincipalName":  "aalvarez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Ebernardo",
-        "email":  "ebernardo@neovantas.com",
-        "userPrincipalName":  "ebernardo@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Ajimenez",
-        "email":  "ajimenez@neovantas.com",
-        "userPrincipalName":  "ajimenez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Bbusto",
-        "email":  "bbusto@neovantas.com",
-        "userPrincipalName":  "bbusto@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Aare",
-        "email":  "aare@neovantas.com",
-        "userPrincipalName":  "aare@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Mdemiguel",
-        "email":  "mdemiguel@neovantas.com",
-        "userPrincipalName":  "mdemiguel@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Snogales",
-        "email":  "snogales@neovantas.com",
-        "userPrincipalName":  "snogales@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Fmacias",
-        "email":  "fmacias@neovantas.com",
-        "userPrincipalName":  "fmacias@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Msanmiguel",
-        "email":  "msanmiguel@neovantas.com",
-        "userPrincipalName":  "msanmiguel@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jlcortina",
-        "email":  "jlcortina@neovantas.com",
-        "userPrincipalName":  "jlcortina@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Dblanco",
-        "email":  "dblanco@neovantas.com",
-        "userPrincipalName":  "dblanco@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Dgomes",
-        "email":  "dgomes@neovantas.com",
-        "userPrincipalName":  "dgomes@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Fgaddi",
-        "email":  "fgaddi@neovantas.com",
-        "userPrincipalName":  "fgaddi@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Odmartin",
-        "email":  "odmartin@neovantas.com",
-        "userPrincipalName":  "odmartin@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Msagardia",
-        "email":  "msagardia@neovantas.com",
-        "userPrincipalName":  "msagardia@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Xgonzalez",
-        "email":  "xgonzalez@neovantas.com",
-        "userPrincipalName":  "xgonzalez@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Arojo",
-        "email":  "arojo@neovantas.com",
-        "userPrincipalName":  "arojo@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    },
-    {
-        "displayName":  "Jruiz",
-        "email":  "jruiz@neovantas.com",
-        "userPrincipalName":  "jruiz@neovantas.com",
-        "jobTitle":  "",
-        "department":  ""
-    }
+  {
+    "displayName": "Adriana Ar? Vargas",
+    "email": "aare@neovantas.com",
+    "userPrincipalName": "aare@neovantas.com",
+    "jobTitle": "HR Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Alba Boluda Lopez",
+    "email": "aboluda@neovantas.com",
+    "userPrincipalName": "aboluda@neovantas.com",
+    "jobTitle": "BECO Sr. Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Alba Jim?nez",
+    "email": "ajimenez@neovantas.com",
+    "userPrincipalName": "ajimenez@neovantas.com",
+    "jobTitle": "Head of People",
+    "department": ""
+  },
+  {
+    "displayName": "Alenda ?lvarez",
+    "email": "aalvarez@neovantas.com",
+    "userPrincipalName": "aalvarez@neovantas.com",
+    "jobTitle": "Head of Management Control & Sustainability",
+    "department": ""
+  },
+  {
+    "displayName": "?lvaro Rojo",
+    "email": "arojo@neovantas.com",
+    "userPrincipalName": "arojo@neovantas.com",
+    "jobTitle": "Training Designer",
+    "department": ""
+  },
+  {
+    "displayName": "Ana Mar?a Gonz?lez Morales",
+    "email": "amgonzalez@neovantas.com",
+    "userPrincipalName": "amgonzalez@neovantas.com",
+    "jobTitle": "Accounting & Commercial Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Beatriz Busto",
+    "email": "bbusto@neovantas.com",
+    "userPrincipalName": "bbusto@neovantas.com",
+    "jobTitle": "Head/Deputy Director",
+    "department": ""
+  },
+  {
+    "displayName": "B?rbara Gonz?lez",
+    "email": "bgonzalez@neovantas.com",
+    "userPrincipalName": "bgonzalez@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Claudia ?lvarez",
+    "email": "calvarez@neovantas.com",
+    "userPrincipalName": "calvarez@neovantas.com",
+    "jobTitle": "Behavioral Economics Lead",
+    "department": ""
+  },
+  {
+    "displayName": "Daniel Rodr?guez",
+    "email": "drodriguez@neovantas.com",
+    "userPrincipalName": "drodriguez@neovantas.com",
+    "jobTitle": "Business Transformation Lead",
+    "department": ""
+  },
+  {
+    "displayName": "Daniela Blanco",
+    "email": "dblanco@neovantas.com",
+    "userPrincipalName": "dblanco@neovantas.com",
+    "jobTitle": "Secretar?a & OAM",
+    "department": ""
+  },
+  {
+    "displayName": "David G?mez Gim?nez",
+    "email": "dgomez@neovantas.com",
+    "userPrincipalName": "dgomez@neovantas.com",
+    "jobTitle": "Behavioral Economics Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Diego Garrido Escart?n",
+    "email": "dgarrido@neovantas.com",
+    "userPrincipalName": "dgarrido@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Diego Gomes de Azevedo",
+    "email": "dgomes@neovantas.com",
+    "userPrincipalName": "dgomes@neovantas.com",
+    "jobTitle": "Senior Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Emma Bernardo",
+    "email": "ebernardo@neovantas.com",
+    "userPrincipalName": "ebernardo@neovantas.com",
+    "jobTitle": "Head of Marketing",
+    "department": ""
+  },
+  {
+    "displayName": "Esperanza Harumi Nishizawa",
+    "email": "enishizawa@neovantas.com",
+    "userPrincipalName": "enishizawa@neovantas.com",
+    "jobTitle": "BECO Lead",
+    "department": ""
+  },
+  {
+    "displayName": "Eva Ruiz de Valdivia Castro",
+    "email": "eruizdevaldivia@neovantas.com",
+    "userPrincipalName": "eruizdevaldivia@neovantas.com",
+    "jobTitle": "Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Federica Gaddi",
+    "email": "fgaddi@neovantas.com",
+    "userPrincipalName": "fgaddi@neovantas.com",
+    "jobTitle": "Senior Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Felipe Jos? Carbonell",
+    "email": "fcarbonell@neovantas.com",
+    "userPrincipalName": "fcarbonell@neovantas.com",
+    "jobTitle": "Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Fernando B?ez Mart?nez",
+    "email": "fbaez@neovantas.com",
+    "userPrincipalName": "fbaez@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Fernando Mac?as",
+    "email": "fmacias@neovantas.com",
+    "userPrincipalName": "fmacias@neovantas.com",
+    "jobTitle": "Manager",
+    "department": ""
+  },
+  {
+    "displayName": "Gonzalo Fern?ndez",
+    "email": "gfernandez@neovantas.com",
+    "userPrincipalName": "gfernandez@neovantas.com",
+    "jobTitle": "Behavioral Economics Senior Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Isabela Pastor Vidaurrazaga",
+    "email": "ipastor@neovantas.com",
+    "userPrincipalName": "ipastor@neovantas.com",
+    "jobTitle": "BECO Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Isabella Estefan Fiorillo",
+    "email": "iestefan@neovantas.com",
+    "userPrincipalName": "iestefan@neovantas.com",
+    "jobTitle": "BECO Senior Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Jaime Eduardo G?mez",
+    "email": "jgomez@neovantas.com",
+    "userPrincipalName": "jgomez@neovantas.com",
+    "jobTitle": "AI Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "James Bresnan",
+    "email": "jbresnan@neovantas.com",
+    "userPrincipalName": "jbresnan@neovantas.com",
+    "jobTitle": "Finance Director",
+    "department": ""
+  },
+  {
+    "displayName": "Jimena Jim?nez Rumayor",
+    "email": "jjimenez@neovantas.com",
+    "userPrincipalName": "jjimenez@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Jimena Ruiz Mart?nez",
+    "email": "jruiz@neovantas.com",
+    "userPrincipalName": "jruiz@neovantas.com",
+    "jobTitle": "UX Designer",
+    "department": ""
+  },
+  {
+    "displayName": "Jos? Mar?a Gonz?lez S?nchez",
+    "email": "jmgonzalez@neovantas.com",
+    "userPrincipalName": "jmgonzalez@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Jos? Luis Cortina",
+    "email": "jlcortina@neovantas.com",
+    "userPrincipalName": "jlcortina@neovantas.com",
+    "jobTitle": "Presidente",
+    "department": ""
+  },
+  {
+    "displayName": "Juan de Rus",
+    "email": "jderus@neovantas.com",
+    "userPrincipalName": "jderus@neovantas.com",
+    "jobTitle": "Director",
+    "department": ""
+  },
+  {
+    "displayName": "Juana Squassini",
+    "email": "jsquassini@neovantas.com",
+    "userPrincipalName": "jsquassini@neovantas.com",
+    "jobTitle": "BECO Sr. Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Karina Vald?s Arriaga",
+    "email": "kvaldes@neovantas.com",
+    "userPrincipalName": "kvaldes@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Magda Alejandra Dos Santos Zitzen",
+    "email": "mdsantos@neovantas.com",
+    "userPrincipalName": "mdsantos@neovantas.com",
+    "jobTitle": "Behavioral Economics Senior Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Maia Wodka",
+    "email": "mwodka@neovantas.com",
+    "userPrincipalName": "mwodka@neovantas.com",
+    "jobTitle": "BECO Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Marcela Olivares",
+    "email": "molivares@neovantas.com",
+    "userPrincipalName": "molivares@neovantas.com",
+    "jobTitle": "BECO Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Marita San Miguel",
+    "email": "msanmiguel@neovantas.com",
+    "userPrincipalName": "msanmiguel@neovantas.com",
+    "jobTitle": "Office Administration Manager",
+    "department": ""
+  },
+  {
+    "displayName": "Mart?n Sagard?a",
+    "email": "msagardia@neovantas.com",
+    "userPrincipalName": "msagardia@neovantas.com",
+    "jobTitle": "Strategic Consulting Lead",
+    "department": ""
+  },
+  {
+    "displayName": "Mar?a L?pez S?nchez",
+    "email": "mlopez@neovantas.com",
+    "userPrincipalName": "mlopez@neovantas.com",
+    "jobTitle": "Behavioral Economics Manager & Head of Innovation",
+    "department": ""
+  },
+  {
+    "displayName": "Mar?a Ortiz Navarro",
+    "email": "mortiz@neovantas.com",
+    "userPrincipalName": "mortiz@neovantas.com",
+    "jobTitle": "Analytics Senior Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Mateo Guerrero",
+    "email": "mguerrero@neovantas.com",
+    "userPrincipalName": "mguerrero@neovantas.com",
+    "jobTitle": "Behavioral Economics Senior Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Mateo Santill?n",
+    "email": "msantillan@neovantas.com",
+    "userPrincipalName": "msantillan@neovantas.com",
+    "jobTitle": "BECO Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Miguel Jaime Salom Jim?nez",
+    "email": "msalom@neovantas.com",
+    "userPrincipalName": "msalom@neovantas.com",
+    "jobTitle": "Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Miguel Rodr?guez Ram?rez",
+    "email": "mrodriguez@neovantas.com",
+    "userPrincipalName": "mrodriguez@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Miriam M?ndez",
+    "email": "mmendez@neovantas.com",
+    "userPrincipalName": "mmendez@neovantas.com",
+    "jobTitle": "Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "M?ximo de Miguel Rodr?guez",
+    "email": "mdemiguel@neovantas.com",
+    "userPrincipalName": "mdemiguel@neovantas.com",
+    "jobTitle": "HR Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Natalia Garc?a Rosas",
+    "email": "ngarcia@neovantas.com",
+    "userPrincipalName": "ngarcia@neovantas.com",
+    "jobTitle": "Behavioral Economics Specialist (MX)",
+    "department": ""
+  },
+  {
+    "displayName": "Olympia Arango Castro",
+    "email": "oarango@neovantas.com",
+    "userPrincipalName": "oarango@neovantas.com",
+    "jobTitle": "BECO Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Pablo Alonso",
+    "email": "palonso@neovantas.com",
+    "userPrincipalName": "palonso@neovantas.com",
+    "jobTitle": "Advanced Analytics Analyst",
+    "department": ""
+  },
+  {
+    "displayName": "Paola Schietekat",
+    "email": "pschietekat@neovantas.com",
+    "userPrincipalName": "pschietekat@neovantas.com",
+    "jobTitle": "Business Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Patricia Espinosa Carpintero",
+    "email": "pespinosa@neovantas.com",
+    "userPrincipalName": "pespinosa@neovantas.com",
+    "jobTitle": "Consultora ? Advisor",
+    "department": ""
+  },
+  {
+    "displayName": "Ram?n Oliver P?rez",
+    "email": "roliver@neovantas.com",
+    "userPrincipalName": "roliver@neovantas.com",
+    "jobTitle": "BECO Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Sarai Nogales Checa",
+    "email": "snogales@neovantas.com",
+    "userPrincipalName": "snogales@neovantas.com",
+    "jobTitle": "HR Specialist",
+    "department": ""
+  },
+  {
+    "displayName": "Sof?a Mart?n Gir?n",
+    "email": "smartin@neovantas.com",
+    "userPrincipalName": "smartin@neovantas.com",
+    "jobTitle": "Behavioral Economics Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "V?ctor Sanz Calvo",
+    "email": "vsanz@neovantas.com",
+    "userPrincipalName": "vsanz@neovantas.com",
+    "jobTitle": "Advanced Analytics Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Vit?ria Giraldi",
+    "email": "vgiraldi@neovantas.com",
+    "userPrincipalName": "vgiraldi@neovantas.com",
+    "jobTitle": "Consultant",
+    "department": ""
+  },
+  {
+    "displayName": "Xabier Gonz?lez",
+    "email": "xgonzalez@neovantas.com",
+    "userPrincipalName": "xgonzalez@neovantas.com",
+    "jobTitle": "Strategic Consulting Lead",
+    "department": ""
+  }
 ]
