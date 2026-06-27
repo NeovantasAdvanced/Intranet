@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.1
+
+Actualizacion de version visible del portal.
+
 ## v1.0.0
 
 Resumen de funcionalidades:

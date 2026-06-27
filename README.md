@@ -340,3 +340,9 @@ git push origin v1.0.0
 - Gestion de usuarios desde la interfaz
 - Gestion de herramientas desde la interfaz
 - Sincronizaciones desde la interfaz
+
+### Versionado
+
+- La version visible del portal se controla desde `src/config/appVersion.ts`.
+- Cada cambio publicado en `main` debe incrementar el `PATCH`.
+- Ejemplo: `v1.0.0` -> `v1.0.1`.
