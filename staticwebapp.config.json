@@ -1,10 +1,6 @@
 {
   "routes": [
     {
-      "route": "/api/*",
-      "allowedRoles": ["anonymous"]
-    },
-    {
       "route": "/login",
       "redirect": "/.auth/login/aad?post_login_redirect_uri=/",
       "statusCode": 302
