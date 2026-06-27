@@ -166,7 +166,7 @@ async function requestJson(path: string, init?: RequestInit) {
 export async function getAccessControl() {
   if (typeof window !== 'undefined') {
     try {
-      const payload = await requestJson('/api/admin/access');
+      const payload = await requestJson('/api/admin-access');
       const merged = mergeWithSeed(payload);
       writeLocalCache(merged);
       return merged.accessControl;
@@ -189,7 +189,7 @@ export async function updateAccessControl(accessControl: AccessControlData) {
   }
 
   try {
-    await requestJson('/api/admin/access', {
+    await requestJson('/api/admin-access', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ accessControl: payload.accessControl }),
@@ -210,7 +210,7 @@ export async function updateAccessControl(accessControl: AccessControlData) {
 export async function getUsersAccess() {
   if (typeof window !== 'undefined') {
     try {
-      const payload = await requestJson('/api/admin/access');
+      const payload = await requestJson('/api/admin-access');
       const merged = mergeWithSeed(payload);
       writeLocalCache(merged);
       return merged.usersAccess;
@@ -233,7 +233,7 @@ export async function updateUserAccess(usersAccess: UserAccessRow[]) {
   }
 
   try {
-    await requestJson('/api/admin/access', {
+    await requestJson('/api/admin-access', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ usersAccess: payload.usersAccess }),
@@ -254,7 +254,7 @@ export async function updateUserAccess(usersAccess: UserAccessRow[]) {
 export async function getManagedContent() {
   if (typeof window !== 'undefined') {
     try {
-      const payload = await requestJson('/api/admin/access');
+      const payload = await requestJson('/api/admin-access');
       const merged = mergeWithSeed(payload);
       writeLocalCache(merged);
       return merged.content;
@@ -277,7 +277,7 @@ export async function updateManagedContent(content: ManagedContentData) {
   }
 
   try {
-    await requestJson('/api/admin/access', {
+    await requestJson('/api/admin-access', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ content: payload.content }),
