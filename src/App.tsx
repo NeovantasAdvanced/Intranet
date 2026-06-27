@@ -1,6 +1,7 @@
 import { AppLayout } from './components/layout/AppLayout';
 import { AdminCenterPage } from './pages/AdminCenterPage';
 import { AdminUsagePage } from './pages/AdminUsagePage';
+import { AdminProfileDiagnosticsPage } from './pages/AdminProfileDiagnosticsPage';
 import { HomeDashboard } from './pages/HomeDashboard';
 import { useEffect, useState } from 'react';
 import { trackUsageEvent } from './lib/usageTracking';
@@ -19,6 +20,10 @@ function getRouteName() {
 
   if (pathname === '/admin/usage' || hash === '/admin/usage') {
     return 'admin-usage';
+  }
+
+  if (pathname === '/admin/profile-diagnostics' || hash === '/admin/profile-diagnostics') {
+    return 'admin-profile-diagnostics';
   }
 
   return 'home';
@@ -57,6 +62,8 @@ export default function App() {
         <AdminCenterPage />
       ) : routeName === 'admin-usage' ? (
         <AdminUsagePage />
+      ) : routeName === 'admin-profile-diagnostics' ? (
+        <AdminProfileDiagnosticsPage />
       ) : (
         <HomeDashboard />
       )}
