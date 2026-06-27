@@ -1,20 +1,20 @@
-﻿import { BarChart3, Boxes, LayoutDashboard, RefreshCcw, ShieldCheck, Users2, Search } from 'lucide-react';
+import { ArrowLeft, BarChart3, Boxes, LayoutDashboard, RefreshCcw, Search, Users2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { APP_VERSION } from '../config/appVersion';
 import accessControlData from '../data/access-control.json';
+import appsData from '../data/apps.json';
+import documentsData from '../data/documents.json';
+import eventsData from '../data/events.json';
+import newsData from '../data/news.json';
+import organizationUsersData from '../data/organization-users.json';
+import sharePointCatalogData from '../data/sharepointCatalog.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { useAuthSession } from '../context/AuthSessionContext';
 import { canAccessStatistics, isAdmin } from '../lib/accessControl';
 import { AdminUsagePage } from './AdminUsagePage';
-import organizationUsersData from '../data/organization-users.json';
-import newsData from '../data/news.json';
-import eventsData from '../data/events.json';
-import sharePointCatalogData from '../data/sharepointCatalog.json';
-import appsData from '../data/apps.json';
-import documentsData from '../data/documents.json';
-import { type EventItem, type InternalApp, type DocumentItem, type NewsItem, type SharePointCatalog } from '../types/content';
+import { type DocumentItem, type EventItem, type InternalApp, type NewsItem, type SharePointCatalog } from '../types/content';
 
 type AdminTabId = 'dashboard' | 'statistics' | 'users' | 'sync' | 'content';
 
@@ -38,7 +38,7 @@ type AccessControlDraft = {
 
 const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'statistics', label: 'EstadÃ­sticas', icon: BarChart3 },
+  { id: 'statistics', label: 'Estadísticas', icon: BarChart3 },
   { id: 'users', label: 'Usuarios y permisos', icon: Users2 },
   { id: 'sync', label: 'Sincronizaciones', icon: RefreshCcw },
   { id: 'content', label: 'Contenido', icon: Boxes },
@@ -116,7 +116,10 @@ export function AdminCenterPage() {
   const portalStatus = 'Operativo';
   const repositoryAllowedEmails = accessControl.repositories.allowedEmails ?? [];
   const adminAllowedEmails = accessControl.admins.allowedEmails ?? [];
-  const repositoryInitialSet = useMemo(() => new Set(repositoryAllowedEmails.map((email) => email.trim().toLowerCase()).filter(Boolean)), []);
+  const repositoryInitialSet = useMemo(
+    () => new Set(repositoryAllowedEmails.map((email) => email.trim().toLowerCase()).filter(Boolean)),
+    [],
+  );
   const [repositoryDraftEmails, setRepositoryDraftEmails] = useState<string[]>(repositoryAllowedEmails);
   const [repositoryChangeSource, setRepositoryChangeSource] = useState<Record<string, 'pilot' | 'manual'>>({});
   const authorizedUsers = repositoryAllowedEmails.length;
@@ -150,12 +153,12 @@ export function AdminCenterPage() {
           permissionFilter === 'all'
             ? true
             : permissionFilter === 'admins'
-            ? user.admin
-            : permissionFilter === 'repositories'
-            ? user.repositories
-            : permissionFilter === 'no-access'
-            ? !user.repositories && !user.admin
-            : true;
+              ? user.admin
+              : permissionFilter === 'repositories'
+                ? user.repositories
+                : permissionFilter === 'no-access'
+                  ? !user.repositories && !user.admin
+                  : true;
 
         return matchesQuery && matchesFilter;
       });
@@ -190,10 +193,10 @@ export function AdminCenterPage() {
     const current = repositoryDraftSet.has(normalized);
 
     if (!current) {
-      return initial ? 'Pilot' : 'Sin acceso';
+      return initial ? 'Piloto' : 'Sin acceso';
     }
 
-    return repositoryChangeSource[normalized] === 'manual' || !initial ? 'Manual' : 'Pilot';
+    return repositoryChangeSource[normalized] === 'manual' || !initial ? 'Manual' : 'Piloto';
   };
 
   const toggleRepositoryAccess = (email: string) => {
@@ -213,21 +216,24 @@ export function AdminCenterPage() {
   const adminCanViewStatistics = canAccessStatistics(userEmail);
 
   if (!adminAllowed) {
-    return (
-      <div className="rounded-[24px] border border-neovantas-line bg-white p-8 text-neovantas-navy">
-        No tienes permisos para acceder a esta secciÃ³n.
-      </div>
-    );
+    return <div className="rounded-[24px] border border-neovantas-line bg-white p-8 text-neovantas-navy">No tienes permisos para acceder a esta sección.</div>;
   }
 
   return (
     <section className="space-y-6">
       <SectionHeader
-        title="Centro de AdministraciÃ³n"
-        description="Panel central para administraciÃ³n, mÃ©tricas, permisos, sincronizaciones y contenido."
+        title="Centro de Administración"
+        description="Panel central para administración, métricas, permisos, sincronizaciones y contenido."
       />
 
       <div className="flex flex-wrap gap-2">
+        <a
+          href="/"
+          className="focus-ring inline-flex items-center gap-2 rounded-full border border-neovantas-cyan/25 bg-[#eef6ff] px-4 py-2 text-sm font-semibold text-neovantas-blue transition hover:border-neovantas-blue hover:bg-white"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Volver
+        </a>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -248,26 +254,20 @@ export function AdminCenterPage() {
             </button>
           );
         })}
-        <a
-          href="/admin/profile-diagnostics"
-          className="focus-ring inline-flex items-center gap-2 rounded-full border border-neovantas-cyan/25 bg-[#eef6ff] px-4 py-2 text-sm font-semibold text-neovantas-blue transition hover:border-neovantas-blue hover:bg-white"
-        >
-          DiagnÃ³stico de perfil
-        </a>
       </div>
 
       {activeTab === 'dashboard' ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <StatCard title="Estado del portal" value={portalStatus} note="Vista ejecutiva del portal en tiempo real." />
-          <StatCard title="Noticias" value={String(lastNewsCount)} note={`Ãšltimo briefing: ${lastNewsDate}`} />
+          <StatCard title="Noticias" value={String(lastNewsCount)} note={`Último briefing: ${lastNewsDate}`} />
           <StatCard
             title="Eventos"
             value={String(events.length)}
-            note={lastEvent ? `PrÃ³ximo/Ãºltimo evento: ${lastEvent.title}` : 'Sin eventos cargados.'}
+            note={lastEvent ? `Próximo/último evento: ${lastEvent.title}` : 'Sin eventos cargados.'}
           />
           <StatCard title="Usuarios con permisos" value={String(organizationUsers.length)} note={`${adminUsers} administradores detectados`} />
           <StatCard title="Repositorios" value={String(authorizedUsers)} note="Usuarios autorizados para Repositorios." />
-          {versionLabel ? <StatCard title="VersiÃ³n" value={versionLabel} note="VersiÃ³n del portal desde package.json." /> : null}
+          {versionLabel ? <StatCard title="Versión" value={versionLabel} note="Versión del portal desde package.json." /> : null}
         </div>
       ) : null}
 
@@ -275,7 +275,7 @@ export function AdminCenterPage() {
         adminCanViewStatistics ? (
           <AdminUsagePage />
         ) : (
-          <Card className="p-8 text-center text-neovantas-navy">No tienes permisos para acceder a esta secciÃ³n.</Card>
+          <Card className="p-8 text-center text-neovantas-navy">No tienes permisos para acceder a esta sección.</Card>
         )
       ) : null}
 
@@ -305,7 +305,7 @@ export function AdminCenterPage() {
                 <input
                   value={userSearch}
                   onChange={(event) => setUserSearch(event.target.value)}
-                  placeholder="Buscar por nombre, email o departamento"
+                  placeholder="Buscar por nombre, email, cargo o departamento"
                   className="w-full min-w-0 border-0 bg-transparent text-sm text-neovantas-navy outline-none placeholder:text-neovantas-muted"
                 />
               </label>
@@ -366,7 +366,11 @@ export function AdminCenterPage() {
                             : 'border-neovantas-line bg-white text-neovantas-muted hover:border-neovantas-cyan/30 hover:text-neovantas-blue'
                         }`}
                       >
-                        <span className={`h-2.5 w-2.5 rounded-full ${repositoryDraftSet.has(user.email.trim().toLowerCase()) ? 'bg-neovantas-cyan' : 'bg-neovantas-muted'}`} />
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            repositoryDraftSet.has(user.email.trim().toLowerCase()) ? 'bg-neovantas-cyan' : 'bg-neovantas-muted'
+                          }`}
+                        />
                         {repositoryDraftSet.has(user.email.trim().toLowerCase()) ? 'Con acceso' : 'Sin acceso'}
                       </button>
                     </td>
@@ -399,7 +403,9 @@ export function AdminCenterPage() {
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={async () => { await navigator.clipboard.writeText(pendingAccessControlJson); }}
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(pendingAccessControlJson);
+                  }}
                   className="focus-ring inline-flex items-center justify-center rounded-full border border-neovantas-blue bg-neovantas-navy px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neovantas-blue"
                 >
                   Copiar JSON
@@ -418,11 +424,10 @@ export function AdminCenterPage() {
         </Card>
       ) : null}
 
-
       {activeTab === 'content' ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[
-            { title: 'Accesos rÃ¡pidos', count: 6 },
+            { title: 'Accesos rápidos', count: 6 },
             { title: 'Herramientas', count: apps.filter((item) => item.category === 'tools').length },
             { title: 'Recursos de empleado', count: apps.filter((item) => item.category === 'employee').length },
             { title: 'Documentos destacados', count: documents.length },
@@ -433,7 +438,7 @@ export function AdminCenterPage() {
               <p className="text-base font-semibold text-neovantas-navy">{item.title}</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-neovantas-blue">{item.count}</p>
               <p className="mt-2 text-sm text-neovantas-muted">
-                Lectura actual desde catÃ¡logo JSON. EdiciÃ³n desde consola prevista en fase 2.
+                Lectura actual desde catálogo JSON. Edición desde consola prevista en fase 2.
               </p>
             </Card>
           ))}

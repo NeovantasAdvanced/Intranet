@@ -9,7 +9,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
-import { RELEASE_VERSION } from '../../config/releaseInfo';
+import { APP_VERSION } from '../../config/appVersion';
 import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
@@ -139,7 +139,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <footer className="px-4 pb-4 md:px-8">
             <div className="mx-auto flex w-full max-w-[1200px] justify-end">
               <span className="text-xs font-semibold tracking-[0.12em] text-neovantas-muted">
-                Workspace {RELEASE_VERSION}
+                Workspace {APP_VERSION}
               </span>
             </div>
           </footer>
