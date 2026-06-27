@@ -1,4 +1,4 @@
-import { BarChart3, Boxes, LayoutDashboard, RefreshCcw, ShieldCheck, Users2, Search } from 'lucide-react';
+﻿import { BarChart3, Boxes, LayoutDashboard, RefreshCcw, ShieldCheck, Users2, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { APP_VERSION } from '../config/appVersion';
 import accessControlData from '../data/access-control.json';
@@ -38,7 +38,7 @@ type AccessControlDraft = {
 
 const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'statistics', label: 'Estadísticas', icon: BarChart3 },
+  { id: 'statistics', label: 'EstadÃ­sticas', icon: BarChart3 },
   { id: 'users', label: 'Usuarios y permisos', icon: Users2 },
   { id: 'sync', label: 'Sincronizaciones', icon: RefreshCcw },
   { id: 'content', label: 'Contenido', icon: Boxes },
@@ -165,19 +165,17 @@ export function AdminCenterPage() {
       JSON.stringify(
         {
           admins: {
-            allowedEmails: adminAllowedEmails,
+            allowedEmails: adminAllowedEmails.slice().sort(),
           },
           repositories: {
-            allowedEmails: repositoryDraftEmails,
-            blockedEmails: organizationUsers
-              .map((user) => user.email)
-              .filter((email) => !repositoryDraftEmails.map((item) => item.toLowerCase()).includes(email.toLowerCase())),
+            allowedEmails: repositoryDraftEmails.slice().sort(),
+            blockedEmails: [],
           },
         },
         null,
         2,
       ),
-    [adminAllowedEmails, organizationUsers, repositoryDraftEmails],
+    [adminAllowedEmails, repositoryDraftEmails],
   );
 
   const repositoryDraftSet = useMemo(
@@ -202,7 +200,7 @@ export function AdminCenterPage() {
   if (!adminAllowed) {
     return (
       <div className="rounded-[24px] border border-neovantas-line bg-white p-8 text-neovantas-navy">
-        No tienes permisos para acceder a esta sección.
+        No tienes permisos para acceder a esta secciÃ³n.
       </div>
     );
   }
@@ -210,8 +208,8 @@ export function AdminCenterPage() {
   return (
     <section className="space-y-6">
       <SectionHeader
-        title="Centro de Administración"
-        description="Panel central para administración, métricas, permisos, sincronizaciones y contenido."
+        title="Centro de AdministraciÃ³n"
+        description="Panel central para administraciÃ³n, mÃ©tricas, permisos, sincronizaciones y contenido."
       />
 
       <div className="flex flex-wrap gap-2">
@@ -239,22 +237,22 @@ export function AdminCenterPage() {
           href="/admin/profile-diagnostics"
           className="focus-ring inline-flex items-center gap-2 rounded-full border border-neovantas-cyan/25 bg-[#eef6ff] px-4 py-2 text-sm font-semibold text-neovantas-blue transition hover:border-neovantas-blue hover:bg-white"
         >
-          Diagnóstico de perfil
+          DiagnÃ³stico de perfil
         </a>
       </div>
 
       {activeTab === 'dashboard' ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <StatCard title="Estado del portal" value={portalStatus} note="Vista ejecutiva del portal en tiempo real." />
-          <StatCard title="Noticias" value={String(lastNewsCount)} note={`Último briefing: ${lastNewsDate}`} />
+          <StatCard title="Noticias" value={String(lastNewsCount)} note={`Ãšltimo briefing: ${lastNewsDate}`} />
           <StatCard
             title="Eventos"
             value={String(events.length)}
-            note={lastEvent ? `Próximo/último evento: ${lastEvent.title}` : 'Sin eventos cargados.'}
+            note={lastEvent ? `PrÃ³ximo/Ãºltimo evento: ${lastEvent.title}` : 'Sin eventos cargados.'}
           />
           <StatCard title="Usuarios con permisos" value={String(organizationUsers.length)} note={`${adminUsers} administradores detectados`} />
           <StatCard title="Repositorios" value={String(authorizedUsers)} note="Usuarios autorizados para Repositorios." />
-          {versionLabel ? <StatCard title="Versión" value={versionLabel} note="Versión del portal desde package.json." /> : null}
+          {versionLabel ? <StatCard title="VersiÃ³n" value={versionLabel} note="VersiÃ³n del portal desde package.json." /> : null}
         </div>
       ) : null}
 
@@ -262,7 +260,7 @@ export function AdminCenterPage() {
         adminCanViewStatistics ? (
           <AdminUsagePage />
         ) : (
-          <Card className="p-8 text-center text-neovantas-navy">No tienes permisos para acceder a esta sección.</Card>
+          <Card className="p-8 text-center text-neovantas-navy">No tienes permisos para acceder a esta secciÃ³n.</Card>
         )
       ) : null}
 
@@ -369,72 +367,41 @@ export function AdminCenterPage() {
               <div className="max-w-2xl">
                 <h3 className="text-base font-semibold text-neovantas-navy">Cambios pendientes</h3>
                 <p className="mt-1 text-sm text-neovantas-muted">
-                  Genera el JSON para copiar y pegar en `access-control.json`. Todav�a no hay guardado persistente.
+                  Los cambios se preparan como JSON para actualizar access-control.json.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <SectionPill>{hasPendingChanges ? 'Cambios locales' : 'Sin cambios'}</SectionPill>
-                  <SectionPill>{`${repositoryDraftEmails.length} usuarios con acceso`}</SectionPill>
-                  <SectionPill>{`${organizationUsers.length - repositoryDraftEmails.length} bloqueados`}</SectionPill>
+                  <SectionPill>{`${repositoryDraftSet.size} usuarios con acceso`}</SectionPill>
+                  <SectionPill>{`${organizationUsers.length - repositoryDraftSet.size} usuarios sin acceso`}</SectionPill>
+                  <SectionPill>{hasPendingChanges ? 'Cambios pendientes' : '0 cambios pendientes'}</SectionPill>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={async () => { await navigator.clipboard.writeText(pendingAccessControlJson); }}
-                className="focus-ring inline-flex items-center justify-center rounded-full border border-neovantas-blue bg-neovantas-navy px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neovantas-blue"
-              >
-                Copiar JSON
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={async () => { await navigator.clipboard.writeText(pendingAccessControlJson); }}
+                  className="focus-ring inline-flex items-center justify-center rounded-full border border-neovantas-blue bg-neovantas-navy px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neovantas-blue"
+                >
+                  Copiar JSON
+                </button>
+                <a
+                  href={`data:application/json;charset=utf-8,${encodeURIComponent(pendingAccessControlJson)}`}
+                  download="access-control.json"
+                  className="focus-ring inline-flex items-center justify-center rounded-full border border-neovantas-line bg-white px-4 py-2 text-sm font-semibold text-neovantas-blue transition hover:border-neovantas-cyan/30 hover:bg-[#eef6ff]"
+                >
+                  Descargar access-control.json
+                </a>
+              </div>
             </div>
-            <pre className="mt-4 overflow-x-auto rounded-2xl bg-[#0A0A3F] p-4 text-xs leading-6 text-white">
-              {pendingAccessControlJson}
-            </pre>
+            <pre className="mt-4 overflow-x-auto rounded-2xl bg-[#0A0A3F] p-4 text-xs leading-6 text-white">{pendingAccessControlJson}</pre>
           </div>
         </Card>
       ) : null}
 
-      {activeTab === 'sync' ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            {
-              title: 'Noticias Outlook',
-              note: `Última fecha detectada: ${lastNewsDate}`,
-              detail: `${news.length} noticias en catálogo`,
-            },
-            {
-              title: 'Eventos Outlook',
-              note: lastEvent ? `Último evento: ${lastEvent.title}` : 'Sin eventos cargados',
-              detail: `${events.length} eventos en catálogo`,
-            },
-            {
-              title: 'SharePoint catalog',
-              note: `${sharePointCatalog.repositories.length} repositorios y ${sharePointCatalog.resources.length} recursos`,
-              detail: `${sharePointItems} elementos totales`,
-            },
-            {
-              title: 'Deploy Azure',
-              note: `Versión visible: ${formatAppVersion()}`,
-              detail: 'Estado calculado desde los catálogos actuales. Ejecución manual prevista en fase 2.',
-            },
-          ].map((item) => (
-            <Card key={item.title} className="border border-neovantas-line bg-white p-5 shadow-[0_8px_24px_rgba(11,27,54,0.04)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-neovantas-navy">{item.title}</p>
-                  <p className="mt-2 text-sm text-neovantas-muted">{item.note}</p>
-                </div>
-                <Badge tone="neutral">Lectura informativa</Badge>
-              </div>
-              <p className="mt-4 text-sm text-neovantas-blue">{item.detail}</p>
-              <p className="mt-2 text-xs text-neovantas-muted">Lectura informativa</p>
-            </Card>
-          ))}
-        </div>
-      ) : null}
 
       {activeTab === 'content' ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[
-            { title: 'Accesos rápidos', count: 6 },
+            { title: 'Accesos rÃ¡pidos', count: 6 },
             { title: 'Herramientas', count: apps.filter((item) => item.category === 'tools').length },
             { title: 'Recursos de empleado', count: apps.filter((item) => item.category === 'employee').length },
             { title: 'Documentos destacados', count: documents.length },
@@ -445,7 +412,7 @@ export function AdminCenterPage() {
               <p className="text-base font-semibold text-neovantas-navy">{item.title}</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-neovantas-blue">{item.count}</p>
               <p className="mt-2 text-sm text-neovantas-muted">
-                Lectura actual desde catálogo JSON. Edición desde consola prevista en fase 2.
+                Lectura actual desde catÃ¡logo JSON. EdiciÃ³n desde consola prevista en fase 2.
               </p>
             </Card>
           ))}
