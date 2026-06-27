@@ -179,6 +179,12 @@ export function AdminCenterPage() {
             </button>
           );
         })}
+        <a
+          href="/admin/profile-diagnostics"
+          className="focus-ring inline-flex items-center gap-2 rounded-full border border-neovantas-cyan/25 bg-[#eef6ff] px-4 py-2 text-sm font-semibold text-neovantas-blue transition hover:border-neovantas-blue hover:bg-white"
+        >
+          Diagnóstico de perfil
+        </a>
       </div>
 
       {activeTab === 'dashboard' ? (
