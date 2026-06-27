@@ -128,6 +128,14 @@ const homeQuickLinks: HomeLink[] = [
     actionLabel: 'Abrir',
   },
   {
+    title: 'Soporte AST',
+    description: 'Alta y seguimiento de incidencias tecnicas, accesos, equipos y solicitudes operativas.',
+    href: 'mailto:soporte.ast@neovantas.com',
+    icon: LifeBuoy,
+    tone: 'info',
+    actionLabel: 'Contactar',
+  },
+  {
     title: 'Creador de Slides',
     description: 'Genera presentaciones ejecutivas con estilo Neovantas.',
     href: 'https://chatgpt.com/g/g-6a0331e985d081918928a1765dda235d-creador-de-slides-neovantas',
