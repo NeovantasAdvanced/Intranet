@@ -185,5 +185,26 @@
     "tags": [],
     "dateText": "Martes 23 de junio 19:00 CEST",
     "timeText": "19:00 CEST"
+  },
+  {
+    "id": "event-experiencia-de-cliente-en-la-era-de-la-ia-economia-conductual-y-participantes-sinteticos-2026-07-21-2026-07-21-online-https-lnkd-in-e43369cq",
+    "title": "Experiencia de Cliente en la era de la IA: Economía Conductual y Participantes Sintéticos",
+    "organization": "Neovantas / Asociación DEC México",
+    "format": "online",
+    "category": "Fuera de horario laboral",
+    "startDate": "2026-07-21",
+    "endDate": "2026-07-21",
+    "timezone": "Europe/Madrid",
+    "workSchedule": "fuera_horario",
+    "url": "https://lnkd.in/e43369Cq",
+    "cta": "Inscribirse",
+    "source": "Manual",
+    "tags": [
+      "IA",
+      "Economía conductual",
+      "Participantes sintéticos"
+    ],
+    "dateText": "Martes 21 de julio 10:00 México / 18:00 España",
+    "timeText": "10:00 México · 18:00 España"
   }
 ]
