@@ -1,10 +1,10 @@
 # Neovantas Workspace
 
 Version actual:
-v1.0.0
+v1.0.2
 
 Fecha:
-2026-06-27
+2026-06-29
 
 Estado:
 Produccion
