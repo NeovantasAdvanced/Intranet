@@ -68,6 +68,30 @@
     "timeText": "17:00"
   },
   {
+    "id": "evento-masterclass-dec-neovantas-2026-07-21",
+    "title": "Masterclass | Experiencia de Cliente en la era de la IA",
+    "subtitle": "Economía Conductual y Participantes Sintéticos",
+    "category": "Evento",
+    "featured": true,
+    "startDate": "2026-07-21T18:00:00+02:00",
+    "endDate": "2026-07-21T19:00:00+02:00",
+    "location": "Online",
+    "organizer": "Neovantas & Asociación DEC México",
+    "speaker": "Juan de Rus Gutiérrez",
+    "description": "Descubre cómo la Inteligencia Artificial, la Economía Conductual y los Participantes Sintéticos permiten comprender mejor las decisiones de los clientes, diseñar experiencias más eficaces y validar estrategias antes de su implantación.",
+    "cta": "Inscríbete gratuitamente",
+    "url": "https://lnkd.in/e43369Cq",
+    "tags": [
+      "IA",
+      "Economía Conductual",
+      "Participantes Sintéticos",
+      "Customer Experience",
+      "DEC México"
+    ],
+    "image": "/images/events/dec-masterclass-2026.jpg",
+    "source": "Manual"
+  },
+  {
     "id": "event-scaling-market-research-for-faster-smarter-decisions-qualtrics-2026-07-15-2026-07-15-online-https-community-qualtrics-co",
     "title": "Scaling Market Research for Faster, Smarter Decisions",
     "organization": "Qualtrics",
