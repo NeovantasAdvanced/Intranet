@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+  workflow_run:
+    workflows:
+      - Sync Outlook news
+      - Sync Outlook events
+      - Sync SharePoint catalog
+    types:
+      - completed
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
@@ -11,7 +18,11 @@ on:
 
 jobs:
   build_and_deploy:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.action != 'closed'
+    if: >
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event.action != 'closed'
     runs-on: ubuntu-latest
     name: Build and deploy
     steps:
