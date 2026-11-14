@@ -81,7 +81,7 @@ module.exports = async function knowledgeAsk(context, req) {
       if (!knowledgeIndex.getIndexReadStorageConfig().configured) return send(context, 503, { ok: false, answerStatus: 'storage-not-configured' });
       const client = knowledgeIndex.createIndexReadContainerClient();
       const loaded = await search.loadPublishedIndexes(client);
-      results = search.searchIndexes(loaded.indexes, question);
+      results = search.searchIndexes(loaded.indexes, question, { candidateLimit: 15, maxResults: 5, expandNeighbors: true });
       if (classifyQuestion(question, results) === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope', answerType: 'reasoned-advice' });
       if (!results.length && isFiveCQuestion(question)) {
         results = [{ document: 'Neovantas · Cultura corporativa', fragmentId: 'neo-5c', text: NEO_IDENTITY_CONTEXT, page: null }];

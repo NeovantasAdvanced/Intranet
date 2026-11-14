@@ -4,6 +4,7 @@ const { CURRENT_MANIFEST, validateIndex } = require('./knowledge-publish.cjs');
 const MAX_QUERY_LENGTH = 200;
 const MAX_INDEX_BYTES = 2 * 1024 * 1024;
 const MAX_RESULTS = 5;
+const DEFAULT_CANDIDATE_LIMIT = 15;
 const MAX_RESULT_TEXT = 2000;
 const STOP_WORDS = new Set('a al algo algunas algunos ante antes como con contra cual cuando de del desde donde dos el ella ellas ellos en entre era es esa esas ese eso esos esta estas este esto estos fue ha hacia hasta hay la las le les lo los más me mi mis mucho muy no nos o para pero por que se sin sobre su sus también te ti todo un una uno unas unos y ya'.split(' '));
 
@@ -79,15 +80,25 @@ function proximityScore(tokens, terms) {
   return span <= 8 ? 5 : span <= 20 ? 2 : 0;
 }
 
-function searchIndexes(indexes, query) {
+function contentQualityScore(text) {
+  const value = normalizeSearchText(text);
+  const headingNoise = /(^| )(indice|contenido|introduccion|objetivo|alcance|version|revision|aprobacion|tabla de contenido)( |$)/.test(value);
+  const substantive = /(condicion|condiciones|solicitud|solicitar|gasto|gastos|jornada|horario|obligacion|responsabilidad|procedimiento|medios|compensacion|aplica)/.test(value);
+  return (substantive ? 5 : 0) - (headingNoise ? 8 : 0);
+}
+
+function searchIndexes(indexes, query, options = {}) {
   const normalizedQuery = normalizeSearchText(query);
   const terms = [...new Set(tokenize(query))];
   if (!terms.length) return [];
   const termSet = new Set(terms);
   const phrase = terms.join(' ');
+  const candidateLimit = Math.min(Math.max(Number(options.candidateLimit ?? DEFAULT_CANDIDATE_LIMIT), MAX_RESULTS), 50);
+  const resultLimit = Math.min(Math.max(Number(options.maxResults ?? MAX_RESULTS), 1), MAX_RESULTS);
+  const expandNeighbors = options.expandNeighbors === true;
   const candidates = [];
-  for (const index of indexes) {
-    for (const chunk of index.chunks) {
+  for (const [indexNumber, index] of indexes.entries()) {
+    for (const [chunkNumber, chunk] of index.chunks.entries()) {
       const normalizedText = normalizeSearchText(chunk.text);
       const tokens = tokenize(chunk.text);
       const matched = new Set(tokens.filter((term) => termSet.has(term)));
@@ -97,7 +108,8 @@ function searchIndexes(indexes, query) {
       if (normalizedText.includes(phrase)) score += 20;
       score += [...matched].filter((term) => documentTokens.has(term)).length * 3;
       score += proximityScore(tokens, termSet);
-      candidates.push({ document: index.document, fragmentId: chunk.id, text: String(chunk.text).slice(0, MAX_RESULT_TEXT), position: chunk.position, page: chunk.page ?? null, score: Number(score.toFixed(3)) });
+      score += contentQualityScore(chunk.text);
+      candidates.push({ indexNumber, chunkNumber, document: index.document, fragmentId: chunk.id, text: String(chunk.text).slice(0, MAX_RESULT_TEXT), position: chunk.position, page: chunk.page ?? null, score: Number(score.toFixed(3)) });
     }
   }
   const unique = new Map();
@@ -105,7 +117,21 @@ function searchIndexes(indexes, query) {
     const key = `${result.document}\0${normalizeSearchText(result.text)}`;
     if (!unique.has(key) || unique.get(key).score < result.score) unique.set(key, result);
   }
-  return [...unique.values()].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document) || a.position - b.position).slice(0, MAX_RESULTS);
+  const ranked = [...unique.values()].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document) || a.position - b.position).slice(0, candidateLimit);
+  if (expandNeighbors && ranked.length) {
+    const expanded = new Map(ranked.map((result) => [`${result.document}\0${result.fragmentId}`, result]));
+    for (const result of ranked.slice(0, 3)) {
+      const index = indexes[result.indexNumber];
+      for (const neighborNumber of [result.chunkNumber - 1, result.chunkNumber + 1]) {
+        const neighbor = index?.chunks?.[neighborNumber];
+        if (!neighbor) continue;
+        const key = `${index.document}\0${neighbor.id}`;
+        if (!expanded.has(key)) expanded.set(key, { indexNumber: result.indexNumber, chunkNumber: neighborNumber, document: index.document, fragmentId: neighbor.id, text: String(neighbor.text).slice(0, MAX_RESULT_TEXT), position: neighbor.position, page: neighbor.page ?? null, score: Number((result.score - 1).toFixed(3)), neighbor: true });
+      }
+    }
+    return [...expanded.values()].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document) || a.position - b.position).slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, neighbor: _n, ...result }) => result);
+  }
+  return ranked.slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result);
 }
 
-module.exports = { MAX_QUERY_LENGTH, MAX_INDEX_BYTES, MAX_RESULTS, MAX_RESULT_TEXT, normalizeSearchText, tokenize, validateManifest, readJsonLimited, loadPublishedIndexes, searchIndexes };
+module.exports = { MAX_QUERY_LENGTH, MAX_INDEX_BYTES, MAX_RESULTS, MAX_RESULT_TEXT, DEFAULT_CANDIDATE_LIMIT, normalizeSearchText, tokenize, validateManifest, readJsonLimited, loadPublishedIndexes, searchIndexes };
