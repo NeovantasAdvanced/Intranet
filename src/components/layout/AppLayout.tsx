@@ -7,13 +7,15 @@ import {
   LifeBuoy,
   Newspaper,
   Wrench,
+  Sparkles,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { APP_VERSION } from '../../config/appVersion';
 import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
-import { canAccessFeature } from '../../lib/accessControl';
+import { canAccessFeature, isAdmin as isConfiguredAdmin } from '../../lib/accessControl';
+import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
 import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
 
@@ -48,6 +50,7 @@ function PortalNavigation() {
   }, []);
 
   const userEmail = clientPrincipal?.userDetails ?? '';
+  const isAdministrator = Boolean(clientPrincipal && (isConfiguredAdmin(userEmail) || isAdminUser(userEmail) || isOffice365AdminPrincipal(clientPrincipal)));
   const visibleNavigation = navigation.filter((item) =>
     item.href === '#repositorios' ? canAccessFeature('repositories', userEmail) : true,
   );
@@ -58,9 +61,9 @@ function PortalNavigation() {
       aria-label="Navegacion principal"
     >
       <div className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto py-2">
-        {visibleNavigation.map((item) => {
+        {[...visibleNavigation, ...(isAdministrator ? [{ label: 'Asistente IA', icon: Sparkles, href: '/knowledge-ask' }] : [])].map((item) => {
           const Icon = item.icon;
-          const isActive = activeHash === item.href;
+          const isActive = item.href === '/knowledge-ask' ? window.location.pathname === item.href : activeHash === item.href;
 
           return (
             <a

@@ -3,6 +3,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { AdminCenterPage } from './pages/AdminCenterPage';
 import { AdminUsagePage } from './pages/AdminUsagePage';
 import { HomeDashboard } from './pages/HomeDashboard';
+import { KnowledgeAskPage } from './pages/KnowledgeAskPage';
 import { trackUsageEvent } from './lib/usageTracking';
 
 function getRouteName() {
@@ -19,6 +20,10 @@ function getRouteName() {
 
   if (pathname === '/admin/usage' || hash === '/admin/usage') {
     return 'admin-usage';
+  }
+
+  if (pathname === '/knowledge-ask') {
+    return 'knowledge-ask';
   }
 
   return 'home';
@@ -52,7 +57,7 @@ export default function App() {
 
   return (
     <AppLayout>
-      {routeName === 'admin-center' ? <AdminCenterPage /> : routeName === 'admin-usage' ? <AdminUsagePage /> : <HomeDashboard />}
+      {routeName === 'admin-center' ? <AdminCenterPage /> : routeName === 'admin-usage' ? <AdminUsagePage /> : routeName === 'knowledge-ask' ? <KnowledgeAskPage /> : <HomeDashboard />}
     </AppLayout>
   );
 }
