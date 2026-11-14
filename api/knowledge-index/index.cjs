@@ -1,12 +1,8 @@
 const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
 const { getKnowledgeConfig, createContainerClient } = require('../_shared/knowledge-blob.cjs');
 const { TARGET_DOCUMENT } = require('../_shared/knowledge-pdf.cjs');
-const {
-  getIndexStorageConfig,
-  createIndexContainerClient,
-  createDocumentIndex,
-  writeDocumentIndex,
-} = require('../_shared/knowledge-index.cjs');
+const knowledgeIndexStorage = require('../_shared/knowledge-index.cjs');
+const { getIndexStorageConfig } = knowledgeIndexStorage;
 
 function send(context, status, body) {
   context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body };
@@ -29,9 +25,9 @@ module.exports = async function knowledgeIndex(context, req) {
 
   try {
     const sourceContainerClient = createContainerClient();
-    const indexContainerClient = createIndexContainerClient();
-    const { index, blobName } = await createDocumentIndex({ containerClient: sourceContainerClient });
-    const writeResult = await writeDocumentIndex(indexContainerClient, blobName, index);
+    const indexContainerClient = knowledgeIndexStorage.createIndexContainerClient();
+    const { index, blobName } = await knowledgeIndexStorage.createDocumentIndex({ containerClient: sourceContainerClient });
+    const writeResult = await knowledgeIndexStorage.writeDocumentIndex(indexContainerClient, blobName, index);
     send(context, 200, {
       ok: true,
       document: index.document,

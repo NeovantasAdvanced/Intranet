@@ -127,12 +127,16 @@ async function writeDocumentIndex(containerClient, blobName, index) {
   if (!String(blobName).startsWith(INDEX_PREFIX)) throw new Error('INDEX_PATH_NOT_ALLOWED');
   try {
     await containerClient.getBlockBlobClient(blobName).uploadData(Buffer.from(JSON.stringify(index)), {
-      overwrite: false,
+      conditions: { ifNoneMatch: '*' },
       blobHTTPHeaders: { blobContentType: 'application/json; charset=utf-8' },
     });
     return { created: true, alreadyExists: false };
   } catch (error) {
-    if (error?.statusCode === 409 || error?.code === 'BlobAlreadyExists') {
+    const code = error?.code;
+    const detailCode = error?.details?.errorCode;
+    const isConditionConflict = error?.statusCode === 412 && [code, detailCode].some((value) => ['ConditionNotMet', 'PreconditionFailed'].includes(value));
+    const isExistingBlobConflict = error?.statusCode === 409 && [code, detailCode].includes('BlobAlreadyExists');
+    if (isConditionConflict || isExistingBlobConflict) {
       return { created: false, alreadyExists: true };
     }
     throw error;

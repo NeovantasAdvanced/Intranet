@@ -33,9 +33,16 @@ async function invoke(headers = {}) {
   let uploaded;
   const indexClient = { getBlockBlobClient: () => ({ uploadData: async (body, options) => { uploaded = { body, options }; } }) };
   assert.deepEqual(await indexer.writeDocumentIndex(indexClient, indexer.getIndexBlobName(documentIndex), documentIndex), { created: true, alreadyExists: false });
-  assert.equal(uploaded.options.overwrite, false);
-  const conflictClient = { getBlockBlobClient: () => ({ uploadData: async () => { const error = new Error('exists'); error.statusCode = 409; throw error; } }) };
+  assert.equal(uploaded.options.conditions.ifNoneMatch, '*');
+  assert.equal(uploaded.options.blobHTTPHeaders.blobContentType, 'application/json; charset=utf-8');
+  const conflictClient = { getBlockBlobClient: () => ({ uploadData: async () => { const error = new Error('exists'); error.statusCode = 412; error.details = { errorCode: 'ConditionNotMet' }; throw error; } }) };
   assert.deepEqual(await indexer.writeDocumentIndex(conflictClient, indexer.getIndexBlobName(documentIndex), documentIndex), { created: false, alreadyExists: true });
+  const legacyConflictClient = { getBlockBlobClient: () => ({ uploadData: async () => { const error = new Error('exists'); error.code = 'BlobAlreadyExists'; error.statusCode = 409; throw error; } }) };
+  assert.deepEqual(await indexer.writeDocumentIndex(legacyConflictClient, indexer.getIndexBlobName(documentIndex), documentIndex), { created: false, alreadyExists: true });
+  const unrelatedConflictClient = { getBlockBlobClient: () => ({ uploadData: async () => { const error = new Error('conflict'); error.statusCode = 409; error.details = { errorCode: 'LeaseIdMissing' }; throw error; } }) };
+  await assert.rejects(() => indexer.writeDocumentIndex(unrelatedConflictClient, indexer.getIndexBlobName(documentIndex), documentIndex), (error) => error.statusCode === 409);
+  const unrelatedConditionClient = { getBlockBlobClient: () => ({ uploadData: async () => { const error = new Error('precondition'); error.statusCode = 412; error.details = { errorCode: 'LeaseIdMissing' }; throw error; } }) };
+  await assert.rejects(() => indexer.writeDocumentIndex(unrelatedConditionClient, indexer.getIndexBlobName(documentIndex), documentIndex), (error) => error.statusCode === 412);
   const failureClient = { getBlockBlobClient: () => ({ uploadData: async () => { const error = new Error('forbidden'); error.statusCode = 403; throw error; } }) };
   await assert.rejects(() => indexer.writeDocumentIndex(failureClient, indexer.getIndexBlobName(documentIndex), documentIndex), (error) => error.statusCode === 403);
   await assert.rejects(() => indexer.downloadTargetPdf({ getBlobClient: () => ({ download: async () => ({ contentLength: indexer.MAX_PDF_BYTES + 1 }) }) }), /PDF_TOO_LARGE/);
@@ -53,6 +60,28 @@ async function invoke(headers = {}) {
     const missing = await invoke({ 'x-ms-client-principal': principal() });
     assert.equal(missing.status, 503);
     assert.equal(missing.body.indexStatus, 'storage-not-configured');
+    process.env.KNOWLEDGE_STORAGE_ACCOUNT = 'source-account';
+    process.env.KNOWLEDGE_CONTAINER = 'source-container';
+    process.env.KNOWLEDGE_BLOB_SAS_TOKEN = 'read-only-test';
+    process.env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT = 'index-account';
+    process.env.KNOWLEDGE_INDEX_CONTAINER = 'index-container';
+    process.env.KNOWLEDGE_INDEX_BLOB_SAS_TOKEN = 'write-only-test';
+    const originalCreateClient = indexer.createIndexContainerClient;
+    const originalCreateIndex = indexer.createDocumentIndex;
+    const originalWrite = indexer.writeDocumentIndex;
+    indexer.createIndexContainerClient = () => ({ });
+    indexer.createDocumentIndex = async () => ({ index: { document: 'originals/test.pdf', pageCount: 1, extractedCharacters: 4, chunkCount: 1 }, blobName: 'knowledge-index/documents/test.json' });
+    indexer.writeDocumentIndex = async () => ({ created: true, alreadyExists: false });
+    const created = await invoke({ 'x-ms-client-principal': principal() });
+    assert.equal(created.status, 200);
+    assert.equal(created.body.indexStatus, 'created');
+    indexer.writeDocumentIndex = async () => ({ created: false, alreadyExists: true });
+    const existing = await invoke({ 'x-ms-client-principal': principal() });
+    assert.equal(existing.status, 200);
+    assert.equal(existing.body.indexStatus, 'already-exists');
+    indexer.createIndexContainerClient = originalCreateClient;
+    indexer.createDocumentIndex = originalCreateIndex;
+    indexer.writeDocumentIndex = originalWrite;
   } finally {
     for (const name of ['KNOWLEDGE_STORAGE_ACCOUNT', 'KNOWLEDGE_CONTAINER', 'KNOWLEDGE_BLOB_SAS_TOKEN', 'KNOWLEDGE_INDEX_STORAGE_ACCOUNT', 'KNOWLEDGE_INDEX_CONTAINER', 'KNOWLEDGE_INDEX_BLOB_SAS_TOKEN']) {
       if (old[name] === undefined) delete process.env[name]; else process.env[name] = old[name];
