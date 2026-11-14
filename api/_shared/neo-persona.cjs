@@ -28,10 +28,19 @@ function classifyQuestion(question, results = []) {
 }
 
 function isIdentityQuestion(question) {
+  return isNeoIdentityQuestion(question) || isCorporateIdentityQuestion(question);
+}
+
+function isNeoIdentityQuestion(question) {
   const value = normalize(question);
-  return value.includes('5 c') || value.includes('cinco c') || value.includes('que puedes hacer') || value.includes('que puede hacer neo') || value.includes('quien es neo') || value.includes('como trabaja neo') || value.includes('como funciona neo') || value.includes('que es neovantas') || value.includes('que hace neovantas') || value.includes('quienes somos');
+  return value.includes('5 c') || value.includes('cinco c') || value.includes('que puedes hacer') || value.includes('que puede hacer neo') || value.includes('quien es neo') || value.includes('como trabaja neo') || value.includes('como funciona neo');
+}
+
+function isCorporateIdentityQuestion(question) {
+  const value = normalize(question);
+  return value.includes('que es neovantas') || value.includes('que hace neovantas') || value.includes('quienes somos') || value.includes('que servicios ofrece neovantas');
 }
 
 function isFiveCQuestion(question) { return normalize(question).includes('5 c') || (normalize(question).includes('cinco') && normalize(question).includes('c')); }
 
-module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isIdentityQuestion, isFiveCQuestion, normalize };
+module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isIdentityQuestion, isNeoIdentityQuestion, isCorporateIdentityQuestion, isFiveCQuestion, normalize };
