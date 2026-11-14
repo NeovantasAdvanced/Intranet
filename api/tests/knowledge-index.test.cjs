@@ -83,8 +83,24 @@ async function invoke(headers = {}, body) {
     const valid = await invoke({ 'x-ms-client-principal': principal() }, '{"document":"originals/02_personas/Guía de Nómina.pdf"}');
     assert.equal(valid.status, 200);
     assert.equal(valid.body.document, 'originals/02_personas/Guía de Nómina.pdf');
+    const validObject = await invoke({ 'x-ms-client-principal': principal() }, { document: 'originals/02_personas/Guía de Nómina.pdf' });
+    assert.equal(validObject.status, 200);
+    const validBuffer = await invoke({ 'x-ms-client-principal': principal() }, Buffer.from('{"document":"originals/02_personas/Guía de Nómina.pdf"}', 'utf8'));
+    assert.equal(validBuffer.status, 200);
+    assert.equal((await invoke({ 'x-ms-client-principal': principal() }, '{"other":"value"}')).status, 400);
+    assert.equal((await invoke({ 'x-ms-client-principal': principal() }, Buffer.from('{invalid', 'utf8'))).status, 400);
     assert.equal((await invoke({ 'x-ms-client-principal': principal() }, '{"document":"originals/no-existe.pdf"}')).body.indexStatus, 'document-not-found');
+    assert.equal((await invoke({ 'x-ms-client-principal': principal() }, '{"document":"originals/no-existe.pdf"}')).body.document, 'originals/no-existe.pdf');
     assert.equal((await invoke({ 'x-ms-client-principal': principal() }, '{"document":"https://example.com/file.pdf"}')).body.indexStatus, 'document-path-not-allowed');
+    knowledgeBlob.listKnowledgeDocuments = async () => { const error = new Error('storage not found'); error.statusCode = 404; throw error; };
+    const storageError = await invoke({ 'x-ms-client-principal': principal() }, '{"document":"originals/02_personas/Guía de Nómina.pdf"}');
+    assert.equal(storageError.status, 503);
+    assert.equal(storageError.body.indexStatus, 'storage-error');
+    assert.equal(storageError.body.document, 'originals/02_personas/Guía de Nómina.pdf');
+    knowledgeBlob.listKnowledgeDocuments = async () => [
+      { name: 'originals/01_cultura_y_cumplimiento/Código Ético y de Conducta - NEOVANTAS.pdf' },
+      { name: 'originals/02_personas/Guía de Nómina.pdf' },
+    ];
     const compatibility = await invoke({ 'x-ms-client-principal': principal() });
     assert.equal(compatibility.status, 200);
     assert.equal(compatibility.body.document, 'originals/01_cultura_y_cumplimiento/Código Ético y de Conducta - NEOVANTAS.pdf');

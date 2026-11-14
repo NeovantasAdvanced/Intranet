@@ -11,14 +11,22 @@ function send(context, status, body) {
 
 function getRequestedDocument(req) {
   if (req?.body === undefined || req?.body === null || req.body === '') return TARGET_DOCUMENT;
+  const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : req.body;
   let body;
   try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
   } catch {
     throw Object.assign(new Error('INVALID_REQUEST'), { code: 'INVALID_REQUEST' });
   }
   if (!body || typeof body !== 'object') throw Object.assign(new Error('INVALID_REQUEST'), { code: 'INVALID_REQUEST' });
-  return typeof body.document === 'string' && body.document.trim() ? body.document.trim() : TARGET_DOCUMENT;
+  if (typeof body.document !== 'string' || !body.document.trim()) {
+    throw Object.assign(new Error('INVALID_REQUEST'), { code: 'INVALID_REQUEST' });
+  }
+  return body.document.trim();
+}
+
+function isSafeDocumentPath(document) {
+  return typeof document === 'string' && document.startsWith('originals/') && !document.includes('..');
 }
 
 module.exports = async function knowledgeIndex(context, req) {
@@ -31,16 +39,25 @@ module.exports = async function knowledgeIndex(context, req) {
     send(context, 403, { ok: false, document: TARGET_DOCUMENT, indexStatus: 'admin-access-required' });
     return;
   }
+  let requestedDocument = TARGET_DOCUMENT;
+  let responseDocument = TARGET_DOCUMENT;
+  try {
+    requestedDocument = getRequestedDocument(req);
+  } catch {
+    send(context, 400, { ok: false, document: TARGET_DOCUMENT, indexStatus: 'invalid-request' });
+    return;
+  }
   if (!getKnowledgeConfig().configured || !getIndexStorageConfig().configured) {
     send(context, 503, { ok: false, document: TARGET_DOCUMENT, indexStatus: 'storage-not-configured' });
     return;
   }
 
   try {
-    const document = getRequestedDocument(req);
+    const document = requestedDocument;
+    responseDocument = isSafeDocumentPath(document) ? document : TARGET_DOCUMENT;
     const sourceContainerClient = createContainerClient();
     const indexContainerClient = knowledgeIndexStorage.createIndexContainerClient();
-    if (!document.startsWith('originals/') || document.includes('..')) {
+    if (!isSafeDocumentPath(document)) {
       throw Object.assign(new Error('DOCUMENT_PATH_NOT_ALLOWED'), { code: 'DOCUMENT_PATH_NOT_ALLOWED' });
     }
     const available = await knowledgeBlob.listKnowledgeDocuments({ containerClient: sourceContainerClient });
@@ -58,9 +75,9 @@ module.exports = async function knowledgeIndex(context, req) {
       indexStatus: writeResult.alreadyExists ? 'already-exists' : 'created',
     });
   } catch (error) {
-    const status = error?.code === 'INVALID_REQUEST' || error?.code === 'DOCUMENT_PATH_NOT_ALLOWED' ? 400 : error?.code === 'DOCUMENT_NOT_FOUND' || error?.statusCode === 404 ? 404 : error?.code === 'PDF_TOO_LARGE' ? 413 : error?.code === 'PDF_NO_TEXT' ? 422 : 503;
-    const indexStatus = error?.code === 'INVALID_REQUEST' ? 'invalid-request' : error?.code === 'DOCUMENT_PATH_NOT_ALLOWED' ? 'document-path-not-allowed' : error?.code === 'DOCUMENT_NOT_FOUND' || error?.statusCode === 404 ? 'document-not-found' : error?.code === 'PDF_TOO_LARGE' ? 'pdf-too-large' : error?.code === 'PDF_NO_TEXT' ? 'no-extractable-text' : 'storage-or-processing-error';
+    const status = error?.code === 'DOCUMENT_PATH_NOT_ALLOWED' ? 400 : error?.code === 'DOCUMENT_NOT_FOUND' ? 404 : error?.code === 'PDF_TOO_LARGE' ? 413 : error?.code === 'PDF_NO_TEXT' ? 422 : 503;
+    const indexStatus = error?.code === 'DOCUMENT_PATH_NOT_ALLOWED' ? 'document-path-not-allowed' : error?.code === 'DOCUMENT_NOT_FOUND' ? 'document-not-found' : error?.code === 'PDF_TOO_LARGE' ? 'pdf-too-large' : error?.code === 'PDF_NO_TEXT' ? 'no-extractable-text' : 'storage-error';
     context.log?.(`[knowledge-index] ${indexStatus}`);
-    send(context, status, { ok: false, document: TARGET_DOCUMENT, indexStatus });
+    send(context, status, { ok: false, document: responseDocument, indexStatus });
   }
 };
