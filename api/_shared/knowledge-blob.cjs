@@ -34,6 +34,14 @@ async function listKnowledgeDocuments({ containerClient = createContainerClient(
   return documents;
 }
 
+async function listKnowledgeDocumentsWithEtags({ containerClient = createContainerClient(), prefix = ORIGINALS_PREFIX } = {}) {
+  const documents = await listKnowledgeDocuments({ containerClient, prefix });
+  return Promise.all(documents.map(async (document) => {
+    const properties = await containerClient.getBlobClient(document.name).getProperties();
+    return { ...document, etag: properties.etag ?? null };
+  }));
+}
+
 async function downloadKnowledgeBlob(blobName, { containerClient = createContainerClient() } = {}) {
   if (!String(blobName).startsWith(ORIGINALS_PREFIX)) {
     throw new Error('Knowledge blobs must be inside originals/.');
@@ -42,4 +50,4 @@ async function downloadKnowledgeBlob(blobName, { containerClient = createContain
   return response.readableStreamBody;
 }
 
-module.exports = { ORIGINALS_PREFIX, getKnowledgeConfig, createContainerClient, listKnowledgeDocuments, downloadKnowledgeBlob };
+module.exports = { ORIGINALS_PREFIX, getKnowledgeConfig, createContainerClient, listKnowledgeDocuments, listKnowledgeDocumentsWithEtags, downloadKnowledgeBlob };

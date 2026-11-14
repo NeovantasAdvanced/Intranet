@@ -32,6 +32,25 @@ function createIndexContainerClient(config = getIndexStorageConfig()) {
   return serviceClient.getContainerClient(config.container);
 }
 
+function getIndexReadStorageConfig(env = process.env) {
+  const account = String(env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT ?? '').trim();
+  const container = String(env.KNOWLEDGE_INDEX_CONTAINER ?? '').trim();
+  const sasToken = String(env.KNOWLEDGE_INDEX_READ_SAS_TOKEN ?? '').trim();
+  return { account, container, sasToken, configured: Boolean(account && container && sasToken) };
+}
+
+function createIndexReadContainerClient(config = getIndexReadStorageConfig()) {
+  if (!config.configured) throw new Error('Knowledge index read storage is not configured.');
+  let BlobServiceClient;
+  try {
+    ({ BlobServiceClient } = require('@azure/storage-blob'));
+  } catch {
+    throw new Error('Knowledge index Blob Storage SDK is unavailable.');
+  }
+  const endpoint = `https://${config.account}.blob.core.windows.net`;
+  return new BlobServiceClient(`${endpoint}?${config.sasToken.replace(/^\?/, '')}`).getContainerClient(config.container);
+}
+
 function normalizeText(value) {
   return String(value ?? '')
     .replace(/\r\n?/g, '\n')
@@ -157,6 +176,8 @@ module.exports = {
   MAX_PDF_BYTES,
   getIndexStorageConfig,
   createIndexContainerClient,
+  getIndexReadStorageConfig,
+  createIndexReadContainerClient,
   normalizeText,
   splitText,
   stableId,
