@@ -3,6 +3,13 @@
   "private": true,
   "type": "commonjs",
   "dependencies": {
-    "@azure/data-tables": "^13.3.0"
+    "@azure/data-tables": "^13.3.0",
+    "@azure/storage-blob": "12.27.0"
+  },
+  "overrides": {
+    "@azure/abort-controller": "2.1.2"
+  },
+  "scripts": {
+    "test:knowledge-blob": "node tests/knowledge-blob.test.cjs && node tests/knowledge-diagnostics.test.cjs"
   }
 }

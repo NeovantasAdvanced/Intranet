@@ -1,0 +1,18 @@
+{
+  "contacts": [],
+  "corporateLinks": [],
+  "benefits": [],
+  "faqs": [],
+  "procedures": [],
+  "recordSchema": {
+    "id": "Identificador único del registro",
+    "title": "Título del contenido",
+    "content": "Contenido breve y validado; no almacenar aquí documentos confidenciales",
+    "source": "Ruta o URL de la fuente original",
+    "owner": "Responsable del contenido o validación",
+    "status": "pendiente | validado | requiere-revision | obsoleto",
+    "lastValidatedAt": "Fecha ISO de última validación, cuando exista",
+    "accessLevel": "Nivel de acceso aplicable",
+    "country": "País aplicable, cuando corresponda"
+  }
+}
