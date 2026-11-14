@@ -1,5 +1,3 @@
-const { BlobServiceClient } = require('@azure/storage-blob');
-
 const ORIGINALS_PREFIX = 'originals/';
 
 function getKnowledgeConfig(env = process.env) {
@@ -11,6 +9,12 @@ function getKnowledgeConfig(env = process.env) {
 
 function createContainerClient(config = getKnowledgeConfig()) {
   if (!config.configured) throw new Error('Knowledge Blob Storage is not configured.');
+  let BlobServiceClient;
+  try {
+    ({ BlobServiceClient } = require('@azure/storage-blob'));
+  } catch {
+    throw new Error('Knowledge Blob Storage SDK is unavailable.');
+  }
   const endpoint = `https://${config.account}.blob.core.windows.net`;
   const serviceClient = new BlobServiceClient(`${endpoint}?${config.sasToken.replace(/^\?/, '')}`);
   return serviceClient.getContainerClient(config.container);
