@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "admin/knowledge/diagnostics"
+      "route": "knowledge-diagnostics"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
