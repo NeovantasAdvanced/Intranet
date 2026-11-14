@@ -12,6 +12,26 @@ const SCHEMA_VERSION = '1.0';
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 150;
 
+function getIndexStorageConfig(env = process.env) {
+  const account = String(env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT ?? '').trim();
+  const container = String(env.KNOWLEDGE_INDEX_CONTAINER ?? '').trim();
+  const sasToken = String(env.KNOWLEDGE_INDEX_BLOB_SAS_TOKEN ?? '').trim();
+  return { account, container, sasToken, configured: Boolean(account && container && sasToken) };
+}
+
+function createIndexContainerClient(config = getIndexStorageConfig()) {
+  if (!config.configured) throw new Error('Knowledge index Blob Storage is not configured.');
+  let BlobServiceClient;
+  try {
+    ({ BlobServiceClient } = require('@azure/storage-blob'));
+  } catch {
+    throw new Error('Knowledge index Blob Storage SDK is unavailable.');
+  }
+  const endpoint = `https://${config.account}.blob.core.windows.net`;
+  const serviceClient = new BlobServiceClient(`${endpoint}?${config.sasToken.replace(/^\?/, '')}`);
+  return serviceClient.getContainerClient(config.container);
+}
+
 function normalizeText(value) {
   return String(value ?? '')
     .replace(/\r\n?/g, '\n')
@@ -105,10 +125,18 @@ async function createDocumentIndex({ containerClient, parser, indexedAt } = {}) 
 
 async function writeDocumentIndex(containerClient, blobName, index) {
   if (!String(blobName).startsWith(INDEX_PREFIX)) throw new Error('INDEX_PATH_NOT_ALLOWED');
-  await containerClient.getBlockBlobClient(blobName).uploadData(Buffer.from(JSON.stringify(index)), {
-    overwrite: false,
-    blobHTTPHeaders: { blobContentType: 'application/json; charset=utf-8' },
-  });
+  try {
+    await containerClient.getBlockBlobClient(blobName).uploadData(Buffer.from(JSON.stringify(index)), {
+      overwrite: false,
+      blobHTTPHeaders: { blobContentType: 'application/json; charset=utf-8' },
+    });
+    return { created: true, alreadyExists: false };
+  } catch (error) {
+    if (error?.statusCode === 409 || error?.code === 'BlobAlreadyExists') {
+      return { created: false, alreadyExists: true };
+    }
+    throw error;
+  }
 }
 
 module.exports = {
@@ -117,6 +145,8 @@ module.exports = {
   CHUNK_SIZE,
   CHUNK_OVERLAP,
   MAX_PDF_BYTES,
+  getIndexStorageConfig,
+  createIndexContainerClient,
   normalizeText,
   splitText,
   stableId,
