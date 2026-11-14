@@ -1,0 +1,35 @@
+import { Bot, LoaderCircle, Send, ShieldAlert, Sparkles } from 'lucide-react';
+import { FormEvent, useMemo, useState } from 'react';
+import { SectionHeader } from '../components/ui/SectionHeader';
+import { useAuthSession } from '../context/AuthSessionContext';
+import { isAdminUser, isOffice365AdminPrincipal } from '../lib/admin';
+import { isAdmin as isAdminAllowed } from '../lib/accessControl';
+
+type Reference = { document: string; page?: number | null };
+type ResponsePayload = { answer?: string; answerStatus?: 'answered' | 'insufficient-evidence' | 'out-of-scope'; references?: Reference[] };
+type Message = { id: number; question: string; response?: ResponsePayload; error?: boolean };
+const SUGGESTIONS = ['¿Cuáles son las condiciones de teletrabajo?', '¿Qué beneficios tenemos los empleados?', '¿Cuáles son las 5 C de Neovantas?', '¿Qué establece nuestro código ético?'];
+
+function documentName(path: string) {
+  const name = path.split('/').pop() ?? path;
+  try { return decodeURIComponent(name); } catch { return name; }
+}
+
+export function NeoPage() {
+  const { authChecked, clientPrincipal } = useAuthSession();
+  const [question, setQuestion] = useState(''); const [messages, setMessages] = useState<Message[]>([]); const [loading, setLoading] = useState(false); const [error, setError] = useState(false);
+  const isAdmin = useMemo(() => Boolean(clientPrincipal && (isAdminAllowed(clientPrincipal.userDetails) || isAdminUser(clientPrincipal.userDetails) || isOffice365AdminPrincipal(clientPrincipal))), [clientPrincipal]);
+  if (!authChecked) return <div className="rounded-2xl border border-neovantas-line bg-white p-8 text-sm text-neovantas-muted">Comprobando permisos...</div>;
+  if (!isAdmin) return <div className="rounded-2xl border border-[#f1d8c8] bg-white p-8 text-center shadow-panel"><ShieldAlert className="mx-auto h-8 w-8 text-[#b45309]" aria-hidden="true" /><h1 className="mt-4 font-display text-2xl text-neovantas-navy">Acceso restringido</h1><p className="mt-2 text-sm text-neovantas-muted">Neo está disponible únicamente para administradores autorizados.</p></div>;
+  async function ask(event?: FormEvent) {
+    event?.preventDefault(); const value = question.trim(); if (!value || loading) return;
+    const id = Date.now(); setQuestion(''); setError(false); setLoading(true); setMessages((current) => [...current, { id, question: value }]);
+    try { const response = await fetch('/api/knowledge-ask', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question: value }) }); const payload = await response.json() as ResponsePayload; if (!response.ok) throw new Error('request-failed'); setMessages((current) => current.map((item) => item.id === id ? { ...item, response: payload } : item)); } catch { setError(true); setMessages((current) => current.map((item) => item.id === id ? { ...item, error: true } : item)); } finally { setLoading(false); }
+  }
+  return <div className="space-y-7"><SectionHeader title="Neo, tu asistente de Neovantas" description="Consulta nuestras políticas, procedimientos y documentación corporativa." /><section className="overflow-hidden rounded-2xl border border-neovantas-line bg-white shadow-panel"><div className="flex items-start gap-4 border-b border-neovantas-line bg-neovantas-mist px-5 py-5 md:px-7"><div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-neovantas-blue text-white"><Bot className="h-6 w-6" aria-hidden="true" /></div><div><h2 className="font-display text-xl text-neovantas-navy">Hola, soy Neo</h2><p className="mt-1 text-sm leading-6 text-neovantas-muted">Estoy aquí para ayudarte a encontrar información de Neovantas. ¿Qué necesitas saber?</p></div></div><div className="space-y-5 p-5 md:p-7" aria-live="polite">{messages.length ? messages.map((message) => <ConversationMessage key={message.id} message={message} />) : <div className="rounded-xl border border-dashed border-neovantas-line p-6 text-center text-sm text-neovantas-muted">Empieza con una pregunta sobre políticas, beneficios o procedimientos internos.</div>}{loading ? <div className="flex items-center gap-2 text-sm text-neovantas-muted"><LoaderCircle className="h-4 w-4 animate-spin text-neovantas-blue" aria-hidden="true" />Neo está consultando la documentación...</div> : null}{error ? <p role="alert" className="rounded-lg bg-[#fff4ed] px-4 py-3 text-sm text-[#9a3412]">No se pudo completar la consulta. Inténtalo de nuevo.</p> : null}<div className="flex flex-wrap gap-2" aria-label="Preguntas sugeridas">{SUGGESTIONS.map((item) => <button type="button" key={item} onClick={() => setQuestion(item)} disabled={loading} className="focus-ring rounded-full border border-neovantas-line bg-white px-3 py-2 text-left text-xs font-semibold text-neovantas-blue hover:border-neovantas-blue hover:bg-[#eef6ff] disabled:opacity-50">{item}</button>)}</div><form onSubmit={ask} className="flex flex-col gap-3 sm:flex-row sm:items-end"><textarea aria-label="Pregunta para Neo" value={question} onChange={(event) => setQuestion(event.target.value)} maxLength={1000} rows={3} placeholder="Escribe tu pregunta..." className="focus-ring min-w-0 flex-1 resize-none rounded-xl border border-neovantas-line px-4 py-3 text-sm outline-none placeholder:text-neovantas-muted" /><button type="submit" disabled={loading || !question.trim()} className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-neovantas-blue px-5 text-sm font-semibold text-white hover:bg-neovantas-navy disabled:opacity-50"><Send className="h-4 w-4" aria-hidden="true" />Enviar</button></form><p className="flex items-center gap-2 text-xs text-neovantas-muted"><Sparkles className="h-3.5 w-3.5 text-neovantas-blue" aria-hidden="true" />Cada pregunta se consulta de forma independiente. El historial solo vive en esta página.</p></div></section></div>;
+}
+
+function ConversationMessage({ message }: { message: Message }) {
+  const sources = [...new Map((message.response?.references ?? []).map((reference) => [reference.document, reference])).values()];
+  return <article className="space-y-3"><div className="rounded-xl bg-neovantas-navy px-4 py-3 text-sm leading-6 text-white">{message.question}</div><div className="rounded-xl border border-neovantas-line bg-[#fbfdff] px-4 py-4 text-sm leading-7 text-neovantas-ink">{message.error ? <span className="text-[#9a3412]">No se pudo completar esta consulta.</span> : message.response ? <><p className={message.response.answerStatus !== 'answered' ? 'text-neovantas-muted' : ''}>{message.response.answer}</p>{sources.length ? <div className="mt-4 border-t border-neovantas-line pt-3"><p className="text-xs font-bold uppercase tracking-[0.12em] text-neovantas-muted">Fuentes documentales</p><ul className="mt-2 space-y-1 text-sm text-neovantas-blue">{sources.map((source) => <li key={source.document}>• {documentName(source.document)}{source.page ? ` · pág. ${source.page}` : ''}</li>)}</ul></div> : null}</> : <span className="text-neovantas-muted">Preparando respuesta...</span>}</div></article>;
+}

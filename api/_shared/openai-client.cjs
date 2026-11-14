@@ -40,7 +40,7 @@ function extractOutputText(payload) {
     .join('');
 }
 
-async function askOpenAI({ question, context, config = getOpenAIConfig(), fetchImpl = globalThis.fetch, log }) {
+async function askOpenAI({ question, context, instructions, config = getOpenAIConfig(), fetchImpl = globalThis.fetch, log }) {
   if (!config.configured) {
     const error = new Error('OPENAI_NOT_CONFIGURED');
     error.code = 'OPENAI_NOT_CONFIGURED';
@@ -56,6 +56,7 @@ async function askOpenAI({ question, context, config = getOpenAIConfig(), fetchI
   const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
   const body = {
     model: config.model,
+    instructions: instructions || 'Responde en español utilizando exclusivamente los DATOS DOCUMENTALES.',
     store: false,
     max_output_tokens: config.maxOutputTokens,
     input: [

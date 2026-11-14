@@ -13,7 +13,8 @@
     "test:news-subject": "node scripts/tests/news-subject-selection.mjs",
     "test:folder-normalization": "node scripts/tests/folder-normalization.mjs",
     "test:news-parser": "node scripts/tests/news-html-parser.mjs",
-    "test:news-html": "node scripts/tests/news-html-parser.mjs"
+    "test:news-html": "node scripts/tests/news-html-parser.mjs",
+    "test:neo-ui": "node scripts/tests/neo-ui.mjs"
   },
   "dependencies": {
     "@azure/data-tables": "^13.3.0",

@@ -3,6 +3,7 @@ const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const search = require('../_shared/knowledge-search.cjs');
 const { getStorageErrorDetails } = require('../_shared/knowledge-publish.cjs');
 const { getOpenAIConfig, askOpenAI } = require('../_shared/openai-client.cjs');
+const { NEO_SYSTEM_INSTRUCTIONS, OUT_OF_SCOPE_MESSAGE, classifyQuestion } = require('../_shared/neo-persona.cjs');
 
 const MAX_QUESTION_LENGTH = 1000;
 
@@ -58,17 +59,19 @@ module.exports = async function knowledgeAsk(context, req) {
   const question = typeof body.question === 'string' ? body.question.trim() : '';
   if (!question) return send(context, 400, { ok: false, answerStatus: 'question-required' });
   if (question.length > MAX_QUESTION_LENGTH) return send(context, 400, { ok: false, answerStatus: 'question-too-long' });
+  if (classifyQuestion(question) === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope' });
   if (!knowledgeIndex.getIndexReadStorageConfig().configured) return send(context, 503, { ok: false, answerStatus: 'storage-not-configured' });
 
   try {
     const client = knowledgeIndex.createIndexReadContainerClient();
     const { indexes } = await search.loadPublishedIndexes(client);
     const results = search.searchIndexes(indexes, question);
+    if (classifyQuestion(question, results) === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope' });
     if (!results.length) return send(context, 200, { ok: true, answer: 'La documentación disponible no contiene información suficiente para responder.', references: [], sourceCount: 0, answerStatus: 'insufficient-evidence' });
     const config = getOpenAIConfig();
     const contextText = makeContext(results, config.maxContextChars);
     if (!contextText) return send(context, 200, { ok: true, answer: 'La documentación disponible no contiene información suficiente para responder.', references: [], sourceCount: 0, answerStatus: 'insufficient-evidence' });
-    const modelResponse = await askOpenAI({ question, context: contextText, config, log: context.log });
+    const modelResponse = await askOpenAI({ question, context: contextText, instructions: NEO_SYSTEM_INSTRUCTIONS, config, log: context.log });
     const answer = validateModelAnswer(modelResponse.data, results);
     if (!answer) return send(context, 502, { ok: false, answerStatus: 'invalid-model-response' });
     context.log?.(`[knowledge-ask] completed resultCount=${results.length} sourceCount=${answer.sourceCount} inputTokens=${Number(modelResponse.usage?.input_tokens ?? 0)} outputTokens=${Number(modelResponse.usage?.output_tokens ?? 0)}`);
