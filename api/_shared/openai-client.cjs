@@ -40,7 +40,7 @@ function extractOutputText(payload) {
     .join('');
 }
 
-async function askOpenAI({ question, context, instructions, config = getOpenAIConfig(), fetchImpl = globalThis.fetch, log }) {
+async function askOpenAI({ question, context, instructions, history = '', config = getOpenAIConfig(), fetchImpl = globalThis.fetch, log }) {
   if (!config.configured) {
     const error = new Error('OPENAI_NOT_CONFIGURED');
     error.code = 'OPENAI_NOT_CONFIGURED';
@@ -66,7 +66,7 @@ async function askOpenAI({ question, context, instructions, config = getOpenAICo
       },
       {
         role: 'user',
-        content: [{ type: 'input_text', text: `PREGUNTA:\n${question}\n\nDATOS DOCUMENTALES:\n<documentary-data>\n${context}\n</documentary-data>` }],
+        content: [{ type: 'input_text', text: `${history}\nPREGUNTA:\n${question}\n\nDATOS DOCUMENTALES:\n<documentary-data>\n${context}\n</documentary-data>` }],
       },
     ],
     text: {
@@ -81,8 +81,9 @@ async function askOpenAI({ question, context, instructions, config = getOpenAICo
             answer: { type: 'string' },
             references: { type: 'array', items: { type: 'object', additionalProperties: false, properties: { fragmentId: { type: 'string' }, document: { type: 'string' }, page: { anyOf: [{ type: 'integer' }, { type: 'null' }] } }, required: ['fragmentId', 'document', 'page'] } },
             answerStatus: { type: 'string', enum: ['answered', 'insufficient-evidence'] },
+            answerType: { type: 'string', enum: ['internal-document', 'corporate-identity', 'corporate-web', 'general-knowledge', 'reasoned-advice', 'mixed'] },
           },
-          required: ['answer', 'references', 'answerStatus'],
+          required: ['answer', 'references', 'answerStatus', 'answerType'],
         },
       },
     },
