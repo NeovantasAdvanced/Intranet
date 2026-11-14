@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cultura-cumplimiento",
+    "name": "Cultura y cumplimiento",
+    "description": "Código ético, anticorrupción, igualdad, diversidad y prevención del acoso."
+  },
+  {
+    "id": "personas-beneficios",
+    "name": "Personas y beneficios",
+    "description": "Nóminas, permisos, vacaciones, descuentos y beneficios para empleados."
+  },
+  {
+    "id": "trabajo-seguridad",
+    "name": "Trabajo y seguridad",
+    "description": "Teletrabajo, prevención de riesgos y normas de seguridad informática."
+  },
+  {
+    "id": "onboarding",
+    "name": "Onboarding",
+    "description": "Incorporación, acompañamiento NeoBuddy y recursos para nuevas personas."
+  },
+  {
+    "id": "movilidad-internacional",
+    "name": "Movilidad internacional",
+    "description": "Guías de España y México para personas en movilidad internacional."
+  },
+  {
+    "id": "calendarios",
+    "name": "Calendarios",
+    "description": "Calendarios laborales y festivos vigentes."
+  }
+]
