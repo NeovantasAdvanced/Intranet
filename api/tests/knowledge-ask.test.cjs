@@ -20,6 +20,11 @@ async function run() {
     search.loadPublishedIndexes = async () => { throw new Error('out-of-scope must not load documents'); };
     let response = await invoke(endpoint, { question: '¿Me das una receta de cocina?' });
     assert.equal(response.status, 200); assert.equal(response.body.answerStatus, 'out-of-scope');
+    global.fetch = async () => ({ ok: true, json: async () => ({ output_text: JSON.stringify({ answer: 'Puedo ayudarte con la cultura, ideas y documentación de Neovantas.', references: [{ document: 'Neovantas · Identidad de Neo', fragmentId: 'neo-identity', page: null }], answerStatus: 'answered', answerType: 'corporate-identity' }) }) });
+    response = await invoke(endpoint, { question: '¿Qué puedes hacer por mí?' });
+    assert.equal(response.body.answerStatus, 'answered'); assert.equal(response.body.answerType, 'corporate-identity');
+    response = await invoke(endpoint, { question: '¿Cuáles son nuestras 5 C?' });
+    assert.equal(response.body.answerStatus, 'answered'); assert.equal(response.body.answerType, 'corporate-identity');
     search.loadPublishedIndexes = async () => ({ indexes: [] });
     let captured;
     global.fetch = async (url, options) => { captured = { url, options }; return { ok: true, json: async () => ({ output_text: JSON.stringify({ answer: 'La politica permite teletrabajo.', references: [{ document: 'originals/policy.pdf', fragmentId: 'fragment-1', page: 2 }], answerStatus: 'answered' }), usage: { input_tokens: 100, output_tokens: 30 } }) }; };
