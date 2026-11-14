@@ -94,11 +94,17 @@ function buildDocumentIndex({ document = TARGET_DOCUMENT, pageCount, text, etag 
 
 function getIndexBlobName({ document = TARGET_DOCUMENT, etag = null }) {
   const version = crypto.createHash('sha256').update(`${document}\0${etag ?? 'no-etag'}`).digest('hex').slice(0, 16);
-  return `${INDEX_PREFIX}codigo-etico-conducta-${version}.json`;
+  const prefix = document === TARGET_DOCUMENT ? 'codigo-etico-conducta' : 'document';
+  return `${INDEX_PREFIX}${prefix}-${version}.json`;
 }
 
-async function downloadTargetPdf(containerClient = createContainerClient()) {
-  const response = await containerClient.getBlobClient(TARGET_DOCUMENT).download();
+async function downloadTargetPdf(containerClient = createContainerClient(), document = TARGET_DOCUMENT) {
+  if (!String(document).startsWith('originals/') || String(document).includes('..')) {
+    const error = new Error('DOCUMENT_PATH_NOT_ALLOWED');
+    error.code = 'DOCUMENT_PATH_NOT_ALLOWED';
+    throw error;
+  }
+  const response = await containerClient.getBlobClient(document).download();
   if (response.contentLength > MAX_PDF_BYTES) {
     const error = new Error('PDF_TOO_LARGE');
     error.code = 'PDF_TOO_LARGE';
@@ -110,11 +116,11 @@ async function downloadTargetPdf(containerClient = createContainerClient()) {
   };
 }
 
-async function createDocumentIndex({ containerClient, parser, indexedAt } = {}) {
-  const downloaded = await downloadTargetPdf(containerClient);
+async function createDocumentIndex({ containerClient, document = TARGET_DOCUMENT, parser, indexedAt } = {}) {
+  const downloaded = await downloadTargetPdf(containerClient, document);
   const extracted = await extractPdfText(downloaded.buffer, parser);
   const index = buildDocumentIndex({
-    document: TARGET_DOCUMENT,
+    document,
     pageCount: extracted.pageCount,
     text: extracted.text,
     etag: downloaded.etag,

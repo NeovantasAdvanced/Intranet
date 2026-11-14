@@ -1,14 +1,15 @@
 const assert = require('node:assert/strict');
 const indexer = require('../_shared/knowledge-index.cjs');
+const knowledgeBlob = require('../_shared/knowledge-blob.cjs');
 const handler = require('../knowledge-index/index.cjs');
 
 function principal(role = 'admin') {
   return Buffer.from(JSON.stringify({ userDetails: 'admin@neovantas.com', userRoles: [role] })).toString('base64');
 }
 
-async function invoke(headers = {}) {
+async function invoke(headers = {}, body) {
   const context = { res: null, log() {} };
-  await handler(context, { headers });
+  await handler(context, { headers, body });
   return context.res;
 }
 
@@ -29,6 +30,8 @@ async function invoke(headers = {}) {
   assert.match(indexer.getIndexBlobName(documentIndex), /^knowledge-index\/documents\//);
   assert.equal(indexer.getIndexStorageConfig({ KNOWLEDGE_INDEX_STORAGE_ACCOUNT: 'neovantasintranet', KNOWLEDGE_INDEX_CONTAINER: 'neovantas-knowledge-index', KNOWLEDGE_INDEX_BLOB_SAS_TOKEN: 'sv=test' }).configured, true);
   assert.equal(indexer.getIndexStorageConfig({ KNOWLEDGE_STORAGE_ACCOUNT: 'account', KNOWLEDGE_CONTAINER: 'originals', KNOWLEDGE_BLOB_SAS_TOKEN: 'read-only' }).configured, false);
+  assert.notEqual(indexer.getIndexBlobName({ document: 'originals/02_personas/Guía de Nómina.pdf', etag: 'etag-1' }), indexer.getIndexBlobName({ document: 'originals/03_trabajo/Política de Teletrabajo.pdf', etag: 'etag-1' }));
+  await assert.rejects(() => indexer.downloadTargetPdf({ getBlobClient() {} }, 'https://example.com/file.pdf'), /DOCUMENT_PATH_NOT_ALLOWED/);
   await assert.rejects(() => indexer.writeDocumentIndex({ getBlockBlobClient() {} }, 'originals/not-allowed.json', {}), /INDEX_PATH_NOT_ALLOWED/);
   let uploaded;
   const indexClient = { getBlockBlobClient: () => ({ uploadData: async (body, options) => { uploaded = { body, options }; } }) };
@@ -66,22 +69,29 @@ async function invoke(headers = {}) {
     process.env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT = 'index-account';
     process.env.KNOWLEDGE_INDEX_CONTAINER = 'index-container';
     process.env.KNOWLEDGE_INDEX_BLOB_SAS_TOKEN = 'write-only-test';
-    const originalCreateClient = indexer.createIndexContainerClient;
+    const originalList = knowledgeBlob.listKnowledgeDocuments;
     const originalCreateIndex = indexer.createDocumentIndex;
     const originalWrite = indexer.writeDocumentIndex;
-    indexer.createIndexContainerClient = () => ({ });
-    indexer.createDocumentIndex = async () => ({ index: { document: 'originals/test.pdf', pageCount: 1, extractedCharacters: 4, chunkCount: 1 }, blobName: 'knowledge-index/documents/test.json' });
+    const originalIndexClient = indexer.createIndexContainerClient;
+    knowledgeBlob.listKnowledgeDocuments = async () => [
+      { name: 'originals/01_cultura_y_cumplimiento/Código Ético y de Conducta - NEOVANTAS.pdf' },
+      { name: 'originals/02_personas/Guía de Nómina.pdf' },
+    ];
+    indexer.createIndexContainerClient = () => ({});
+    indexer.createDocumentIndex = async ({ document }) => ({ index: { document, pageCount: 1, extractedCharacters: 4, chunkCount: 1 }, blobName: 'knowledge-index/documents/test.json' });
     indexer.writeDocumentIndex = async () => ({ created: true, alreadyExists: false });
-    const created = await invoke({ 'x-ms-client-principal': principal() });
-    assert.equal(created.status, 200);
-    assert.equal(created.body.indexStatus, 'created');
-    indexer.writeDocumentIndex = async () => ({ created: false, alreadyExists: true });
-    const existing = await invoke({ 'x-ms-client-principal': principal() });
-    assert.equal(existing.status, 200);
-    assert.equal(existing.body.indexStatus, 'already-exists');
-    indexer.createIndexContainerClient = originalCreateClient;
+    const valid = await invoke({ 'x-ms-client-principal': principal() }, '{"document":"originals/02_personas/Guía de Nómina.pdf"}');
+    assert.equal(valid.status, 200);
+    assert.equal(valid.body.document, 'originals/02_personas/Guía de Nómina.pdf');
+    assert.equal((await invoke({ 'x-ms-client-principal': principal() }, '{"document":"originals/no-existe.pdf"}')).body.indexStatus, 'document-not-found');
+    assert.equal((await invoke({ 'x-ms-client-principal': principal() }, '{"document":"https://example.com/file.pdf"}')).body.indexStatus, 'document-path-not-allowed');
+    const compatibility = await invoke({ 'x-ms-client-principal': principal() });
+    assert.equal(compatibility.status, 200);
+    assert.equal(compatibility.body.document, 'originals/01_cultura_y_cumplimiento/Código Ético y de Conducta - NEOVANTAS.pdf');
+    indexer.createIndexContainerClient = originalIndexClient;
     indexer.createDocumentIndex = originalCreateIndex;
     indexer.writeDocumentIndex = originalWrite;
+    knowledgeBlob.listKnowledgeDocuments = originalList;
   } finally {
     for (const name of ['KNOWLEDGE_STORAGE_ACCOUNT', 'KNOWLEDGE_CONTAINER', 'KNOWLEDGE_BLOB_SAS_TOKEN', 'KNOWLEDGE_INDEX_STORAGE_ACCOUNT', 'KNOWLEDGE_INDEX_CONTAINER', 'KNOWLEDGE_INDEX_BLOB_SAS_TOKEN']) {
       if (old[name] === undefined) delete process.env[name]; else process.env[name] = old[name];
