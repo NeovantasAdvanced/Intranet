@@ -17,9 +17,13 @@ async function run() {
     knowledgeIndex.createIndexReadContainerClient = () => ({});
     search.loadPublishedIndexes = async () => ({ indexes: [] });
     search.searchIndexes = () => [{ document: 'originals/policy.pdf', fragmentId: 'fragment-1', text: 'La politica permite teletrabajo.', position: 0, page: 2, score: 20 }];
+    search.loadPublishedIndexes = async () => { throw new Error('out-of-scope must not load documents'); };
+    let response = await invoke(endpoint, { question: '¿Me das una receta de cocina?' });
+    assert.equal(response.status, 200); assert.equal(response.body.answerStatus, 'out-of-scope');
+    search.loadPublishedIndexes = async () => ({ indexes: [] });
     let captured;
     global.fetch = async (url, options) => { captured = { url, options }; return { ok: true, json: async () => ({ output_text: JSON.stringify({ answer: 'La politica permite teletrabajo.', references: [{ document: 'originals/policy.pdf', fragmentId: 'fragment-1', page: 2 }], answerStatus: 'answered' }), usage: { input_tokens: 100, output_tokens: 30 } }) }; };
-    let response = await invoke(endpoint, JSON.stringify({ question: 'teletrabajo' }));
+    response = await invoke(endpoint, JSON.stringify({ question: 'teletrabajo' }));
     assert.equal(response.status, 200); assert.equal(response.body.answerStatus, 'answered'); assert.equal(response.body.sourceCount, 1);
     const requestBody = JSON.parse(captured.options.body); assert.equal(requestBody.model, 'gpt-4.1-mini'); assert.equal(requestBody.store, false); assert.match(captured.options.headers.authorization, /^Bearer /);
     response = await invoke(endpoint, { question: 'teletrabajo' }); assert.equal(response.status, 200);
