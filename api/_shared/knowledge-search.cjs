@@ -109,7 +109,7 @@ function searchIndexes(indexes, query, options = {}) {
       score += [...matched].filter((term) => documentTokens.has(term)).length * 3;
       score += proximityScore(tokens, termSet);
       score += contentQualityScore(chunk.text);
-      candidates.push({ indexNumber, chunkNumber, document: index.document, fragmentId: chunk.id, text: String(chunk.text).slice(0, MAX_RESULT_TEXT), position: chunk.position, page: chunk.page ?? null, score: Number(score.toFixed(3)) });
+      candidates.push({ indexNumber, chunkNumber, document: index.document, fragmentId: chunk.id, text: String(chunk.text).slice(0, MAX_RESULT_TEXT), position: chunk.position, page: chunk.page ?? null, score: Number(score.toFixed(3)), matchedTerms: [...matched] });
     }
   }
   const unique = new Map();
@@ -117,10 +117,32 @@ function searchIndexes(indexes, query, options = {}) {
     const key = `${result.document}\0${normalizeSearchText(result.text)}`;
     if (!unique.has(key) || unique.get(key).score < result.score) unique.set(key, result);
   }
-  const ranked = [...unique.values()].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document) || a.position - b.position).slice(0, candidateLimit);
+  const documentStats = new Map();
+  for (const result of unique.values()) {
+    const current = documentStats.get(result.document) ?? { maxScore: 0, terms: new Set(), count: 0, indexNumber: result.indexNumber };
+    current.maxScore = Math.max(current.maxScore, result.score);
+    result.matchedTerms.forEach((term) => current.terms.add(term));
+    current.count += 1;
+    documentStats.set(result.document, current);
+  }
+  const queryTerms = new Set(terms);
+  const documentRanking = [...documentStats.entries()].map(([document, stats]) => {
+    const titleTerms = new Set(tokenize(document));
+    const titleMatches = [...queryTerms].filter((term) => titleTerms.has(term)).length;
+    return { document, indexNumber: stats.indexNumber, score: stats.maxScore + titleMatches * 5 + Math.min(stats.count, 3), coverage: stats.terms.size / terms.length };
+  }).sort((a, b) => b.score - a.score || b.coverage - a.coverage || a.document.localeCompare(b.document));
+  const primary = documentRanking[0];
+  const secondaryThreshold = primary ? primary.score * 0.78 : 0;
+  const ranked = [...unique.values()].sort((a, b) => {
+    const aDoc = documentRanking.find((item) => item.document === a.document);
+    const bDoc = documentRanking.find((item) => item.document === b.document);
+    const aPriority = aDoc?.document === primary?.document ? 2 : aDoc?.score >= secondaryThreshold ? 1 : 0;
+    const bPriority = bDoc?.document === primary?.document ? 2 : bDoc?.score >= secondaryThreshold ? 1 : 0;
+    return bPriority - aPriority || (bDoc?.score ?? 0) - (aDoc?.score ?? 0) || b.score - a.score || a.position - b.position;
+  }).slice(0, candidateLimit);
   if (expandNeighbors && ranked.length) {
     const expanded = new Map(ranked.map((result) => [`${result.document}\0${result.fragmentId}`, result]));
-    for (const result of ranked.slice(0, 3)) {
+    for (const result of ranked.filter((item) => item.document === primary?.document).slice(0, 5)) {
       const index = indexes[result.indexNumber];
       for (const neighborNumber of [result.chunkNumber - 1, result.chunkNumber + 1]) {
         const neighbor = index?.chunks?.[neighborNumber];
@@ -129,11 +151,15 @@ function searchIndexes(indexes, query, options = {}) {
         if (!expanded.has(key)) expanded.set(key, { indexNumber: result.indexNumber, chunkNumber: neighborNumber, document: index.document, fragmentId: neighbor.id, text: String(neighbor.text).slice(0, MAX_RESULT_TEXT), position: neighbor.position, page: neighbor.page ?? null, score: Number((result.score - 1).toFixed(3)), neighbor: true });
       }
     }
-    const results = [...expanded.values()].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document) || a.position - b.position).slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, neighbor: _n, ...result }) => result);
-    return options.diagnostic ? { candidates: ranked.map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result), results } : results;
+    const results = [...expanded.values()].sort((a, b) => {
+      const aPrimary = a.document === primary?.document ? 1 : 0;
+      const bPrimary = b.document === primary?.document ? 1 : 0;
+      return bPrimary - aPrimary || b.score - a.score || a.position - b.position;
+    }).slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, neighbor: _n, matchedTerms: _m, ...result }) => result);
+    return options.diagnostic ? { candidates: ranked.map(({ indexNumber: _i, chunkNumber: _c, matchedTerms: _m, ...result }) => result), documents: documentRanking, primaryDocument: primary?.document ?? null, results } : results;
   }
-  const results = ranked.slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result);
-  return options.diagnostic ? { candidates: ranked.map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result), results } : results;
+  const results = ranked.slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, matchedTerms: _m, ...result }) => result);
+  return options.diagnostic ? { candidates: ranked.map(({ indexNumber: _i, chunkNumber: _c, matchedTerms: _m, ...result }) => result), documents: documentRanking, primaryDocument: primary?.document ?? null, results } : results;
 }
 
 module.exports = { MAX_QUERY_LENGTH, MAX_INDEX_BYTES, MAX_RESULTS, MAX_RESULT_TEXT, DEFAULT_CANDIDATE_LIMIT, normalizeSearchText, tokenize, validateManifest, readJsonLimited, loadPublishedIndexes, searchIndexes };
