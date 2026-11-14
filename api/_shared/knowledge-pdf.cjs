@@ -8,7 +8,7 @@ const TARGET_DOCUMENT = 'originals/01_cultura_y_cumplimiento/Código Ético y de
 
 function getPdfParser() {
   try {
-    return require('pdf-parse');
+    return require('pdf-parse/lib/pdf-parse.js');
   } catch {
     throw new Error('PDF_PARSER_UNAVAILABLE');
   }
