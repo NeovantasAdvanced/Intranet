@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { getIndexBlobName } = require('../_shared/knowledge-index.cjs');
-const { buildCurrentManifest, publishCurrentManifest, validateIndex } = require('../_shared/knowledge-publish.cjs');
+const { buildCurrentManifest, publishCurrentManifest, validateIndex, getStorageErrorDetails } = require('../_shared/knowledge-publish.cjs');
 const handler = require('../knowledge-publish/index.cjs');
 
 const docs = [
@@ -39,16 +39,27 @@ function readClient(indexes) {
   await assert.rejects(() => buildCurrentManifest({ documents: docs.map((doc) => ({ ...doc, etag: 'new-etag' })), indexContainerClient: readClient(indexes) }), (error) => error.code === 'INDEX_INCOMPLETE' && error.pending.length === 2);
 
   let uploadOptions;
-  const blob = { uploadData: async (body, options) => { uploadOptions = options; }, getProperties: async () => ({ etag: 'current-etag' }) };
+  const blob = { uploadData: async (body, options) => { uploadOptions = options; } };
   const client = { getBlockBlobClient: () => blob };
-  assert.deepEqual(await publishCurrentManifest(client, manifest), { created: true, updated: false });
+  const readClientForManifest = { getBlobClient: () => ({ getProperties: async () => ({ etag: 'current-etag' }) }) };
+  assert.deepEqual(await publishCurrentManifest({ readContainerClient: readClientForManifest, writeContainerClient: client, manifest }), { created: true, updated: false });
   assert.equal(uploadOptions.conditions.ifNoneMatch, '*');
   let calls = 0;
   const existing = { uploadData: async (body, options) => { calls += 1; if (calls === 1) { const error = new Error('exists'); error.statusCode = 412; throw error; } assert.equal(options.conditions.ifMatch, 'current-etag'); }, getProperties: async () => ({ etag: 'current-etag' }) };
-  assert.deepEqual(await publishCurrentManifest({ getBlockBlobClient: () => existing }, manifest), { created: false, updated: true });
+  let readPropertiesCalls = 0;
+  const readExisting = { getBlobClient: () => ({ getProperties: async () => { readPropertiesCalls += 1; return { etag: 'current-etag' }; } }) };
+  assert.deepEqual(await publishCurrentManifest({ readContainerClient: readExisting, writeContainerClient: { getBlockBlobClient: () => existing }, manifest }), { created: false, updated: true });
+  assert.equal(readPropertiesCalls, 1);
   const race = { uploadData: async () => { const error = new Error('race'); error.statusCode = 412; throw error; }, getProperties: async () => ({ etag: 'current-etag' }) };
-  await assert.rejects(() => publishCurrentManifest({ getBlockBlobClient: () => race }, manifest), /MANIFEST_CONFLICT/);
+  await assert.rejects(() => publishCurrentManifest({ readContainerClient: readExisting, writeContainerClient: { getBlockBlobClient: () => race }, manifest }), /MANIFEST_CONFLICT/);
   const forbidden = { uploadData: async () => { const error = new Error('forbidden'); error.statusCode = 403; throw error; } };
-  await assert.rejects(() => publishCurrentManifest({ getBlockBlobClient: () => forbidden }, manifest), (error) => error.statusCode === 403);
+  await assert.rejects(() => publishCurrentManifest({ readContainerClient: readExisting, writeContainerClient: { getBlockBlobClient: () => forbidden }, manifest }), (error) => error.statusCode === 403);
+  assert.deepEqual(getStorageErrorDetails({ statusCode: 403, code: 'AuthorizationPermissionMismatch', details: { errorCode: 'AuthorizationPermissionMismatch', requestId: 'request-id' }, message: 'contains secret URL' }, 'publish-current-manifest'), {
+    operation: 'publish-current-manifest',
+    statusCode: 403,
+    code: 'AuthorizationPermissionMismatch',
+    errorCode: 'AuthorizationPermissionMismatch',
+    requestId: 'request-id',
+  });
   console.log('knowledge-publish tests passed');
 })();

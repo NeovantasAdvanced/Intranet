@@ -50,17 +50,28 @@ async function buildCurrentManifest({ documents, indexContainerClient }) {
   return { schemaVersion: SCHEMA_VERSION, publishedAt: new Date().toISOString(), documents: entries };
 }
 
-async function publishCurrentManifest(containerClient, manifest) {
-  const blobClient = containerClient.getBlockBlobClient(CURRENT_MANIFEST);
+function getStorageErrorDetails(error, operation) {
+  return {
+    operation,
+    statusCode: error?.statusCode ?? null,
+    code: error?.code ?? null,
+    errorCode: error?.details?.errorCode ?? null,
+    requestId: error?.requestId ?? error?.details?.requestId ?? null,
+  };
+}
+
+async function publishCurrentManifest({ readContainerClient, writeContainerClient, manifest }) {
+  const writeBlobClient = writeContainerClient.getBlockBlobClient(CURRENT_MANIFEST);
   const body = Buffer.from(JSON.stringify(manifest));
   try {
-    await blobClient.uploadData(body, { conditions: { ifNoneMatch: '*' }, blobHTTPHeaders: { blobContentType: 'application/json; charset=utf-8' } });
+    await writeBlobClient.uploadData(body, { conditions: { ifNoneMatch: '*' }, blobHTTPHeaders: { blobContentType: 'application/json; charset=utf-8' } });
     return { created: true, updated: false };
   } catch (error) {
     if (!(error?.statusCode === 412 || error?.code === 'BlobAlreadyExists')) throw error;
-    const properties = await blobClient.getProperties();
+    const readBlobClient = readContainerClient.getBlobClient(CURRENT_MANIFEST);
+    const properties = await readBlobClient.getProperties();
     try {
-      await blobClient.uploadData(body, { conditions: { ifMatch: properties.etag }, blobHTTPHeaders: { blobContentType: 'application/json; charset=utf-8' } });
+      await writeBlobClient.uploadData(body, { conditions: { ifMatch: properties.etag }, blobHTTPHeaders: { blobContentType: 'application/json; charset=utf-8' } });
       return { created: false, updated: true };
     } catch (updateError) {
       if (updateError?.statusCode === 412) {
@@ -73,4 +84,4 @@ async function publishCurrentManifest(containerClient, manifest) {
   }
 }
 
-module.exports = { CURRENT_MANIFEST, validateIndex, buildCurrentManifest, publishCurrentManifest };
+module.exports = { CURRENT_MANIFEST, validateIndex, buildCurrentManifest, publishCurrentManifest, getStorageErrorDetails };
