@@ -8,5 +8,7 @@ assert.equal(classifyQuestion('que beneficios tenemos'), 'internal');
 assert.equal(classifyQuestion('que establece el codigo etico'), 'internal');
 assert.equal(classifyQuestion('me das una receta de cocina'), 'out-of-scope');
 assert.equal(classifyQuestion('que significa esto'), 'general');
+assert.equal(classifyQuestion('que puedes hacer por mi'), 'corporate-identity');
+assert.equal(classifyQuestion('cuales son nuestras 5 c'), 'corporate-identity');
 assert.match(OUT_OF_SCOPE_MESSAGE, /Neovantas/);
 console.log('neo-persona tests passed');

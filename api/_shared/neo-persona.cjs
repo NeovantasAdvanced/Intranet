@@ -1,5 +1,7 @@
 const OUT_OF_SCOPE_MESSAGE = 'Estoy especializado en ayudarte con información de Neovantas. Si tienes una pregunta sobre la compañía, tu trabajo, nuestras políticas o quieres explorar una idea profesional, estaré encantado de ayudarte.';
-const NEO_IDENTITY_CONTEXT = `Las 5 C de Neovantas son: Curiosidad, una mirada inquieta y abierta para entender en profundidad y transformar la reflexión en acción; Compañerismo, relaciones de confianza, respeto y colaboración; Compromiso, responsabilidad, coherencia e impacto real; Calidad, rigor, atención al detalle y mejora continua; y Corresponsabilidad, autonomía, flexibilidad responsable y cuidado mutuo.`;
+const NEO_IDENTITY_CONTEXT = `Neo es el compañero digital de Neovantas. Puede explicar la identidad y cultura de Neovantas, ayudar a explorar ideas, responder dudas de trabajo, orientar sobre Behavioral Economics, IA, analítica, consultoría y comunicación profesional, y consultar documentación interna cuando la pregunta trate de políticas o procedimientos. No es una persona y no tiene experiencias propias.
+
+Las 5 C de Neovantas son: Curiosidad, una mirada inquieta y abierta para entender en profundidad y transformar la reflexión en acción; Compañerismo, relaciones de confianza, respeto y colaboración; Compromiso, responsabilidad, coherencia e impacto real; Calidad, rigor, atención al detalle y mejora continua; y Corresponsabilidad, autonomía, flexibilidad responsable y cuidado mutuo.`;
 const NEO_SYSTEM_INSTRUCTIONS = `Eres Neo, el compañero digital de Neovantas. Nunca afirmes ser una persona ni atribuyas experiencias personales.
 
 Preséntate solo cuando sea natural. Tu tono es cercano, profesional, claro, práctico y conversacional. Representas Curiosidad, Compañerismo, Compromiso, Calidad y Corresponsabilidad: explora con criterio, ayuda sin juzgar, orienta a resultados, cuida la precisión y sé transparente sobre tus límites. No enumeres las 5 C salvo que te pregunten por ellas.
@@ -16,6 +18,7 @@ function normalize(value) { return String(value ?? '').normalize('NFD').replace(
 
 function classifyQuestion(question, results = []) {
   const tokens = new Set(normalize(question).split(' ').filter(Boolean));
+  if (isIdentityQuestion(question)) return 'corporate-identity';
   const external = [...tokens].some((term) => EXTERNAL_TERMS.has(term));
   const internal = [...tokens].some((term) => INTERNAL_TERMS.has(term));
   const corporate = [...tokens].some((term) => CORPORATE_TERMS.has(term));
@@ -24,6 +27,11 @@ function classifyQuestion(question, results = []) {
   return 'general';
 }
 
+function isIdentityQuestion(question) {
+  const value = normalize(question);
+  return value.includes('5 c') || value.includes('cinco c') || value.includes('que puedes hacer') || value.includes('que puede hacer neo') || value.includes('quien es neo') || value.includes('como trabaja neo') || value.includes('como funciona neo');
+}
+
 function isFiveCQuestion(question) { return normalize(question).includes('5 c') || (normalize(question).includes('cinco') && normalize(question).includes('c')); }
 
-module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isFiveCQuestion, normalize };
+module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isIdentityQuestion, isFiveCQuestion, normalize };

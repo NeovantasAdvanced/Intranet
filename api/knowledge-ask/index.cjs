@@ -3,7 +3,7 @@ const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const search = require('../_shared/knowledge-search.cjs');
 const { getStorageErrorDetails } = require('../_shared/knowledge-publish.cjs');
 const { getOpenAIConfig, askOpenAI } = require('../_shared/openai-client.cjs');
-const { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isFiveCQuestion } = require('../_shared/neo-persona.cjs');
+const { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isIdentityQuestion, isFiveCQuestion } = require('../_shared/neo-persona.cjs');
 
 const MAX_QUESTION_LENGTH = 1000;
 const MAX_MESSAGES = 6;
@@ -65,6 +65,7 @@ module.exports = async function knowledgeAsk(context, req) {
 
   try {
     let results = [];
+    const identityQuestion = initialScope === 'corporate-identity' || isIdentityQuestion(question);
     const needsDocuments = initialScope === 'internal';
     if (needsDocuments) {
       if (!knowledgeIndex.getIndexReadStorageConfig().configured) return send(context, 503, { ok: false, answerStatus: 'storage-not-configured' });
@@ -77,9 +78,10 @@ module.exports = async function knowledgeAsk(context, req) {
       }
       if (!results.length) return send(context, 200, { ok: true, answer: INSUFFICIENT, references: [], sourceCount: 0, answerStatus: 'insufficient-evidence', answerType: 'internal-document' });
     }
+    if (identityQuestion) results = [{ document: 'Neovantas · Identidad de Neo', fragmentId: 'neo-identity', text: NEO_IDENTITY_CONTEXT, page: null }];
     const config = getOpenAIConfig();
     const contextText = makeContext(results, config.maxContextChars);
-    const expectedType = needsDocuments ? (isFiveCQuestion(question) && results[0]?.fragmentId === 'neo-5c' ? 'corporate-identity' : 'internal-document') : 'general-knowledge';
+    const expectedType = identityQuestion ? 'corporate-identity' : needsDocuments ? 'internal-document' : 'general-knowledge';
     const modelResponse = await askOpenAI({ question, context: contextText, instructions: NEO_SYSTEM_INSTRUCTIONS, config, log: context.log, history: makeHistory(history) });
     const answer = validateModelAnswer(modelResponse.data, results, expectedType);
     if (!answer) return send(context, 502, { ok: false, answerStatus: 'invalid-model-response' });
