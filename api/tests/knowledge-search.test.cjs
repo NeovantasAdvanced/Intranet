@@ -18,6 +18,16 @@ const retrievalIndex = { ...index, chunks: [
   { id: 'request', text: 'Procedimiento para solicitar teletrabajo mediante la herramienta corporativa.', position: 1700, page: 4 },
   { id: 'expenses', text: 'Gastos y medios: la política establece las condiciones aplicables a los medios de trabajo.', position: 2550, page: 5 },
 ] };
+const documentA = { document: 'originals/politica-teletrabajo.pdf', chunks: [
+  { id: 'a1', text: 'Política de teletrabajo y condiciones generales.', position: 0, page: 1 },
+  { id: 'a2', text: 'H. Compensación de gastos: se cubren los gastos conforme a estas condiciones.', position: 12675, page: 8 },
+  { id: 'a3', text: 'La compensación de gastos se ajustará al convenio colectivo aplicable.', position: 13525, page: 8 },
+] };
+const documentB = { document: 'originals/guia-nomina.pdf', chunks: [
+  { id: 'b1', text: 'La nómina incluye información sobre gastos y compensaciones.', position: 0, page: 1 },
+  { id: 'b2', text: 'Los gastos de nómina se reflejan en los procesos administrativos.', position: 900, page: 2 },
+] };
+const documentC = { document: 'originals/guia-neobuddy.pdf', chunks: [{ id: 'c1', text: 'NeoBuddy explica herramientas y gastos para nuevas personas.', position: 0, page: 1 }] };
 
 function client(objects) {
   return { getBlobClient: (name) => ({ download: async () => {
@@ -39,6 +49,11 @@ function client(objects) {
   assert.equal(substantive[0].fragmentId, 'conditions');
   assert.ok(substantive.some((result) => result.fragmentId === 'request'));
   assert.ok(substantive.some((result) => result.fragmentId === 'expenses'));
+  const hierarchical = search.searchIndexes([documentA, documentB, documentC], 'gastos teletrabajo', { candidateLimit: 15, maxResults: 5, expandNeighbors: true, diagnostic: true });
+  assert.equal(hierarchical.primaryDocument, documentA.document);
+  assert.ok(hierarchical.results.some((result) => result.fragmentId === 'a2'));
+  assert.ok(hierarchical.results.some((result) => result.fragmentId === 'a3'));
+  assert.ok(hierarchical.documents[0].document === documentA.document);
   assert.equal(search.searchIndexes([{ ...index, chunks: [...index.chunks, { ...index.chunks[1], id: 'duplicate' }] }], 'teletrabajo').length, 2);
   assert.equal((await search.loadPublishedIndexes(client({ [current]: manifest, [currentIndex]: index, [oldIndex]: { ...index, etag: 'old' } }))).indexes[0].etag, 'etag-current');
   await assert.rejects(() => search.loadPublishedIndexes(client({ [current]: manifest })), (error) => error.statusCode === 404);

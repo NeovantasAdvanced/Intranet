@@ -19,7 +19,8 @@ function selectContextResults(results, maxChars = 12000) {
 
 function makeDocumentContext(results, maxChars = 12000) {
   const { selected, characters, truncated } = selectContextResults(results, maxChars);
-  return { text: selected.map(formatContextEntry).join('\n\n'), selected, characters, truncated };
+  const ordered = [...selected].sort((a, b) => a.document.localeCompare(b.document) || (a.position ?? 0) - (b.position ?? 0));
+  return { text: ordered.map(formatContextEntry).join('\n\n'), selected: ordered, characters, truncated };
 }
 
 module.exports = { MAX_CONTEXT_CHARS, formatContextEntry, selectContextResults, makeDocumentContext };

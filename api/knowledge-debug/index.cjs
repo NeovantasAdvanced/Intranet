@@ -36,12 +36,13 @@ module.exports = async function knowledgeDebug(context, req) {
     const diagnostic = search.searchIndexes(filteredIndexes, query, { candidateLimit: MAX_REPORT_CANDIDATES, maxResults: 5, expandNeighbors: true, diagnostic: true });
     const contextInfo = makeDocumentContext(diagnostic.results, 12000);
     const selectedIds = new Set(contextInfo.selected.map((result) => `${result.document}\0${result.fragmentId}`));
-    const selected = diagnostic.results.map((result) => ({ ...publicFragment(result), selectedForContext: selectedIds.has(`${result.document}\0${result.fragmentId}`), reason: selectedIds.has(`${result.document}\0${result.fragmentId}`) ? 'selected-by-ranking' : 'excluded-by-context-limit' }));
+    const candidateIds = new Set(diagnostic.candidates.map((result) => `${result.document}\0${result.fragmentId}`));
+    const selected = contextInfo.selected.map((result) => ({ ...publicFragment(result), selectedForContext: true, reason: candidateIds.has(`${result.document}\0${result.fragmentId}`) ? 'selected-by-ranking' : 'included-by-continuity' }));
     const candidates = diagnostic.candidates.slice(0, MAX_REPORT_CANDIDATES).map((result) => ({ ...publicFragment(result), selectedForContext: selectedIds.has(`${result.document}\0${result.fragmentId}`), reason: selectedIds.has(`${result.document}\0${result.fragmentId}`) ? 'selected-by-ranking' : 'candidate-not-selected' }));
     const allText = filteredIndexes.flatMap((index) => index.chunks.map((chunk) => String(chunk.text ?? ''))).join(' ');
     const normalized = search.normalizeSearchText(allText);
     const indicators = Object.fromEntries(INDICATORS.map((term) => [term, normalized.includes(term)]));
-    const response = { ok: true, query, document: document || null, documentCount: filteredIndexes.length, documents: filteredIndexes.map((index) => ({ document: index.document, totalFragments: index.chunks.length })), totalFragments, candidates, selectedForContext: selected, contextCharacters: contextInfo.characters, contextTruncated: contextInfo.truncated, indicators };
+    const response = { ok: true, query, document: document || null, documentCount: filteredIndexes.length, documents: filteredIndexes.map((index) => ({ document: index.document, totalFragments: index.chunks.length })), primaryDocument: diagnostic.primaryDocument, documentRanking: diagnostic.documents, totalFragments, candidates, selectedForContext: selected, contextCharacters: contextInfo.characters, contextTruncated: contextInfo.truncated, indicators };
     if (includeText) {
       const found = filteredIndexes.flatMap((index) => index.chunks).find((chunk) => chunk.id === fragmentId);
       if (!found) return send(context, 404, { ok: false, debugStatus: 'fragment-not-found' });
