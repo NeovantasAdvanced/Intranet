@@ -27,11 +27,13 @@ async function run() {
     assert.equal(response.status, 200); assert.equal(response.body.answerStatus, 'answered'); assert.equal(response.body.sourceCount, 1);
     const requestBody = JSON.parse(captured.options.body); assert.equal(requestBody.model, 'gpt-4.1-mini'); assert.equal(requestBody.store, false); assert.match(captured.options.headers.authorization, /^Bearer /);
     response = await invoke(endpoint, { question: 'teletrabajo' }); assert.equal(response.status, 200);
-    search.searchIndexes = () => []; global.fetch = () => { throw new Error('model called without results'); };
-    response = await invoke(endpoint, { question: 'sin resultados' }); assert.equal(response.body.answerStatus, 'insufficient-evidence');
+    search.searchIndexes = () => []; global.fetch = async () => ({ ok: true, json: async () => ({ output_text: JSON.stringify({ answer: 'Una explicación general.', references: [], answerStatus: 'answered', answerType: 'general-knowledge' }) }) });
+    response = await invoke(endpoint, { question: '¿Qué es un nudge?' }); assert.equal(response.body.answerStatus, 'answered'); assert.equal(response.body.answerType, 'general-knowledge');
+    search.searchIndexes = () => [];
+    response = await invoke(endpoint, { question: '¿Cuál es la política de vacaciones?' }); assert.equal(response.body.answerStatus, 'insufficient-evidence');
     search.searchIndexes = () => [{ document: 'originals/policy.pdf', fragmentId: 'fragment-1', text: 'dato', page: 2 }];
     global.fetch = async () => ({ ok: true, json: async () => ({ output_text: JSON.stringify({ answer: 'inventada', references: [{ document: 'originals/other.pdf', fragmentId: 'fake', page: 1 }], answerStatus: 'answered' }) }) });
-    response = await invoke(endpoint, { question: 'consulta' }); assert.equal(response.body.answerStatus, 'insufficient-evidence'); assert.equal(response.body.sourceCount, 0);
+    response = await invoke(endpoint, { question: 'teletrabajo' }); assert.equal(response.body.answerStatus, 'insufficient-evidence'); assert.equal(response.body.sourceCount, 0);
     assert.equal((await invoke(endpoint, { question: 'x'.repeat(1001) })).status, 400); assert.equal((await invoke(endpoint, '{invalid')).status, 400); assert.equal((await invoke(endpoint, { question: 'x' }, {})).status, 401);
     const nonAdmin = Buffer.from(JSON.stringify({ userDetails: 'employee@neovantas.com', userRoles: [], claims: [] })).toString('base64');
     assert.equal((await invoke(endpoint, { question: 'x' }, { 'x-ms-client-principal': nonAdmin })).status, 403);
