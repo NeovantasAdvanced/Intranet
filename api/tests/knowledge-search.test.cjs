@@ -12,6 +12,12 @@ const index = { schemaVersion: '1.0', document: currentDocument, etag: 'etag-cur
   { id: 'b', text: 'Teletrabajo y flexibilidad.', position: 850, page: null },
   { id: 'old', text: 'Teletrabajo y flexibilidad.', position: 1700, page: null },
 ] };
+const retrievalIndex = { ...index, chunks: [
+  { id: 'cover', text: 'Política de Teletrabajo. Índice e introducción.', position: 0, page: 1 },
+  { id: 'conditions', text: 'Condiciones de teletrabajo: la jornada y el horario aplicables se acuerdan con el responsable.', position: 850, page: 3 },
+  { id: 'request', text: 'Procedimiento para solicitar teletrabajo mediante la herramienta corporativa.', position: 1700, page: 4 },
+  { id: 'expenses', text: 'Gastos y medios: la política establece las condiciones aplicables a los medios de trabajo.', position: 2550, page: 5 },
+] };
 
 function client(objects) {
   return { getBlobClient: (name) => ({ download: async () => {
@@ -29,6 +35,10 @@ function client(objects) {
   assert.equal(search.searchIndexes([index], 'inexistente').length, 0);
   assert.equal(search.searchIndexes([index], '   ').length, 0);
   assert.equal(search.searchIndexes([index], 'teletrabajo').length, 2);
+  const substantive = search.searchIndexes([retrievalIndex], 'teletrabajo', { candidateLimit: 15, maxResults: 5, expandNeighbors: true });
+  assert.equal(substantive[0].fragmentId, 'conditions');
+  assert.ok(substantive.some((result) => result.fragmentId === 'request'));
+  assert.ok(substantive.some((result) => result.fragmentId === 'expenses'));
   assert.equal(search.searchIndexes([{ ...index, chunks: [...index.chunks, { ...index.chunks[1], id: 'duplicate' }] }], 'teletrabajo').length, 2);
   assert.equal((await search.loadPublishedIndexes(client({ [current]: manifest, [currentIndex]: index, [oldIndex]: { ...index, etag: 'old' } }))).indexes[0].etag, 'etag-current');
   await assert.rejects(() => search.loadPublishedIndexes(client({ [current]: manifest })), (error) => error.statusCode === 404);
