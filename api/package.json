@@ -11,6 +11,6 @@
     "@azure/abort-controller": "2.1.2"
   },
   "scripts": {
-    "test:knowledge-blob": "node tests/knowledge-blob.test.cjs && node tests/knowledge-diagnostics.test.cjs && node tests/knowledge-pdf.test.cjs && node tests/knowledge-extract.test.cjs && node tests/knowledge-index.test.cjs && node tests/knowledge-publish.test.cjs && node tests/knowledge-search.test.cjs && node tests/knowledge-ask.test.cjs && node tests/knowledge-debug.test.cjs && node tests/neo-persona.test.cjs"
+    "test:knowledge-blob": "node tests/knowledge-blob.test.cjs && node tests/knowledge-diagnostics.test.cjs && node tests/knowledge-pdf.test.cjs && node tests/knowledge-extract.test.cjs && node tests/knowledge-index.test.cjs && node tests/knowledge-publish.test.cjs && node tests/knowledge-search.test.cjs && node tests/knowledge-ask.test.cjs && node tests/knowledge-ask.integration.test.cjs && node tests/knowledge-debug.test.cjs && node tests/neo-persona.test.cjs"
   }
 }
