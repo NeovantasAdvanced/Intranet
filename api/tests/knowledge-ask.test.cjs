@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const search = require('../_shared/knowledge-search.cjs');
-const { getOpenAIConfig, askOpenAI } = require('../_shared/openai-client.cjs');
+const { getOpenAIConfig, askOpenAI, extractOutputText } = require('../_shared/openai-client.cjs');
 
 const header = () => Buffer.from(JSON.stringify({ userDetails: 'admin@neovantas.com', userRoles: ['admin'], claims: [] })).toString('base64');
 const invoke = (handler, body, headers = { 'x-ms-client-principal': header() }) => { const context = { log() {} }; return handler(context, { headers, body }).then(() => context.res); };
@@ -44,6 +44,15 @@ async function run() {
     assert.equal((await invoke(endpoint, { question: 'x' }, { 'x-ms-client-principal': nonAdmin })).status, 403);
     let fetchOptions; const rateLimitedFetch = async (_url, options) => { fetchOptions = options; return { ok: false, status: 429, json: async () => ({}) }; };
     await assert.rejects(() => askOpenAI({ question: 'q', context: 'contexto', config: getOpenAIConfig(), fetchImpl: rateLimitedFetch }), (error) => error.code === 'RATE_LIMITED'); assert.match(fetchOptions.headers.authorization, /^Bearer /);
+    assert.equal(extractOutputText({ output: [{ type: 'reasoning', content: [] }, { type: 'message', content: [{ type: 'output_text', text: 'respuesta' }] }] }), 'respuesta');
+    const incompleteFetch = async () => ({ ok: true, json: async () => ({ status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' }, output: [] }) });
+    await assert.rejects(() => askOpenAI({ question: 'q', context: '', config: getOpenAIConfig(), fetchImpl: incompleteFetch }), (error) => error.code === 'OPENAI_INCOMPLETE_RESPONSE');
+    const emptyFetch = async () => ({ ok: true, json: async () => ({ status: 'completed', output: [] }) });
+    await assert.rejects(() => askOpenAI({ question: 'q', context: '', config: getOpenAIConfig(), fetchImpl: emptyFetch }), (error) => error.code === 'OPENAI_INVALID_RESPONSE');
+    const malformedFetch = async () => ({ ok: true, json: async () => ({ output_text: '{invalid' }) });
+    await assert.rejects(() => askOpenAI({ question: 'q', context: '', config: getOpenAIConfig(), fetchImpl: malformedFetch }), (error) => error.code === 'OPENAI_INVALID_RESPONSE');
+    const providerFetch = async () => ({ ok: false, status: 503, json: async () => ({}) });
+    await assert.rejects(() => askOpenAI({ question: 'q', context: '', config: getOpenAIConfig(), fetchImpl: providerFetch }), (error) => error.code === 'UPSTREAM');
   } finally {
     knowledgeIndex.getIndexReadStorageConfig = originals.config; knowledgeIndex.createIndexReadContainerClient = originals.client; search.loadPublishedIndexes = originals.load; search.searchIndexes = originals.search; global.fetch = originals.fetch;
     for (const key of Object.keys(process.env)) if (!(key in originals.env)) delete process.env[key]; for (const [key, value] of Object.entries(originals.env)) process.env[key] = value;
