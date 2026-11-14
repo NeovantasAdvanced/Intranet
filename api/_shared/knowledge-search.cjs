@@ -94,7 +94,7 @@ function searchIndexes(indexes, query, options = {}) {
   const termSet = new Set(terms);
   const phrase = terms.join(' ');
   const candidateLimit = Math.min(Math.max(Number(options.candidateLimit ?? DEFAULT_CANDIDATE_LIMIT), MAX_RESULTS), 50);
-  const resultLimit = Math.min(Math.max(Number(options.maxResults ?? MAX_RESULTS), 1), MAX_RESULTS);
+  const resultLimit = Math.min(Math.max(Number(options.maxResults ?? MAX_RESULTS), 1), 50);
   const expandNeighbors = options.expandNeighbors === true;
   const candidates = [];
   for (const [indexNumber, index] of indexes.entries()) {
@@ -129,9 +129,11 @@ function searchIndexes(indexes, query, options = {}) {
         if (!expanded.has(key)) expanded.set(key, { indexNumber: result.indexNumber, chunkNumber: neighborNumber, document: index.document, fragmentId: neighbor.id, text: String(neighbor.text).slice(0, MAX_RESULT_TEXT), position: neighbor.position, page: neighbor.page ?? null, score: Number((result.score - 1).toFixed(3)), neighbor: true });
       }
     }
-    return [...expanded.values()].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document) || a.position - b.position).slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, neighbor: _n, ...result }) => result);
+    const results = [...expanded.values()].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document) || a.position - b.position).slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, neighbor: _n, ...result }) => result);
+    return options.diagnostic ? { candidates: ranked.map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result), results } : results;
   }
-  return ranked.slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result);
+  const results = ranked.slice(0, resultLimit).map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result);
+  return options.diagnostic ? { candidates: ranked.map(({ indexNumber: _i, chunkNumber: _c, ...result }) => result), results } : results;
 }
 
 module.exports = { MAX_QUERY_LENGTH, MAX_INDEX_BYTES, MAX_RESULTS, MAX_RESULT_TEXT, DEFAULT_CANDIDATE_LIMIT, normalizeSearchText, tokenize, validateManifest, readJsonLimited, loadPublishedIndexes, searchIndexes };
