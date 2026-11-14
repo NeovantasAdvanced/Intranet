@@ -29,7 +29,7 @@ function classifyQuestion(question, results = []) {
 
 function isIdentityQuestion(question) {
   const value = normalize(question);
-  return value.includes('5 c') || value.includes('cinco c') || value.includes('que puedes hacer') || value.includes('que puede hacer neo') || value.includes('quien es neo') || value.includes('como trabaja neo') || value.includes('como funciona neo');
+  return value.includes('5 c') || value.includes('cinco c') || value.includes('que puedes hacer') || value.includes('que puede hacer neo') || value.includes('quien es neo') || value.includes('como trabaja neo') || value.includes('como funciona neo') || value.includes('que es neovantas') || value.includes('que hace neovantas') || value.includes('quienes somos');
 }
 
 function isFiveCQuestion(question) { return normalize(question).includes('5 c') || (normalize(question).includes('cinco') && normalize(question).includes('c')); }
