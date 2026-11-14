@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { NEO_SYSTEM_INSTRUCTIONS, OUT_OF_SCOPE_MESSAGE, classifyQuestion } = require('../_shared/neo-persona.cjs');
+const { NEO_SYSTEM_INSTRUCTIONS, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isNeoIdentityQuestion, isCorporateIdentityQuestion } = require('../_shared/neo-persona.cjs');
 assert.match(NEO_SYSTEM_INSTRUCTIONS, /Neo/);
 assert.match(NEO_SYSTEM_INSTRUCTIONS, /curiosidad/i);
 assert.match(NEO_SYSTEM_INSTRUCTIONS, /DATOS DOCUMENTALES/);
@@ -11,5 +11,7 @@ assert.equal(classifyQuestion('que significa esto'), 'general');
 assert.equal(classifyQuestion('que puedes hacer por mi'), 'corporate-identity');
 assert.equal(classifyQuestion('cuales son nuestras 5 c'), 'corporate-identity');
 assert.equal(classifyQuestion('que es neovantas'), 'corporate-identity');
+assert.equal(isNeoIdentityQuestion('que puedes hacer por mi'), true);
+assert.equal(isCorporateIdentityQuestion('que es neovantas'), true);
 assert.match(OUT_OF_SCOPE_MESSAGE, /Neovantas/);
 console.log('neo-persona tests passed');
