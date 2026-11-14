@@ -9,5 +9,6 @@
       "route": "admin/knowledge/diagnostics"
     },
     { "type": "http", "direction": "out", "name": "res" }
-  ]
+  ],
+  "scriptFile": "index.cjs"
 }
