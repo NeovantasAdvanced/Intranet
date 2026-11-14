@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
 const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const search = require('../_shared/knowledge-search.cjs');
@@ -13,6 +14,8 @@ const MAX_HISTORY_CHARS = 8000;
 const INSUFFICIENT = 'La documentación disponible no permite responder con suficiente evidencia.';
 
 function send(context, status, body) { context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body }; }
+function requestId() { return crypto.randomUUID(); }
+function logDiagnostic(context, data) { context.log?.(`[knowledge-ask] ${JSON.stringify(data)}`); }
 function parseBody(body) {
   if (body == null || body === '') return {};
   if (Buffer.isBuffer(body)) body = body.toString('utf8');
@@ -51,6 +54,8 @@ function validateModelAnswer(data, results, expectedType) {
 }
 
 module.exports = async function knowledgeAsk(context, req) {
+  const diagnosticId = requestId();
+  let phase = 'authentication'; let resultCount = 0; let validReferenceCount = 0; let openAIStatus = null;
   const principal = getPrincipalFromRequest(req);
   if (!principal) return send(context, 401, { ok: false, answerStatus: 'authentication-required' });
   if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, answerStatus: 'admin-access-required' });
@@ -65,6 +70,7 @@ module.exports = async function knowledgeAsk(context, req) {
   if (initialScope === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope', answerType: 'reasoned-advice' });
 
   try {
+    phase = 'retrieval';
     let results = [];
     const identityQuestion = initialScope === 'corporate-identity' || isIdentityQuestion(question);
     const neoIdentityQuestion = isNeoIdentityQuestion(question);
@@ -74,6 +80,7 @@ module.exports = async function knowledgeAsk(context, req) {
       const client = knowledgeIndex.createIndexReadContainerClient();
       const loaded = await search.loadPublishedIndexes(client);
       results = search.searchIndexes(loaded.indexes, question, { candidateLimit: 15, maxResults: 5, expandNeighbors: true });
+      resultCount = results.length;
       if (classifyQuestion(question, results) === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope', answerType: 'reasoned-advice' });
       if (!results.length && isFiveCQuestion(question)) {
         results = [{ document: 'Neovantas · Cultura corporativa', fragmentId: 'neo-5c', text: NEO_IDENTITY_CONTEXT, page: null }];
@@ -84,13 +91,21 @@ module.exports = async function knowledgeAsk(context, req) {
     const config = getOpenAIConfig();
     const contextText = makeDocumentContext(results, config.maxContextChars).text;
     const expectedType = identityQuestion ? 'corporate-identity' : needsDocuments ? 'internal-document' : 'general-knowledge';
-    const modelResponse = await askOpenAI({ question, context: contextText, instructions: makeRequestInstructions(expectedType), config, log: context.log, history: makeHistory(history) });
+    phase = 'generation';
+    const modelResponse = await askOpenAI({ question, context: contextText, instructions: makeRequestInstructions(expectedType), config, log: (entry) => context.log?.(entry), history: makeHistory(history) });
+    openAIStatus = modelResponse?.data?.status ?? 'completed';
+    phase = 'validation';
     const answer = validateModelAnswer(modelResponse.data, results, expectedType);
-    if (!answer) return send(context, 502, { ok: false, answerStatus: 'invalid-model-response' });
-    context.log?.(`[knowledge-ask] completed resultCount=${results.length} sourceCount=${answer.sourceCount} inputTokens=${Number(modelResponse.usage?.input_tokens ?? 0)} outputTokens=${Number(modelResponse.usage?.output_tokens ?? 0)}`);
+    validReferenceCount = answer?.sourceCount ?? 0;
+    if (!answer) {
+      logDiagnostic(context, { requestId: diagnosticId, phase: 'validation', finalStatus: 502, errorCode: 'INVALID_MODEL_RESPONSE', openAIStatus, resultCount, validReferenceCount: 0, validation: 'invalid' });
+      return send(context, 502, { ok: false, answerStatus: 'invalid-model-response' });
+    }
+    logDiagnostic(context, { requestId: diagnosticId, phase: 'completed', finalStatus: 200, errorCode: null, openAIStatus: openAIStatus, resultCount, validReferenceCount, validation: answer.answerStatus });
     return send(context, 200, { ok: true, ...answer });
   } catch (error) {
     const status = error?.code === 'OPENAI_NOT_CONFIGURED' ? 'openai-not-configured' : error?.code === 'TIMEOUT' ? 'openai-timeout' : error?.code === 'RATE_LIMITED' ? 'openai-rate-limited' : error?.code === 'AUTHENTICATION' ? 'openai-authentication-error' : error?.code === 'OPENAI_INCOMPLETE_RESPONSE' ? 'openai-incomplete-response' : error?.code === 'OPENAI_INVALID_RESPONSE' ? 'openai-invalid-response' : error?.code === 'MANIFEST_INVALID' ? 'manifest-invalid' : error?.code === 'SEARCH_INDEX_INVALID' ? 'index-invalid' : 'storage-error';
+    logDiagnostic(context, { requestId: diagnosticId, phase, finalStatus: status === 'storage-error' ? 503 : 502, errorCode: error?.code ?? status, openAIStatus: error?.status ?? openAIStatus, resultCount, validReferenceCount, validation: 'error' });
     context.log?.(`[knowledge-ask] ${status === 'storage-error' ? JSON.stringify(getStorageErrorDetails(error, 'knowledge-ask-read')) : status}`);
     return send(context, status === 'storage-error' ? 503 : 502, { ok: false, answerStatus: status });
   }
