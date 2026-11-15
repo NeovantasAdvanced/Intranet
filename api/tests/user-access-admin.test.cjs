@@ -8,7 +8,7 @@ const entities = new Map();
 const fake = {
   async getEntity(partition, key) { if (!entities.has(key)) { const error = new Error('missing'); error.statusCode = 404; throw error; } return { ...entities.get(key), etag: 'e1' }; },
   async updateEntity(entity) { entities.set(entity.rowKey, entity); },
-  listEntities() { return { toArray: async () => [...entities.values()] }; },
+  async *listEntities() { yield* entities.values(); },
 };
 const encoded = (value) => Buffer.from(JSON.stringify(value)).toString('base64');
 const contextFor = () => ({ res: null });

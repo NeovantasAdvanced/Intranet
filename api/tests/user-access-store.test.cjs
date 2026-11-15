@@ -6,7 +6,7 @@ const fakeClient = {
   async createEntity(entity) { if (entities.has(entity.rowKey)) { const error = new Error('exists'); error.statusCode = 409; throw error; } entities.set(entity.rowKey, { ...entity }); },
   async getEntity(partitionKey, rowKey) { if (!entities.has(rowKey)) { const error = new Error('missing'); error.statusCode = 404; throw error; } return { ...entities.get(rowKey), etag: 'etag-1' }; },
   async updateEntity(entity) { entities.set(entity.rowKey, { ...entity }); },
-  listEntities() { return { toArray: async () => [...entities.values()] }; },
+  async *listEntities() { yield* entities.values(); },
 };
 
 store.setUserAccessTableClientForTests(fakeClient);

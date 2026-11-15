@@ -96,12 +96,18 @@ async function getClient() {
   return clientPromise;
 }
 
+async function collectEntities(client) {
+  const entities = [];
+  for await (const entity of client.listEntities()) entities.push(entity);
+  return entities;
+}
+
 async function getByPrincipal(principal) {
   const client = await getClient();
   try { return await client.getEntity('users', rowKey(principal)); } catch (error) {
     if (error.statusCode !== 404) throw error;
     const emailSet = new Set(getPrincipalEmailCandidates(principal).map(normalizeEmail));
-    const matches = (await client.listEntities().toArray()).filter((entity) => emailSet.has(normalizeEmail(entity.email)) || emailSet.has(normalizeEmail(entity.userPrincipalName)));
+    const matches = (await collectEntities(client)).filter((entity) => emailSet.has(normalizeEmail(entity.email)) || emailSet.has(normalizeEmail(entity.userPrincipalName)));
     if (matches.length > 1) { const conflict = new Error('user-access-identity-conflict'); conflict.statusCode = 409; throw conflict; }
     if (matches.length === 1) return matches[0];
     throw error;
@@ -136,7 +142,7 @@ function parsePermissions(entity) {
   try { return JSON.parse(entity.permissions || '{}'); } catch { return {}; }
 }
 
-async function listEntities() { return (await getClient()).listEntities().toArray(); }
+async function listEntities() { return collectEntities(await getClient()); }
 
 async function updateEntity(rowKeyValue, patch) {
   const client = await getClient();
