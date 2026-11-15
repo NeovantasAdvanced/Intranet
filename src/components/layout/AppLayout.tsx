@@ -152,9 +152,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <PortalNavigation />
           </div>
 
-          <main className="min-w-0 bg-transparent px-4 py-7 md:px-8 md:py-10">
-            <div className="mx-auto w-full max-w-[1200px]">{children}</div>
-          </main>
+          <main className="min-w-0 bg-transparent px-4 py-7 md:px-8 md:py-10"><div className="mx-auto w-full max-w-[1200px]">{children}</div></main>
 
           <footer className="px-4 pb-4 md:px-8">
             <div className="mx-auto flex w-full max-w-[1200px] justify-end">

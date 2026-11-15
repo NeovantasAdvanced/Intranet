@@ -1,5 +1,5 @@
 const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
-const { listEntities, updateEntity, parsePermissions } = require('../_shared/user-access-store.cjs');
+const { listEntities, updateEntity, parsePermissions, rowKey } = require('../_shared/user-access-store.cjs');
 
 function send(context, status, body) { context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify(body) }; }
 
@@ -16,6 +16,7 @@ module.exports = async function userAccessAdmin(context, req) {
     const rowKey = String(body.rowKey || '').trim();
     const status = ['pending', 'active', 'suspended', 'revoked'].includes(body.status) ? body.status : null;
     if (!rowKey || !status || rowKey.length > 128) return send(context, 400, { ok: false, error: 'invalid-request' });
+    if (rowKey === rowKeyForPrincipal(principal)) return send(context, 403, { ok: false, error: 'self-modification-denied' });
     const permissions = body.permissions && typeof body.permissions === 'object' ? {
       intranet: Boolean(body.permissions.intranet),
       neo: Boolean(body.permissions.neo),
@@ -29,3 +30,5 @@ module.exports = async function userAccessAdmin(context, req) {
     return send(context, 503, { ok: false, error: 'storage-error' });
   }
 };
+
+function rowKeyForPrincipal(principal) { return rowKey(principal); }
