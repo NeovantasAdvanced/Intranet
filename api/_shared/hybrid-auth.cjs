@@ -1,13 +1,22 @@
-const { isAdminPrincipal, isCorporateIdentity } = require('./auth.cjs');
+const { getPrincipalEmailCandidates, isAdminPrincipal, isCorporateIdentity, normalizeEmail } = require('./auth.cjs');
 const { getByPrincipal, parsePermissions } = require('./user-access-store.cjs');
 
 function decision(allowed, reason, permissions = {}) { return { allowed, reason, permissions }; }
+
+function entityMatchesPrincipal(entity, principal) {
+  if (String(entity.identityProvider || '').trim().toLowerCase() !== String(principal.identityProvider || '').trim().toLowerCase()) return false;
+  if (String(entity.staticWebAppsUserId || '').trim() !== String(principal.userId || '').trim()) return false;
+  const principalEmails = new Set(getPrincipalEmailCandidates(principal).map(normalizeEmail));
+  const entityEmails = [entity.email, entity.userPrincipalName].map(normalizeEmail).filter(Boolean);
+  return entityEmails.length > 0 && entityEmails.some((email) => principalEmails.has(email));
+}
 
 async function authorizePrincipal(principal, permission = 'intranet') {
   if (!principal) return decision(false, 'authentication-required');
   if (!isCorporateIdentity(principal) && !(process.env.NODE_ENV === 'test' && require('./auth.cjs').isAdminPrincipal(principal))) return decision(false, 'corporate-identity-required');
   try {
     const entity = await getByPrincipal(principal);
+    if (!entityMatchesPrincipal(entity, principal)) return decision(false, 'identity-mismatch');
     const status = String(entity.status || '').toLowerCase();
     if (status !== 'active') return decision(false, `user-${status || 'not-active'}`);
     const permissions = parsePermissions(entity);
