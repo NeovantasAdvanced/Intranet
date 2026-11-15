@@ -2,7 +2,13 @@ const web = require('./public-knowledge.cjs');
 const search = require('./knowledge-search.cjs');
 
 async function loadPublishedPublicIndexes(containerClient) {
-  const manifest = await web.readBlobJson(containerClient, web.CURRENT_MANIFEST);
+  let manifest;
+  try {
+    manifest = await web.readBlobJson(containerClient, web.CURRENT_MANIFEST);
+  } catch (error) {
+    if (error?.statusCode === 404 || error?.code === 'BlobNotFound' || error?.details?.errorCode === 'BlobNotFound') return null;
+    throw error;
+  }
   if (!manifest || manifest.schemaVersion !== web.PUBLIC_SCHEMA_VERSION || manifest.source !== 'corporate-web' || !Array.isArray(manifest.pages)) { const error = new Error('PUBLIC_MANIFEST_INVALID'); error.code = 'PUBLIC_MANIFEST_INVALID'; throw error; }
   const indexes = manifest.pages.map((page) => ({ schemaVersion: web.PUBLIC_SCHEMA_VERSION, document: page.url, title: page.title, url: page.url, sourceType: 'corporate-web', etag: manifest.candidateId, pageCount: 1, chunks: (page.chunks || []).map((chunk) => ({ ...chunk, document: page.url, page: null })) }));
   return { manifest, indexes };

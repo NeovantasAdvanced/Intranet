@@ -12,6 +12,10 @@ function ctx() { return { res: null, logs: [], log(value) { this.logs.push(value
 (async () => {
   assert.equal(web.cleanHtml(html).includes('Menu'), false); assert.equal(web.cleanHtml(html).includes('Cookies'), false); assert.equal(web.extractPage(html, 'https://www.neovantas.com/servicios').title, 'Servicios');
   await assert.rejects(() => web.validatePublicUrl('https://evil.example/'), /PUBLIC_URL_NOT_ALLOWED/);
+  const missingManifestClient = { getBlobClient: () => ({ download: async () => { const error = new Error('missing'); error.statusCode = 404; throw error; } }) };
+  assert.equal(await publicSearch.loadPublishedPublicIndexes(missingManifestClient), null);
+  const forbiddenManifestClient = { getBlobClient: () => ({ download: async () => { const error = new Error('forbidden'); error.statusCode = 403; throw error; } }) };
+  await assert.rejects(() => publicSearch.loadPublishedPublicIndexes(forbiddenManifestClient), (error) => error.statusCode === 403);
   const oldFetch = global.fetch; const oldClient = web.createBlobClient; const oldValidate = web.validatePublicUrl; const oldEnv = { ...process.env }; const blobs = {};
   process.env.PUBLIC_KNOWLEDGE_STORAGE_ACCOUNT = 'test'; process.env.PUBLIC_KNOWLEDGE_CONTAINER = 'public'; process.env.PUBLIC_KNOWLEDGE_READ_SAS_TOKEN = 'read'; process.env.PUBLIC_KNOWLEDGE_WRITE_SAS_TOKEN = 'write';
   web.createBlobClient = () => ({ getBlockBlobClient: (name) => ({ uploadData: async (data) => { blobs[name] = JSON.parse(data.toString()); } }), getBlobClient: (name) => ({ download: async () => ({ readableStreamBody: [Buffer.from(JSON.stringify(blobs[name]))] }), getProperties: async () => { const error = new Error('not found'); error.statusCode = 404; throw error; } }) });

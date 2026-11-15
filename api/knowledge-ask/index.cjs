@@ -93,7 +93,7 @@ module.exports = async function knowledgeAsk(context, req) {
     if (identityQuestion && !neoIdentityQuestion && publicKnowledge.getConfig().readConfigured) {
       const publicClient = publicKnowledge.createBlobClient(publicKnowledge.getConfig(), publicKnowledge.getConfig().readSas);
       const published = await publicSearch.loadPublishedPublicIndexes(publicClient);
-      results = publicSearch.searchPublicIndexes(published.indexes, question);
+      if (published) results = publicSearch.searchPublicIndexes(published.indexes, question);
     }
     const config = getOpenAIConfig();
     contextResultCount = results.length;
