@@ -56,7 +56,16 @@ function isCorporateQuestion(question, history = []) {
   const explicit = value.includes('neovantas') || value.includes('quienes somos') || value.includes('que hacemos') || value.includes('que servicios') || value.includes('a que se dedica');
   const corporateTopic = /\b(servicios?|soluciones?|metodolog[ií]a|capacidades?|sectores?|presencia|pa[ií]ses?|oficinas?|opera|aplica|aplicamos|consultora tradicional|diferencia)\b/i.test(value);
   const contextual = /\b(neovantas|nuestra empresa|la compan[ií]a|servicios|que hacemos)\b/i.test(context);
-  return explicit || (corporateTopic && contextual);
+  return explicit || isCorporateFollowUp(question, history) || (corporateTopic && contextual);
+}
+
+function isCorporateFollowUp(question, history = []) {
+  const value = normalize(question);
+  const context = normalize(history.map((message) => message.content || '').join(' '));
+  const hasCorporateContext = /\b(neovantas|quienes somos|que hacemos|servicios?|soluciones?|presencia|compania|empresa)\b/i.test(context);
+  const followUp = /^(y|e|entonces|ademas|tambien)\b/.test(value) || /\b(en|para|sobre)\s+(banca|banco|seguros?|telco|finanzas?|financiero|sectores?|paises?|espana|mexico)\b/i.test(value);
+  const corporateContinuation = /\b(que hace|que hacemos|que servicios|donde opera|como aplica|en que sectores|que diferencia)\b/i.test(value);
+  return hasCorporateContext && (followUp || corporateContinuation);
 }
 
 function isIdentityQuestion(question, history = []) {
@@ -75,4 +84,4 @@ function isCorporateIdentityQuestion(question) {
 
 function isFiveCQuestion(question) { return normalize(question).includes('5 c') || (normalize(question).includes('cinco') && normalize(question).includes('c')); }
 
-module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, classifyScope, isCorporateQuestion, isIdentityQuestion, isNeoIdentityQuestion, isCorporateIdentityQuestion, isFiveCQuestion, normalize };
+module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, classifyScope, isCorporateQuestion, isCorporateFollowUp, isIdentityQuestion, isNeoIdentityQuestion, isCorporateIdentityQuestion, isFiveCQuestion, normalize };

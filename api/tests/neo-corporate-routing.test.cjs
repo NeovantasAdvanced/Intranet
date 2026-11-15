@@ -14,8 +14,14 @@ const indexes = [
   assert.equal(persona.classifyQuestion('¿Cómo aplica Neovantas la Economía Conductual?'), 'corporate-identity');
   assert.equal(persona.classifyQuestion('¿Qué es un nudge?'), 'general');
   assert.equal(persona.isIdentityQuestion('¿Y qué servicios ofrecemos?', [{ role: 'user', content: 'Hablábamos de Neovantas' }]), true);
+  assert.equal(persona.isCorporateFollowUp('¿Y qué hace en seguros?', [{ role: 'user', content: '¿Qué es Neovantas?' }]), true);
+  assert.equal(persona.isCorporateFollowUp('¿Y en banca?', [{ role: 'user', content: '¿Qué servicios ofrece Neovantas?' }]), true);
+  assert.equal(persona.isCorporateFollowUp('¿Qué es la regresión logística?', [{ role: 'user', content: '¿Qué es Neovantas?' }]), false);
+  assert.equal(ask.buildRetrievalQuestion('¿Y qué hace en seguros?', [{ role: 'user', content: '¿Qué es Neovantas?' }]), '¿Y qué hace en seguros? Neovantas servicios soluciones que hacemos');
+  assert.equal(ask.buildRetrievalQuestion('¿Qué es la regresión logística?', [{ role: 'user', content: '¿Qué es Neovantas?' }]), '¿Qué es la regresión logística?');
   assert.equal(publicSearch.searchPublicIndexes(indexes, '¿Qué es Neovantas?')[0].url, 'https://www.neovantas.com/quienes-somos');
   assert.equal(publicSearch.searchPublicIndexes(indexes, '¿Qué servicios ofrece Neovantas?')[0].url, 'https://www.neovantas.com/que-hacemos');
+  assert.equal(publicSearch.searchPublicIndexes(indexes, ask.buildRetrievalQuestion('¿Y qué hace en seguros?', [{ role: 'user', content: '¿Qué es Neovantas?' }]))[0].url, 'https://www.neovantas.com/que-hacemos');
   const instructions = ask.makeRequestInstructions('corporate-web'); assert.match(instructions, /No completes listas de pa[ií]ses/);
   const valid = ask.validateModelAnswer({ answer: 'La web indica presencia internacional, pero no enumera países.', references: [{ document: indexes[0].document, fragmentId: 'who' }], answerStatus: 'answered', answerType: 'corporate-web' }, [{ ...indexes[0].chunks[0], document: indexes[0].document, fragmentId: 'who', sourceType: 'corporate-web', title: indexes[0].title, url: indexes[0].url }], 'corporate-web');
   assert.equal(valid.answerStatus, 'answered'); assert.equal(valid.references[0].sourceType, 'corporate-web');
