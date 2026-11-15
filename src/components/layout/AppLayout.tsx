@@ -18,6 +18,8 @@ import { canAccessFeature, isAdmin as isConfiguredAdmin } from '../../lib/access
 import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
 import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
+import { NeoConversationProvider } from '../../context/NeoConversationContext';
+import { NeoFloatingAssistant } from '../neo/NeoChat';
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -45,8 +47,12 @@ function PortalNavigation() {
 
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handleHashChange);
 
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
   }, []);
 
   const userEmail = clientPrincipal?.userDetails ?? '';
@@ -68,8 +74,15 @@ function PortalNavigation() {
           return (
             <a
               key={item.label}
-              href={item.href}
-              onClick={() => setActiveHash(item.href)}
+              href={item.href.startsWith('#') && window.location.pathname === '/neo' ? `/${item.href}` : item.href}
+              onClick={(event) => {
+                setActiveHash(item.href);
+                if (item.href.startsWith('#') && window.location.pathname === '/neo') {
+                  event.preventDefault();
+                  window.history.pushState({}, '', `/${item.href}`);
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
               className={`focus-ring flex h-10 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-semibold transition ${
                 isActive
                   ? 'border border-neovantas-blue bg-neovantas-navy text-white shadow-sm ring-1 ring-neovantas-cyan/35'
@@ -128,6 +141,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <AuthSessionProvider>
+      <NeoConversationProvider>
       <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>
         <div className="min-h-screen bg-[#f7f9fc] text-neovantas-ink">
           <div className="sticky top-0 z-30">
@@ -146,8 +160,10 @@ export function AppLayout({ children }: AppLayoutProps) {
               </span>
             </div>
           </footer>
+          {window.location.pathname !== '/neo' ? <NeoFloatingAssistant /> : null}
         </div>
       </PortalSearchProvider>
+      </NeoConversationProvider>
     </AuthSessionProvider>
   );
 }
