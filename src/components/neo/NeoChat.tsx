@@ -4,6 +4,7 @@ import { useNeoConversation, type NeoMessage } from '../../context/NeoConversati
 import { useAuthSession } from '../../context/AuthSessionContext';
 import { canAccessNeo } from '../../lib/neoAccess';
 import { NeoAvatar } from './NeoAvatar';
+import floatingIsotype from '../../assets/neo-floating-isotype.svg';
 
 const SUGGESTIONS = ['¿Qué puedes hacer por mí?', '¿Cuáles son nuestras 5 C?', '¿Qué es un nudge y cómo lo aplicamos?', '¿Qué servicios ofrece Neovantas?', '¿Cuáles son las condiciones de teletrabajo?'];
 
@@ -73,5 +74,5 @@ export function NeoFloatingAssistant() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   if (!authChecked || !canAccessNeo(clientPrincipal)) return null;
-  return <div className="fixed bottom-5 right-5 z-40 md:bottom-7 md:right-7"><button type="button" aria-label="Pregúntale a Neo" title="Pregúntale a Neo" onClick={() => { setOpen(true); setMinimized(false); }} className="focus-ring grid h-14 w-14 place-items-center rounded-full bg-neovantas-navy text-white shadow-[0_12px_30px_rgba(10,10,63,0.3)] transition hover:scale-105 hover:bg-neovantas-blue"><NeoAvatar size="floating" /></button>{open && !minimized ? <div className="absolute bottom-[4.5rem] right-0 h-[min(600px,calc(100vh-13rem))] max-h-[calc(100vh-13rem)] w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-neovantas-line bg-white shadow-[0_24px_70px_rgba(10,10,63,0.25)]"><NeoChat mode="floating" onMinimize={() => setMinimized(true)} onClose={() => setOpen(false)} /></div> : null}</div>;
+  return <div className="fixed bottom-5 right-5 z-40 md:bottom-7 md:right-7"><button type="button" aria-label="Pregúntale a Neo" title="Pregúntale a Neo" onClick={() => { setOpen(true); setMinimized(false); }} className="group focus-ring grid h-14 w-14 place-items-center rounded-full bg-neovantas-navy shadow-[0_12px_30px_rgba(10,10,63,0.3)] transition hover:scale-105 hover:bg-neovantas-blue"><img src={floatingIsotype} alt="Neo" className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-105" /></button>{open && !minimized ? <div className="absolute bottom-[4.5rem] right-0 h-[min(600px,calc(100vh-13rem))] max-h-[calc(100vh-13rem)] w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-neovantas-line bg-white shadow-[0_24px_70px_rgba(10,10,63,0.25)]"><NeoChat mode="floating" onMinimize={() => setMinimized(true)} onClose={() => setOpen(false)} /></div> : null}</div>;
 }
