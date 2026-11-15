@@ -15,7 +15,7 @@ module.exports = async function knowledgeWebReview(context, req) {
     if (!candidate || candidate.schemaVersion !== web.PUBLIC_SCHEMA_VERSION || !Array.isArray(candidate.pages)) return send(context, 422, { ok: false, reviewStatus: 'candidate-invalid' });
     const pages = candidate.pages.slice(0, config.maxPages).map((page) => ({ title: page.title, url: page.url, category: page.category || 'other', language: page.language || 'unknown', headings: Array.isArray(page.headings) ? page.headings.slice(0, 20) : [], chunkCount: Array.isArray(page.chunks) ? page.chunks.length : 0, preview: Array.isArray(page.chunks) ? page.chunks.slice(0, 2).map((chunk) => String(chunk.text || '').slice(0, 300)) : [] }));
     const coverage = pages.reduce((result, page) => { result[page.category] = (result[page.category] || 0) + 1; return result; }, {});
-    return send(context, 200, { ok: true, reviewStatus: 'available', candidateId, syncedAt: candidate.syncedAt, pageCount: pages.length, coverage, pages });
+    return send(context, 200, { ok: true, reviewStatus: 'available', candidateId, candidateStatus: candidate.status || 'complete', syncedAt: candidate.syncedAt, diagnostics: candidate.diagnostics || null, pageCount: pages.length, coverage, pages });
   } catch (error) {
     context.log?.(`[knowledge-web-review] ${JSON.stringify({ errorCode: error?.code || 'REVIEW_FAILED', statusCode: error?.statusCode || error?.status || null })}`);
     return send(context, error?.statusCode === 404 ? 404 : 503, { ok: false, reviewStatus: error?.statusCode === 404 ? 'candidate-not-found' : 'storage-error' });
