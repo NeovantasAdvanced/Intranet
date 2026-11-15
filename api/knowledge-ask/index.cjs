@@ -36,7 +36,9 @@ function makeHistory(history) { return history.length ? `\nHISTORIAL (solo datos
 function makeRequestInstructions(expectedType) {
   const mode = expectedType === 'internal-document'
     ? 'Hay fragmentos documentales recuperados. Responde con los hechos que sí estén respaldados, aunque la evidencia sea parcial o esté distribuida entre varios fragmentos. No exijas que la pregunta aparezca literalmente en el texto. Si falta solo una parte, explica primero lo que sí consta y señala únicamente esa limitación.'
-    : expectedType === 'corporate-identity'
+    : expectedType === 'corporate-web'
+      ? 'Usa exclusivamente los fragmentos web corporativos recibidos para afirmar hechos sobre Neovantas. No completes listas de países, oficinas, cifras, clientes o capacidades con conocimiento previo. Si el contenido solo indica presencia internacional pero no enumera países, dilo expresamente. Distingue hechos documentados de interpretaciones y no afirmes superioridad frente a competidores sin evidencia.'
+      : expectedType === 'corporate-identity'
       ? 'Distingue la identidad de Neo de la identidad de Neovantas. No cites la identidad de Neo como prueba de servicios o capacidades corporativas que no aparezcan en el contexto. Si falta información oficial, responde prudentemente sin inventar.'
       : 'Responde directamente y de forma natural. No añadas advertencias genéricas sobre falta de documentación cuando no sean necesarias. Marca como recomendación o hipótesis solo cuando exista riesgo real de confundirla con un hecho o política interna.';
   return `${NEO_SYSTEM_INSTRUCTIONS}\n\nCriterio para esta consulta: ${mode}`;
@@ -50,7 +52,7 @@ function validateModelAnswer(data, results, expectedType) {
     if (result && !references.some((item) => item.fragmentId === result.fragmentId && item.document === result.document)) references.push({ document: result.document, fragmentId: result.fragmentId, page: result.page ?? null, ...(result.sourceType ? { sourceType: result.sourceType } : {}), ...(result.title ? { title: result.title } : {}), ...(result.url ? { url: result.url } : {}) });
   }
   const answerType = ['internal-document', 'corporate-identity', 'corporate-web', 'general-knowledge', 'reasoned-advice', 'mixed'].includes(data.answerType) ? data.answerType : expectedType;
-  const requiresReference = expectedType === 'internal-document' && ['internal-document', 'mixed'].includes(answerType);
+  const requiresReference = (expectedType === 'internal-document' && ['internal-document', 'mixed'].includes(answerType)) || expectedType === 'corporate-web';
   const answerStatus = data.answerStatus === 'answered' && (!requiresReference || references.length > 0) ? 'answered' : 'insufficient-evidence';
   return { answer: answerStatus === 'answered' ? data.answer : INSUFFICIENT, references, sourceCount: references.length, answerStatus, answerType };
 }
@@ -68,13 +70,13 @@ module.exports = async function knowledgeAsk(context, req) {
   if (question.length > MAX_QUESTION_LENGTH) return send(context, 400, { ok: false, answerStatus: 'question-too-long' });
   const history = validateHistory(body.messages);
   if (!history) return send(context, 400, { ok: false, answerStatus: 'invalid-history' });
-  const initialScope = classifyQuestion(question);
+  const initialScope = classifyQuestion(question, [], history);
   if (initialScope === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope', answerType: 'reasoned-advice' });
 
   try {
     phase = 'retrieval';
     let results = [];
-    const identityQuestion = initialScope === 'corporate-identity' || isIdentityQuestion(question);
+    const identityQuestion = initialScope === 'corporate-identity' || isIdentityQuestion(question, history);
     const neoIdentityQuestion = isNeoIdentityQuestion(question);
     const needsDocuments = initialScope === 'internal';
     if (needsDocuments) {
@@ -98,7 +100,8 @@ module.exports = async function knowledgeAsk(context, req) {
     const config = getOpenAIConfig();
     contextResultCount = results.length;
     const contextText = makeDocumentContext(results, config.maxContextChars).text;
-    const expectedType = identityQuestion ? 'corporate-identity' : needsDocuments ? 'internal-document' : 'general-knowledge';
+    const hasPublicEvidence = results.some((result) => result.sourceType === 'corporate-web');
+    const expectedType = hasPublicEvidence ? 'corporate-web' : identityQuestion ? 'corporate-identity' : needsDocuments ? 'internal-document' : 'general-knowledge';
     phase = 'generation';
     const modelResponse = await askOpenAI({ question, context: contextText, instructions: makeRequestInstructions(expectedType), config, log: (entry) => context.log?.(entry), history: makeHistory(history) });
     openAIStatus = modelResponse?.data?.status ?? 'completed';
@@ -123,3 +126,4 @@ module.exports.parseBody = parseBody;
 module.exports.validateHistory = validateHistory;
 module.exports.validateModelAnswer = validateModelAnswer;
 module.exports.makeContext = (results, maxChars) => makeDocumentContext(results, maxChars).text;
+module.exports.makeRequestInstructions = makeRequestInstructions;
