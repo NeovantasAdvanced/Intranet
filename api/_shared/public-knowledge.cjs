@@ -11,6 +11,8 @@ const MAX_PAGE_BYTES = 1024 * 1024;
 const MAX_DEPTH = 2;
 const MAX_SITEMAPS = 20;
 const MAX_DISCOVERED_URLS = 120;
+const DEFAULT_CONCURRENCY = 6;
+const DEFAULT_BUDGET_MS = 35000;
 
 function getConfig(env = process.env) {
   const rootUrl = String(env.PUBLIC_KNOWLEDGE_ROOT_URL || DEFAULT_ROOT).replace(/\/$/, '');
@@ -19,7 +21,7 @@ function getConfig(env = process.env) {
   const readSas = String(env.PUBLIC_KNOWLEDGE_READ_SAS_TOKEN || '').trim();
   const writeSas = String(env.PUBLIC_KNOWLEDGE_WRITE_SAS_TOKEN || '').trim();
   const includePaths = String(env.PUBLIC_KNOWLEDGE_INCLUDE_PATHS || '').split(',').map((value) => value.trim()).filter(Boolean);
-  return { rootUrl, account, container, readSas, writeSas, includePaths, maxPages: Math.min(Number(env.PUBLIC_KNOWLEDGE_MAX_PAGES || MAX_PAGES), MAX_PAGES), maxDepth: Math.min(Number(env.PUBLIC_KNOWLEDGE_MAX_DEPTH || MAX_DEPTH), MAX_DEPTH), maxPageBytes: Math.min(Number(env.PUBLIC_KNOWLEDGE_MAX_BYTES || MAX_PAGE_BYTES), MAX_PAGE_BYTES), timeoutMs: Math.min(Number(env.PUBLIC_KNOWLEDGE_TIMEOUT_MS || 10000), 30000), readConfigured: Boolean(account && container && readSas), writeConfigured: Boolean(account && container && writeSas), configured: Boolean(account && container && readSas && writeSas) };
+  return { rootUrl, account, container, readSas, writeSas, includePaths, maxPages: Math.min(Number(env.PUBLIC_KNOWLEDGE_MAX_PAGES || MAX_PAGES), MAX_PAGES), maxDepth: Math.min(Number(env.PUBLIC_KNOWLEDGE_MAX_DEPTH || MAX_DEPTH), MAX_DEPTH), maxPageBytes: Math.min(Number(env.PUBLIC_KNOWLEDGE_MAX_BYTES || MAX_PAGE_BYTES), MAX_PAGE_BYTES), timeoutMs: Math.min(Number(env.PUBLIC_KNOWLEDGE_TIMEOUT_MS || 10000), 30000), maxConcurrency: Math.max(1, Math.min(Number(env.PUBLIC_KNOWLEDGE_MAX_CONCURRENCY || DEFAULT_CONCURRENCY), 12)), budgetMs: Math.max(5000, Math.min(Number(env.PUBLIC_KNOWLEDGE_BUDGET_MS || DEFAULT_BUDGET_MS), 40000)), readConfigured: Boolean(account && container && readSas), writeConfigured: Boolean(account && container && writeSas), configured: Boolean(account && container && readSas && writeSas) };
 }
 
 function allowedHost(hostname) { return hostname === 'www.neovantas.com' || hostname === 'neovantas.com'; }
@@ -55,6 +57,16 @@ function isAllowedPageUrl(value) {
     return true;
   } catch { return false; }
 }
+function prefilterUrl(value, config = {}) {
+  try {
+    const url = new URL(value); const path = url.pathname.toLowerCase(); const included = (config.includePaths || []).some((prefix) => path.startsWith(prefix.toLowerCase()));
+    if (included) return { allowed: true, reason: null };
+    if (/(?:^|\/)(?:en|eng)(?:\/|$)/i.test(path)) return { allowed: false, reason: 'english-page' };
+    if (/(?:privacy|privacidad|cookie|cookies|legal|terms|terminos|términos|aviso-legal|contact|contacto)/i.test(path)) return { allowed: false, reason: 'legal-page' };
+    if (/(?:^|\/)blog(?:\/|$)|\/\d{4}\/\d{2}\//i.test(path)) return { allowed: false, reason: 'blog-page' };
+    return { allowed: true, reason: null };
+  } catch { return { allowed: false, reason: 'invalid-url' }; }
+}
 function sitemapPriority(value) {
   const path = new URL(value).pathname.toLowerCase();
   if (path.includes('page-sitemap')) return 0;
@@ -87,7 +99,7 @@ function classifyPage(page, sourcePriority = 1, config = {}) {
   const category = blog ? 'blog' : legal ? 'legal' : /(?:service|servicio|solution|solucion|sector|industry|industria|method|metodolog|case|caso|about|quienes|somos|capacit|behavioral)/i.test(`${path} ${page.title} ${page.headings.join(' ')}`) ? 'corporate' : 'other';
   let reason = null;
   if (legal && !included) reason = 'legal-page';
-  if (blog && !included && !page.publishedAt) reason = 'blog-without-date';
+  if (blog && !included) reason = 'blog-page';
   const score = (category === 'corporate' ? 100 : category === 'other' ? 50 : 10) + (english ? 0 : 15) + (sourcePriority === 0 ? 10 : 0) - (blog ? 20 : 0);
   return { eligible: !reason, reason, category, language: english ? 'en' : 'es', score, isBlog: blog, included };
 }
@@ -98,4 +110,4 @@ function createBlobClient(config, sas) { let BlobServiceClient; try { ({ BlobSer
 async function readBlobJson(client, name) { const response = await client.getBlobClient(name).download(); const chunks = []; for await (const chunk of response.readableStreamBody) chunks.push(Buffer.from(chunk)); return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
 async function fetchAllowed(url, config, fetchImpl = globalThis.fetch, lookup = dns.lookup) { let current = await validatePublicUrl(url, config.rootUrl, lookup); for (let attempt = 0; attempt <= 3; attempt += 1) { const response = await fetchImpl(current.href, { redirect: 'manual', signal: AbortSignal.timeout(config.timeoutMs) }); if (response.status >= 300 && response.status < 400 && response.headers?.get('location')) { current = await validatePublicUrl(new URL(response.headers.get('location'), current).href, config.rootUrl, lookup); continue; } if (!response.ok) throw new Error(`PUBLIC_HTTP_${response.status}`); const contentLength = Number(response.headers?.get('content-length') || 0); if (contentLength > config.maxPageBytes) throw new Error('PUBLIC_PAGE_TOO_LARGE'); const body = await response.text(); if (Buffer.byteLength(body, 'utf8') > config.maxPageBytes) throw new Error('PUBLIC_PAGE_TOO_LARGE'); return { url: current.href, body, contentType: response.headers?.get('content-type') || '' }; } throw new Error('PUBLIC_TOO_MANY_REDIRECTS'); }
 
-module.exports = { PUBLIC_SCHEMA_VERSION, PUBLIC_PREFIX, CURRENT_MANIFEST, MAX_PAGES, MAX_PAGE_BYTES, MAX_DEPTH, MAX_SITEMAPS, MAX_DISCOVERED_URLS, getConfig, allowedHost, isPrivateAddress, validatePublicUrl, parseRobots, robotsAllows, parseSitemap, parseSitemapDocument, isAllowedPageUrl, sitemapPriority, cleanHtml, extractPage, hasUsefulPageContent, classifyPage, contentFingerprint, splitText, buildCandidate, createBlobClient, readBlobJson, fetchAllowed };
+module.exports = { PUBLIC_SCHEMA_VERSION, PUBLIC_PREFIX, CURRENT_MANIFEST, MAX_PAGES, MAX_PAGE_BYTES, MAX_DEPTH, MAX_SITEMAPS, MAX_DISCOVERED_URLS, DEFAULT_CONCURRENCY, DEFAULT_BUDGET_MS, getConfig, allowedHost, isPrivateAddress, validatePublicUrl, parseRobots, robotsAllows, parseSitemap, parseSitemapDocument, isAllowedPageUrl, prefilterUrl, sitemapPriority, cleanHtml, extractPage, hasUsefulPageContent, classifyPage, contentFingerprint, splitText, buildCandidate, createBlobClient, readBlobJson, fetchAllowed };
