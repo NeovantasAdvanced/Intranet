@@ -5,7 +5,7 @@ const previous = process.env.CORPORATE_ALLOWED_USER_IDS;
 process.env.CORPORATE_ALLOWED_USER_IDS = 'legacy-id,suspended-id';
 const principal = (id, email = `${id}@neovantas.com`, roles = []) => ({ identityProvider: 'aad', userId: id, userDetails: email, userRoles: roles });
 const entities = new Map();
-const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { const error = new Error('not-found'); error.statusCode = 404; throw error; } return entities.get(key); } };
+const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { const error = new Error('not-found'); error.statusCode = 404; throw error; } return entities.get(key); }, listEntities() { return { toArray: async () => [...entities.values()] }; }, async updateEntity(entity) { entities.set(entity.rowKey, { ...entity }); } };
 (async () => {
   store.setUserAccessTableClientForTests(fake);
   entities.set(store.rowKey(principal('active-id')), { identityProvider: 'aad', staticWebAppsUserId: 'active-id', email: 'active-id@neovantas.com', userPrincipalName: 'active-id@neovantas.com', status: 'active', permissions: JSON.stringify({ intranet: true, neo: false, repositories: true, admin: false }) });
