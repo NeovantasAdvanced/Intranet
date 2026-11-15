@@ -35,7 +35,8 @@ Los PDFs e índices documentales continúan en contenedores Blob privados.
 ## GitHub
 
 La ruta `/.auth/login/github` se bloquea con una regla específica. Debe probarse
-en Azure porque existe un `responseOverrides.404`; el resultado esperado es que
+en Azure para confirmar que devuelve 404; no existe un `responseOverrides.404`
+que reescriba esa respuesta. El resultado esperado es que
 la entrada GitHub no permita iniciar sesión y que los endpoints sigan rechazando
 principales que no sean `aad`.
 
