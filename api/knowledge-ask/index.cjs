@@ -5,6 +5,8 @@ const search = require('../_shared/knowledge-search.cjs');
 const { getStorageErrorDetails } = require('../_shared/knowledge-publish.cjs');
 const { getOpenAIConfig, askOpenAI } = require('../_shared/openai-client.cjs');
 const { makeDocumentContext } = require('../_shared/knowledge-context.cjs');
+const publicKnowledge = require('../_shared/public-knowledge.cjs');
+const publicSearch = require('../_shared/public-knowledge-search.cjs');
 const { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isIdentityQuestion, isNeoIdentityQuestion, isFiveCQuestion } = require('../_shared/neo-persona.cjs');
 
 const MAX_QUESTION_LENGTH = 1000;
@@ -45,7 +47,7 @@ function validateModelAnswer(data, results, expectedType) {
   const allowed = new Map(results.map((result) => [`${result.document}\0${result.fragmentId}`, result])); const references = [];
   for (const reference of data.references) {
     const result = reference && allowed.get(`${reference.document}\0${reference.fragmentId}`);
-    if (result && !references.some((item) => item.fragmentId === result.fragmentId && item.document === result.document)) references.push({ document: result.document, fragmentId: result.fragmentId, page: result.page ?? null });
+    if (result && !references.some((item) => item.fragmentId === result.fragmentId && item.document === result.document)) references.push({ document: result.document, fragmentId: result.fragmentId, page: result.page ?? null, ...(result.sourceType ? { sourceType: result.sourceType } : {}), ...(result.title ? { title: result.title } : {}), ...(result.url ? { url: result.url } : {}) });
   }
   const answerType = ['internal-document', 'corporate-identity', 'corporate-web', 'general-knowledge', 'reasoned-advice', 'mixed'].includes(data.answerType) ? data.answerType : expectedType;
   const requiresReference = expectedType === 'internal-document' && ['internal-document', 'mixed'].includes(answerType);
@@ -88,6 +90,11 @@ module.exports = async function knowledgeAsk(context, req) {
       if (!results.length) return send(context, 200, { ok: true, answer: INSUFFICIENT, references: [], sourceCount: 0, answerStatus: 'insufficient-evidence', answerType: 'internal-document' });
     }
     if (neoIdentityQuestion) results = [{ document: 'Neovantas · Identidad de Neo', fragmentId: 'neo-identity', text: NEO_IDENTITY_CONTEXT, page: null }];
+    if (identityQuestion && !neoIdentityQuestion && publicKnowledge.getConfig().readConfigured) {
+      const publicClient = publicKnowledge.createBlobClient(publicKnowledge.getConfig(), publicKnowledge.getConfig().readSas);
+      const published = await publicSearch.loadPublishedPublicIndexes(publicClient);
+      results = publicSearch.searchPublicIndexes(published.indexes, question);
+    }
     const config = getOpenAIConfig();
     contextResultCount = results.length;
     const contextText = makeDocumentContext(results, config.maxContextChars).text;
@@ -105,7 +112,7 @@ module.exports = async function knowledgeAsk(context, req) {
     logDiagnostic(context, { requestId: diagnosticId, phase: 'completed', finalStatus: 200, errorCode: null, openAIStatus: openAIStatus, resultCount, contextResultCount, validReferenceCount, validation: answer.answerStatus });
     return send(context, 200, { ok: true, ...answer });
   } catch (error) {
-    const status = error?.code === 'OPENAI_NOT_CONFIGURED' ? 'openai-not-configured' : error?.code === 'TIMEOUT' ? 'openai-timeout' : error?.code === 'RATE_LIMITED' ? 'openai-rate-limited' : error?.code === 'AUTHENTICATION' ? 'openai-authentication-error' : error?.code === 'OPENAI_INCOMPLETE_RESPONSE' ? 'openai-incomplete-response' : error?.code === 'OPENAI_INVALID_RESPONSE' ? 'openai-invalid-response' : error?.code === 'MANIFEST_INVALID' ? 'manifest-invalid' : error?.code === 'SEARCH_INDEX_INVALID' ? 'index-invalid' : 'storage-error';
+    const status = error?.code === 'OPENAI_NOT_CONFIGURED' ? 'openai-not-configured' : error?.code === 'TIMEOUT' ? 'openai-timeout' : error?.code === 'RATE_LIMITED' ? 'openai-rate-limited' : error?.code === 'AUTHENTICATION' ? 'openai-authentication-error' : error?.code === 'OPENAI_INCOMPLETE_RESPONSE' ? 'openai-incomplete-response' : error?.code === 'OPENAI_INVALID_RESPONSE' ? 'openai-invalid-response' : error?.code === 'MANIFEST_INVALID' ? 'manifest-invalid' : error?.code === 'SEARCH_INDEX_INVALID' ? 'index-invalid' : error?.code === 'PUBLIC_MANIFEST_INVALID' ? 'public-manifest-invalid' : 'storage-error';
     logDiagnostic(context, { requestId: diagnosticId, phase, finalStatus: status === 'storage-error' ? 503 : 502, errorCode: error?.code ?? status, incompleteReason: error?.incompleteReason ?? null, openAIStatus: error?.status ?? openAIStatus, resultCount, contextResultCount, validReferenceCount, validation: 'error' });
     context.log?.(`[knowledge-ask] ${status === 'storage-error' ? JSON.stringify(getStorageErrorDetails(error, 'knowledge-ask-read')) : status}`);
     return send(context, status === 'storage-error' ? 503 : 502, { ok: false, answerStatus: status });
