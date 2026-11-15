@@ -14,6 +14,7 @@ const CORPORATE_TERMS = new Set('neovantas politica políticas procedimiento pro
 const INTERNAL_TERMS = new Set('politica políticas procedimiento procedimientos beneficio beneficios empleado empleados vacaciones vacacion teletrabajo teletrabajar permiso permisos nomina nómina salario codigo código etico ético conducta anticorrupcion anticorrupción igualdad diversidad inclusion inclusión acoso seguridad salud trabajo onboarding neobuddy calendario festivo'.split(' '));
 const EXTERNAL_TERMS = new Set('receta recetas cocinar cocina futbol fútbol deporte deportes javascript python programacion programación informática videojuego videojuegos pelicula películas música musica clima horoscopo horóscopo loteria lotería mundial'.split(' '));
 const CLEARLY_PERSONAL_TERMS = new Set('paella cocinar cocina receta recetas serie series netflix ocio fin semana grifo casa fontaneria fontanería arreglar loteria lotería partido partidos pelicula película peliculas películas videojuego videojuegos'.split(' '));
+const CONTEXT_DEPENDENT_TERMS = new Set('comida comidas menu menú cena cenas'.split(' '));
 const PROFESSIONAL_TERMS = new Set('proyecto proyectos cliente clientes trabajo laboral profesional empresa equipo equipos evento eventos comercial ventas conversion conversión estrategia consultoria consultoría consultora negocio banca banco seguros seguro telco tecnologia tecnología ia inteligencia artificial agente agentes datos analitica analítica behavioral economics economia economía conductual nudge sesgo sesgos presentacion presentación reunion reunión productividad excel tabla dinamica dinámica kpi kpis proceso procesos mejora aplicacion aplicación implementar implantar aplicar organizacion organización compania compañía neovantas servicios servicio soluciones metodologia metodología capacidades sectores teletrabajo vacaciones beneficios permisos politica política procedimiento procedimientos codigo código etico ético'.split(' '));
 
 function normalize(value) { return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9ñ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
@@ -39,9 +40,14 @@ function classifyScope(question, history = []) {
   const personal = [...tokens].some((term) => CLEARLY_PERSONAL_TERMS.has(term));
   const professional = [...tokens].some((term) => PROFESSIONAL_TERMS.has(term));
   const contextualProfessional = [...contextTokens].some((term) => PROFESSIONAL_TERMS.has(term));
-  if (personal && !professional && !contextualProfessional) return 'out-of-scope';
-  if (professional || contextualProfessional) return 'in-scope';
-  return 'ambiguous';
+  // An unequivocally personal current question cannot be authorized by prior turns.
+  if (personal && !professional) return 'out-of-scope';
+  const contextDependent = [...tokens].some((term) => CONTEXT_DEPENDENT_TERMS.has(term));
+  if (contextDependent && !professional && !contextualProfessional) return 'ambiguous';
+  if (/\b(esto|eso|ello|lo)\b/i.test(value) && !professional && !contextualProfessional) return 'ambiguous';
+  // Neo is intentionally permissive for technical, analytical, educational,
+  // writing and productivity questions. Only clearly personal requests are rejected.
+  return 'in-scope';
 }
 
 function isCorporateQuestion(question, history = []) {

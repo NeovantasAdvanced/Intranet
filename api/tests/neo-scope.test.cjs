@@ -25,6 +25,15 @@ async function run() {
   assert.equal(persona.classifyScope('¿Y cómo lo aplicaríamos?', [{ role: 'user', content: 'Hablábamos de un proyecto para un cliente bancario.' }]), 'in-scope');
   assert.equal(persona.classifyScope('¿Qué menú recomendarías?', [{ role: 'user', content: 'Estamos preparando un evento corporativo.' }]), 'in-scope');
   assert.equal(persona.classifyScope('¿Qué significa esto?'), 'ambiguous');
+  assert.equal(persona.classifyScope('¿Cómo organizar una comida?'), 'ambiguous');
+  assert.equal(persona.classifyScope('¿Qué diferencia hay entre media y mediana?'), 'in-scope');
+  assert.equal(persona.classifyScope('¿Qué es la regresión logística?'), 'in-scope');
+  assert.equal(persona.classifyScope('¿Cómo redacto un correo de seguimiento?'), 'in-scope');
+  assert.equal(persona.classifyScope('Resume este texto en tres puntos'), 'in-scope');
+  assert.equal(persona.classifyScope('¿Cómo se hace una paella?', [{ role: 'user', content: 'Hablábamos de banca y conversión comercial.' }]), 'out-of-scope');
+  assert.equal(persona.classifyScope('Recomiéndame una serie para esta noche', [{ role: 'user', content: 'Hablábamos de un proyecto profesional.' }]), 'out-of-scope');
+  assert.equal(persona.classifyScope('¿Qué menú recomendarías?', [{ role: 'user', content: 'Estamos preparando un evento corporativo.' }]), 'in-scope');
+  assert.equal(persona.classifyScope('¿Y en seguros?', [{ role: 'user', content: 'Analizamos un proyecto bancario.' }]), 'in-scope');
 
   const originalConfig = knowledgeIndex.getIndexReadStorageConfig;
   const originalLoad = search.loadPublishedIndexes;
