@@ -18,19 +18,18 @@ const DEV_ADMIN_PRINCIPAL: ClientPrincipal & {
   email: string;
   userPrincipalName: string;
 } = {
-  userDetails: 'fmacias@neovantas.com',
+  userDetails: 'dev-user',
   identityProvider: 'dev',
   userRoles: ['authenticated'],
   claims: [
     { typ: 'name', val: 'Fernando Macías' },
     { typ: 'given_name', val: 'Fernando' },
-    { typ: 'preferred_username', val: 'fmacias@neovantas.com' },
-    { typ: 'email', val: 'fmacias@neovantas.com' },
+    { typ: 'preferred_username', val: 'dev-user' },
   ],
   givenName: 'Fernando',
   displayName: 'Fernando Macías',
-  email: 'fmacias@neovantas.com',
-  userPrincipalName: 'fmacias@neovantas.com',
+  email: 'dev-user',
+  userPrincipalName: 'dev-user',
 };
 
 type UserIdentity = Partial<ClientPrincipal> & {
@@ -113,10 +112,6 @@ export function getUserFirstName(user: UserIdentity | null) {
   }
 
   const normalizedEmail = email.toLowerCase();
-  if (normalizedEmail === 'fmacias@neovantas.com') {
-    return 'Fernando';
-  }
-
   const localPart = email.split('@')[0] ?? '';
   if (!localPart) {
     return '';

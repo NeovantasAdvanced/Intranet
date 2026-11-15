@@ -11,6 +11,10 @@
       "statusCode": 302
     },
     {
+      "route": "/.auth/login/github",
+      "statusCode": 404
+    },
+    {
       "route": "/*",
       "allowedRoles": ["authenticated"]
     }

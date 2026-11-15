@@ -25,20 +25,13 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import assistantsData from '../data/assistants.json';
-import newsData from '../data/news.json';
-import eventsData from '../data/events.json';
-import documentsData from '../data/documents.json';
-import sharePointCatalogData from '../data/sharepointCatalog.json';
-import appsData from '../data/apps.json';
-import supportAstData from '../data/supportAst.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { SearchBar } from '../components/ui/SearchBar';
 import { useAuthSession } from '../context/AuthSessionContext';
 import { usePortalSearch } from '../context/PortalSearchContext';
-import { canAccessFeature } from '../lib/accessControl';
+import { usePortalData } from '../context/PortalDataContext';
 import { EventsSection } from '../components/events/EventsSection';
 import { UpcomingEventsBlock } from '../components/events/UpcomingEventsBlock';
 import { getTodayIso, isPastEvent, sortEventsAscending } from '../lib/events';
@@ -53,15 +46,6 @@ import type {
   SupportAstItem,
 } from '../types/content';
 
-const assistants = assistantsData as Assistant[];
-const news = newsData as NewsItem[];
-const events = eventsData as EventItem[];
-const documents = documentsData as DocumentItem[];
-const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
-const sharePointRepositories = sharePointCatalog.repositories;
-const sharePointResources = sharePointCatalog.resources;
-const apps = appsData as InternalApp[];
-const supportAst = supportAstData as SupportAstItem[];
 
 type HomeLink = {
   title: string;
@@ -618,7 +602,7 @@ function matchesQuery(query: string, values: SearchableValue[]) {
   return haystack.includes(query);
 }
 
-function matchesRepositoryFilter(filterId: RepositoryFilterId, item: (typeof sharePointResources)[number]) {
+function matchesRepositoryFilter(filterId: RepositoryFilterId, item: SharePointCatalog['resources'][number]) {
   if (filterId === 'all') {
     return true;
   }
@@ -693,10 +677,15 @@ function getActivePortalTab(): PortalTabId {
 export function HomeDashboard() {
   const { searchValue, setSearchValue } = usePortalSearch();
   const { authChecked, displayName, clientPrincipal } = useAuthSession();
+  const { data: portalData, loading: portalLoading, error: portalError } = usePortalData();
   const [repositoryFilter, setRepositoryFilter] = useState<RepositoryFilterId>('all');
   const [projectFilter, setProjectFilter] = useState('all');
   const [sharePointSearch, setSharePointSearch] = useState('');
   const [activeTab, setActiveTab] = useState<PortalTabId>(getActivePortalTab);
+
+  const { assistants, news, events, documents, sharePointCatalog, apps, supportAst } = portalData;
+  const sharePointRepositories = sharePointCatalog.repositories;
+  const sharePointResources = sharePointCatalog.resources;
 
   useEffect(() => {
     const handleHashChange = () => setActiveTab(getActivePortalTab());
@@ -717,7 +706,8 @@ export function HomeDashboard() {
   const showEvents = activeTab === 'eventos';
   const showNews = activeTab === 'noticias';
   const showSupport = activeTab === 'soporte-ast';
-  const canViewRepositories = canAccessFeature('repositories', clientPrincipal?.userDetails ?? '');
+  const canViewRepositories = portalData.profile.canViewRepositories;
+
 
   const filteredContent = useMemo(
     () => ({
@@ -966,6 +956,8 @@ export function HomeDashboard() {
 
   return (
     <div className="home-shell">
+      {portalLoading ? <p className="mb-4 rounded-xl border border-neovantas-line bg-white px-4 py-3 text-sm text-neovantas-muted">Cargando contenido corporativo...</p> : null}
+      {portalError ? <p role="alert" className="mb-4 rounded-xl border border-[#f3c5b4] bg-white px-4 py-3 text-sm text-[#9a3412]">No se pudo cargar el contenido corporativo.</p> : null}
       {showHome ? (
       <section
         id="inicio"

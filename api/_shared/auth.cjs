@@ -38,6 +38,13 @@ function parseConfiguredEmails() {
     .filter(Boolean);
 }
 
+function parseConfiguredUserIds() {
+  return String(process.env.CORPORATE_ALLOWED_USER_IDS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function getClaimValue(principal, predicate) {
   return (principal?.claims ?? []).find((claim) => predicate(normalizeRole(claim.typ ?? '')))?.val ?? '';
 }
@@ -100,6 +107,10 @@ function isAdminPrincipal(principal) {
     return false;
   }
 
+  if (process.env.CORPORATE_ALLOWED_USER_IDS && !isCorporatePrincipal(principal)) {
+    return false;
+  }
+
   const configuredEmails = parseConfiguredEmails();
   if (configuredEmails.length > 0) {
     const principalEmails = getPrincipalEmailCandidates(principal);
@@ -125,9 +136,24 @@ function isAdminPrincipal(principal) {
   });
 }
 
+function isCorporatePrincipal(principal) {
+  if (!principal || normalizeRole(principal.identityProvider) !== 'aad') {
+    return false;
+  }
+
+  const userId = String(principal.userId || '').trim();
+  const allowedUserIds = parseConfiguredUserIds();
+  if (!userId || !allowedUserIds.includes(userId)) {
+    return false;
+  }
+
+  return getPrincipalEmailCandidates(principal).some((email) => email.endsWith('@neovantas.com'));
+}
+
 module.exports = {
   getPrincipalFromRequest,
   getPrincipalEmailCandidates,
   isAdminPrincipal,
+  isCorporatePrincipal,
   normalizeEmail,
 };

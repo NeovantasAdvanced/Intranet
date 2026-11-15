@@ -16,9 +16,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
-import { fetchClientPrincipal } from '../lib/auth';
-import { isAdminUser, isOffice365AdminPrincipal } from '../lib/admin';
-import { isAdmin as isAccessAdmin } from '../lib/accessControl';
+import { usePortalData } from '../context/PortalDataContext';
+import { useAuthSession } from '../context/AuthSessionContext';
 
 type UsageMetricRow = {
   label: string;
@@ -331,37 +330,17 @@ function downloadTextFile(filename: string, content: string, type: string) {
 }
 
 export function AdminUsagePage() {
+  const { data: portalData } = usePortalData();
+  const { clientPrincipal } = useAuthSession();
   const [authState, setAuthState] = useState<AuthState>('loading');
-  const [userEmail, setUserEmail] = useState('');
+  const userEmail = clientPrincipal?.userDetails ?? '';
   const [summary, setSummary] = useState<UsageSummary | null>(null);
   const [error, setError] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('all');
 
   useEffect(() => {
-    let mounted = true;
-
-    fetchClientPrincipal()
-      .then((principal) => {
-        if (!mounted) {
-          return;
-        }
-
-        const email = principal?.userDetails?.trim() ?? '';
-        setUserEmail(email);
-
-        const allowed = isAccessAdmin(email) || isAdminUser(email) || isOffice365AdminPrincipal(principal);
-        setAuthState(allowed ? 'admin' : 'forbidden');
-      })
-      .catch(() => {
-        if (mounted) {
-          setAuthState('forbidden');
-        }
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    setAuthState(portalData.profile.isAdmin ? 'admin' : 'forbidden');
+  }, [portalData.profile.isAdmin]);
 
   useEffect(() => {
     if (authState !== 'admin') {

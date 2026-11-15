@@ -1,5 +1,5 @@
 const { recordUsageEvent } = require('../_shared/usage-store.cjs');
-const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest, isCorporatePrincipal } = require('../_shared/auth.cjs');
 
 function parseRequestBody(body) {
   if (!body) {
@@ -34,6 +34,10 @@ module.exports = async function usageTrack(context, req) {
   }
 
   const principal = getPrincipalFromRequest(req);
+  if (!isCorporatePrincipal(principal)) {
+    context.res = { status: principal ? 403 : 401, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: false, error: principal ? 'Forbidden' : 'Authentication required' }) };
+    return;
+  }
   const userEmail = principal?.userDetails || 'anonymous';
 
   try {

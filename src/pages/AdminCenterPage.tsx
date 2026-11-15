@@ -1,18 +1,11 @@
 import { ArrowLeft, BarChart3, Boxes, LayoutDashboard, RefreshCcw, Search, Users2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { APP_VERSION } from '../config/appVersion';
-import accessControlData from '../data/access-control.json';
-import appsData from '../data/apps.json';
-import documentsData from '../data/documents.json';
-import eventsData from '../data/events.json';
-import newsData from '../data/news.json';
-import organizationUsersData from '../data/organization-users.json';
-import sharePointCatalogData from '../data/sharepointCatalog.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { useAuthSession } from '../context/AuthSessionContext';
-import { canAccessStatistics, isAdmin } from '../lib/accessControl';
+import { usePortalData } from '../context/PortalDataContext';
 import { AdminUsagePage } from './AdminUsagePage';
 import { type DocumentItem, type EventItem, type InternalApp, type NewsItem, type SharePointCatalog } from '../types/content';
 
@@ -43,14 +36,6 @@ const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = 
   { id: 'sync', label: 'Sincronizaciones', icon: RefreshCcw },
   { id: 'content', label: 'Contenido', icon: Boxes },
 ];
-
-const organizationUsers = organizationUsersData as OrganizationUserRow[];
-const accessControl = accessControlData as AccessControlDraft;
-const news = newsData as NewsItem[];
-const events = eventsData as EventItem[];
-const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
-const apps = appsData as InternalApp[];
-const documents = documentsData as DocumentItem[];
 
 function getInitialTab() {
   if (typeof window === 'undefined') {
@@ -98,17 +83,42 @@ function SectionPill({ children }: { children: string }) {
 
 export function AdminCenterPage() {
   const { clientPrincipal } = useAuthSession();
+  const { data: sharedPortalData } = usePortalData();
   const userEmail = clientPrincipal?.userDetails ?? '';
   const [activeTab, setActiveTab] = useState<AdminTabId>(getInitialTab);
   const [userSearch, setUserSearch] = useState('');
   const [permissionFilter, setPermissionFilter] = useState<'all' | 'repositories' | 'no-access' | 'admins'>('all');
-  const adminAllowed = isAdmin(userEmail);
+  const [portalData, setPortalData] = useState<{
+    organizationUsers: OrganizationUserRow[];
+    accessControl: AccessControlDraft;
+    news: NewsItem[];
+    events: EventItem[];
+    sharePointCatalog: SharePointCatalog;
+    apps: InternalApp[];
+    documents: DocumentItem[];
+  } | null>(null);
+  const adminAllowed = sharedPortalData.profile.isAdmin;
 
   useEffect(() => {
     const syncTabFromUrl = () => setActiveTab(getInitialTab());
     window.addEventListener('popstate', syncTabFromUrl);
     return () => window.removeEventListener('popstate', syncTabFromUrl);
   }, []);
+
+  useEffect(() => {
+    fetch('/api/portal-data?scope=admin', { credentials: 'same-origin', cache: 'no-store' })
+      .then(async (response) => { if (!response.ok) throw new Error('admin-data-failed'); return response.json(); })
+      .then((payload) => setPortalData(payload))
+      .catch(() => setPortalData(null));
+  }, []);
+
+  const organizationUsers = portalData?.organizationUsers ?? [];
+  const accessControl = portalData?.accessControl ?? { admins: { allowedEmails: [] }, repositories: { allowedEmails: [], blockedEmails: [] } };
+  const news = portalData?.news ?? [];
+  const events = portalData?.events ?? [];
+  const sharePointCatalog = portalData?.sharePointCatalog ?? { repositories: [], resources: [] };
+  const apps = portalData?.apps ?? [];
+  const documents = portalData?.documents ?? [];
 
   const lastNewsDate = news[0]?.rawMeta?.dateText ?? formatDate(news[0]?.date);
   const lastNewsCount = news.length;
@@ -213,7 +223,7 @@ export function AdminCenterPage() {
     JSON.stringify(repositoryDraftEmails.slice().sort()) !== JSON.stringify(repositoryAllowedEmails.slice().sort()) ||
     Object.keys(repositoryChangeSource).length > 0;
 
-  const adminCanViewStatistics = canAccessStatistics(userEmail);
+  const adminCanViewStatistics = sharedPortalData.profile.isAdmin;
 
   if (!adminAllowed) {
     return <div className="rounded-[24px] border border-neovantas-line bg-white p-8 text-neovantas-navy">No tienes permisos para acceder a esta sección.</div>;

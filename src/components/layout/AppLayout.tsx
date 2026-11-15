@@ -14,11 +14,11 @@ import { APP_VERSION } from '../../config/appVersion';
 import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
-import { canAccessFeature } from '../../lib/accessControl';
-import { canAccessNeo } from '../../lib/neoAccess';
+import { usePortalData } from '../../context/PortalDataContext';
 import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
 import { NeoConversationProvider } from '../../context/NeoConversationContext';
+import { PortalDataProvider } from '../../context/PortalDataContext';
 import { NeoFloatingAssistant } from '../neo/NeoChat';
 
 type AppLayoutProps = {
@@ -38,6 +38,7 @@ const navigation = [
 
 function PortalNavigation() {
   const { clientPrincipal } = useAuthSession();
+  const { data: portalData } = usePortalData();
   const [activeHash, setActiveHash] = useState(() =>
     typeof window === 'undefined' ? '#inicio' : window.location.hash || '#inicio',
   );
@@ -55,10 +56,9 @@ function PortalNavigation() {
     };
   }, []);
 
-  const userEmail = clientPrincipal?.userDetails ?? '';
-  const isAdministrator = canAccessNeo(clientPrincipal);
+  const isAdministrator = portalData.profile.isAdmin;
   const visibleNavigation = navigation.filter((item) =>
-    item.href === '#repositorios' ? canAccessFeature('repositories', userEmail) : true,
+    item.href === '#repositorios' ? portalData.profile.canViewRepositories : true,
   );
 
   return (
@@ -144,6 +144,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <AuthSessionProvider>
       <NeoConversationProvider>
+      <PortalDataProvider>
       <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>
         <div className="min-h-screen bg-[#f7f9fc] text-neovantas-ink">
           <div className="sticky top-0 z-30">
@@ -165,6 +166,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {window.location.pathname !== '/neo' ? <NeoFloatingAssistant /> : null}
         </div>
       </PortalSearchProvider>
+      </PortalDataProvider>
       </NeoConversationProvider>
     </AuthSessionProvider>
   );
