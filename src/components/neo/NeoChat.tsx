@@ -2,8 +2,7 @@ import { Bot, ChevronDown, ExternalLink, LoaderCircle, Maximize2, Send, ShieldAl
 import { useState } from 'react';
 import { useNeoConversation, type NeoMessage } from '../../context/NeoConversationContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
-import { isAdmin as isAdminAllowed } from '../../lib/accessControl';
-import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
+import { canAccessNeo } from '../../lib/neoAccess';
 
 const SUGGESTIONS = ['¿Qué puedes hacer por mí?', '¿Cuáles son nuestras 5 C?', '¿Qué es un nudge y cómo lo aplicamos?', '¿Qué servicios ofrece Neovantas?', '¿Cuáles son las condiciones de teletrabajo?'];
 function documentName(path: string) { const name = path.split('/').pop() ?? path; try { return decodeURIComponent(name); } catch { return name; } }
@@ -13,7 +12,7 @@ function ConversationMessage({ message }: { message: NeoMessage }) { const sourc
 
 export function NeoChat({ mode = 'full', onMinimize, onClose }: { mode?: 'full' | 'floating'; onMinimize?: () => void; onClose?: () => void }) {
   const { authChecked, clientPrincipal } = useAuthSession();
-  const isAdmin = Boolean(clientPrincipal && (isAdminAllowed(clientPrincipal.userDetails) || isAdminUser(clientPrincipal.userDetails) || isOffice365AdminPrincipal(clientPrincipal)));
+  const isAdmin = canAccessNeo(clientPrincipal);
   const { question, setQuestion, messages, loading, error, ask } = useNeoConversation();
   const isFloating = mode === 'floating';
   if (!authChecked) return <div className="p-5 text-sm text-neovantas-muted">Comprobando permisos...</div>;
@@ -32,7 +31,9 @@ export function NeoChat({ mode = 'full', onMinimize, onClose }: { mode?: 'full' 
 }
 
 export function NeoFloatingAssistant() {
+  const { authChecked, clientPrincipal } = useAuthSession();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  return <div className="fixed bottom-5 right-5 z-40 md:bottom-7 md:right-7"><button type="button" aria-label="Pregúntale a Neo" title="Pregúntale a Neo" onClick={() => { setOpen(true); setMinimized(false); }} className="focus-ring grid h-14 w-14 place-items-center rounded-full bg-neovantas-navy text-white shadow-[0_12px_30px_rgba(10,10,63,0.3)] transition hover:scale-105 hover:bg-neovantas-blue"><Sparkles className="h-6 w-6" /></button>{open && !minimized ? <div className="absolute bottom-[4.5rem] right-0 h-[min(650px,calc(100vh-8rem))] w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-neovantas-line bg-white shadow-[0_24px_70px_rgba(10,10,63,0.25)]"><NeoChat mode="floating" onMinimize={() => setMinimized(true)} onClose={() => setOpen(false)} /></div> : null}</div>;
+  if (!authChecked || !canAccessNeo(clientPrincipal)) return null;
+  return <div className="fixed bottom-5 right-5 z-40 md:bottom-7 md:right-7"><button type="button" aria-label="Pregúntale a Neo" title="Pregúntale a Neo" onClick={() => { setOpen(true); setMinimized(false); }} className="focus-ring grid h-14 w-14 place-items-center rounded-full bg-neovantas-navy text-white shadow-[0_12px_30px_rgba(10,10,63,0.3)] transition hover:scale-105 hover:bg-neovantas-blue"><Sparkles className="h-6 w-6" /></button>{open && !minimized ? <div className="absolute bottom-[4.5rem] right-0 h-[min(600px,calc(100vh-13rem))] max-h-[calc(100vh-13rem)] w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-neovantas-line bg-white shadow-[0_24px_70px_rgba(10,10,63,0.25)]"><NeoChat mode="floating" onMinimize={() => setMinimized(true)} onClose={() => setOpen(false)} /></div> : null}</div>;
 }

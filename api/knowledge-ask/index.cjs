@@ -7,13 +7,14 @@ const { getOpenAIConfig, askOpenAI } = require('../_shared/openai-client.cjs');
 const { makeDocumentContext } = require('../_shared/knowledge-context.cjs');
 const publicKnowledge = require('../_shared/public-knowledge.cjs');
 const publicSearch = require('../_shared/public-knowledge-search.cjs');
-const { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isIdentityQuestion, isNeoIdentityQuestion, isFiveCQuestion } = require('../_shared/neo-persona.cjs');
+const { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, classifyScope, isIdentityQuestion, isNeoIdentityQuestion, isFiveCQuestion } = require('../_shared/neo-persona.cjs');
 
 const MAX_QUESTION_LENGTH = 1000;
 const MAX_MESSAGES = 6;
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_HISTORY_CHARS = 8000;
 const INSUFFICIENT = 'La documentación disponible no permite responder con suficiente evidencia.';
+const AMBIGUOUS_MESSAGE = '¿Puedes darme un poco más de contexto profesional para ayudarte mejor?';
 
 function send(context, status, body) { context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body }; }
 function requestId() { return crypto.randomUUID(); }
@@ -74,8 +75,10 @@ module.exports = async function knowledgeAsk(context, req) {
   if (question.length > MAX_QUESTION_LENGTH) return send(context, 400, { ok: false, answerStatus: 'question-too-long' });
   const history = validateHistory(body.messages);
   if (!history) return send(context, 400, { ok: false, answerStatus: 'invalid-history' });
+  const scope = classifyScope(question, history);
+  if (scope === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope', answerType: 'reasoned-advice' });
+  if (scope === 'ambiguous') return send(context, 200, { ok: true, answer: AMBIGUOUS_MESSAGE, references: [], sourceCount: 0, answerStatus: 'ambiguous', answerType: 'reasoned-advice' });
   const initialScope = classifyQuestion(question, [], history);
-  if (initialScope === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope', answerType: 'reasoned-advice' });
 
   try {
     phase = 'retrieval';
