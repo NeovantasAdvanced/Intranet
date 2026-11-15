@@ -6,6 +6,7 @@ const context = fs.readFileSync('src/context/NeoConversationContext.tsx', 'utf8'
 const app = fs.readFileSync('src/App.tsx', 'utf8');
 const layout = fs.readFileSync('src/components/layout/AppLayout.tsx', 'utf8');
 const access = fs.readFileSync('src/lib/neoAccess.ts', 'utf8');
+const avatar = fs.readFileSync('src/components/neo/NeoAvatar.tsx', 'utf8');
 
 assert.match(chat, /Soy Neo/);
 assert.match(context, /fetch\('\/api\/knowledge-ask'/);
@@ -16,6 +17,11 @@ assert.match(chat, /canAccessNeo/);
 assert.match(chat, /SUGGESTIONS/);
 assert.match(chat, /Pregúntale a Neo/);
 assert.match(chat, /Abrir Neo en pantalla completa/);
+assert.match(chat, /NeoAvatar size="message"/);
+assert.match(chat, /NeoAvatar size="header"/);
+assert.match(chat, /NeoAvatar size="floating"/);
+assert.match(avatar, /NEOVANTAS_ISOLOGO_BLUE\.png/);
+assert.ok(fs.existsSync('src/assets/NEOVANTAS_ISOLOGO_BLUE.png'));
 assert.match(app, /pathname === '\/neo'/);
 assert.match(layout, /label: 'Neo'/);
 assert.match(layout, /pushState/);
