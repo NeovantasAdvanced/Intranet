@@ -1,5 +1,6 @@
 const { recordUsageEvent } = require('../_shared/usage-store.cjs');
-const { getPrincipalFromRequest, isCorporatePrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 
 function parseRequestBody(body) {
   if (!body) {
@@ -34,7 +35,8 @@ module.exports = async function usageTrack(context, req) {
   }
 
   const principal = getPrincipalFromRequest(req);
-  if (!isCorporatePrincipal(principal)) {
+  const authorization = await authorizePrincipal(principal, 'intranet');
+  if (!authorization.allowed) {
     context.res = { status: principal ? 403 : 401, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: false, error: principal ? 'Forbidden' : 'Authentication required' }) };
     return;
   }

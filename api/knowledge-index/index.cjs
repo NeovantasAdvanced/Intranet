@@ -1,4 +1,5 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const knowledgeBlob = require('../_shared/knowledge-blob.cjs');
 const { getKnowledgeConfig, createContainerClient } = knowledgeBlob;
 const { TARGET_DOCUMENT } = require('../_shared/knowledge-pdf.cjs');
@@ -35,7 +36,7 @@ module.exports = async function knowledgeIndex(context, req) {
     send(context, 401, { ok: false, document: TARGET_DOCUMENT, indexStatus: 'authentication-required' });
     return;
   }
-  if (!isAdminPrincipal(principal)) {
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) {
     send(context, 403, { ok: false, document: TARGET_DOCUMENT, indexStatus: 'admin-access-required' });
     return;
   }

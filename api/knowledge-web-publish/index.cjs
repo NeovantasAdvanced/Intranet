@@ -1,10 +1,11 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const web = require('../_shared/public-knowledge.cjs');
 
 function send(context, status, body) { context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body }; }
 function parseBody(body) { if (typeof body === 'string') { try { return JSON.parse(body); } catch { return null; } } return body && typeof body === 'object' ? body : null; }
 module.exports = async function knowledgeWebPublish(context, req) {
-  const principal = getPrincipalFromRequest(req); if (!principal) return send(context, 401, { ok: false, publishStatus: 'authentication-required' }); if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, publishStatus: 'admin-access-required' });
+  const principal = getPrincipalFromRequest(req); if (!principal) return send(context, 401, { ok: false, publishStatus: 'authentication-required' }); if (!(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, publishStatus: 'admin-access-required' });
   const candidateId = parseBody(req?.body)?.candidateId; if (typeof candidateId !== 'string' || !/^[a-f0-9]{24}$/.test(candidateId)) return send(context, 400, { ok: false, publishStatus: 'candidate-required' });
   const config = web.getConfig(); if (!config.configured) return send(context, 503, { ok: false, publishStatus: 'storage-not-configured' });
   try {

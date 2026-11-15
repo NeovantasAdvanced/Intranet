@@ -1,4 +1,5 @@
-const { getPrincipalFromRequest, getPrincipalEmailCandidates, isAdminPrincipal, isCorporatePrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest, getPrincipalEmailCandidates } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 
 const data = {
   assistants: require('../data/assistants.json'),
@@ -19,25 +20,27 @@ const adminData = {
   knowledgeInventory: require('../data/knowledge-inventory.json'),
 };
 
-function profileFor(principal) {
+function profileFor(principal, authorization, adminAuthorization) {
   const emails = new Set(getPrincipalEmailCandidates(principal));
   const repositoryEmails = new Set(adminData.accessControl.repositories.allowedEmails.map((email) => String(email).trim().toLowerCase()));
-  return { isAdmin: isAdminPrincipal(principal), canViewRepositories: [...emails].some((email) => repositoryEmails.has(email)) };
+  return { isAdmin: Boolean(adminAuthorization?.allowed), canViewRepositories: authorization.source === 'table' ? authorization.permissions.repositories === true : [...emails].some((email) => repositoryEmails.has(email)) };
 }
 
 module.exports = async function portalData(context, req) {
   const principal = getPrincipalFromRequest(req);
-  if (!isCorporatePrincipal(principal)) {
+  const authorization = await authorizePrincipal(principal, 'intranet');
+  if (!authorization.allowed) {
     context.res = { status: principal ? 403 : 401, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify({ ok: false, error: principal ? 'Forbidden' : 'Authentication required' }) };
     return;
   }
 
   const scope = String(req.query?.scope || '').trim().toLowerCase();
-  if (scope === 'admin' && !isAdminPrincipal(principal)) {
+  const adminAuthorization = scope === 'admin' ? await authorizePrincipal(principal, 'admin') : null;
+  if (scope === 'admin' && !adminAuthorization.allowed) {
     context.res = { status: 403, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify({ ok: false, error: 'Forbidden' }) };
     return;
   }
 
   const payload = scope === 'admin' ? adminData : data;
-  context.res = { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify({ ok: true, profile: profileFor(principal), ...payload }) };
+  context.res = { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify({ ok: true, profile: profileFor(principal, authorization, adminAuthorization), ...payload }) };
 };

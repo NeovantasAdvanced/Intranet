@@ -1,4 +1,5 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const search = require('../_shared/knowledge-search.cjs');
 const { makeDocumentContext } = require('../_shared/knowledge-context.cjs');
@@ -19,7 +20,7 @@ function publicFragment(result) { return { document: result.document, fragmentId
 module.exports = async function knowledgeDebug(context, req) {
   const principal = getPrincipalFromRequest(req);
   if (!principal) return send(context, 401, { ok: false, debugStatus: 'authentication-required' });
-  if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, debugStatus: 'admin-access-required' });
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, debugStatus: 'admin-access-required' });
   const query = queryValue(req, 'q');
   const document = queryValue(req, 'document');
   const fragmentId = queryValue(req, 'fragmentId');

@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const web = require('../_shared/public-knowledge.cjs');
 function send(context, status, body) { context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body }; }
 function safeError(error) { return error?.message?.startsWith('PUBLIC_') ? error.message : 'page-fetch-failed'; }
@@ -38,7 +39,7 @@ async function processPages(items, config, robots, deadline) {
   return results;
 }
 module.exports = async function knowledgeWebSync(context, req) {
-  const principal = getPrincipalFromRequest(req); if (!principal) return send(context, 401, { ok: false, syncStatus: 'authentication-required' }); if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, syncStatus: 'admin-access-required' });
+  const principal = getPrincipalFromRequest(req); if (!principal) return send(context, 401, { ok: false, syncStatus: 'authentication-required' }); if (!(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, syncStatus: 'admin-access-required' });
   const config = web.getConfig(); if (!config.configured) return send(context, 503, { ok: false, syncStatus: 'storage-not-configured' });
   const startedAt = Date.now(); const deadline = startedAt + config.budgetMs;
   try {

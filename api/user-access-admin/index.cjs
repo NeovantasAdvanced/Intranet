@@ -1,4 +1,5 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const { listEntities, updateEntity, parsePermissions, rowKey } = require('../_shared/user-access-store.cjs');
 
 function send(context, status, body) { context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify(body) }; }
@@ -6,7 +7,7 @@ function send(context, status, body) { context.res = { status, headers: { 'conte
 module.exports = async function userAccessAdmin(context, req) {
   const principal = getPrincipalFromRequest(req);
   if (!principal) return send(context, 401, { ok: false, error: 'authentication-required' });
-  if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, error: 'admin-access-required' });
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, error: 'admin-access-required' });
   try {
     if (String(req.method || 'GET').toUpperCase() === 'GET') {
       const users = await listEntities();
@@ -23,7 +24,7 @@ module.exports = async function userAccessAdmin(context, req) {
       repositories: Boolean(body.permissions.repositories),
       admin: Boolean(body.permissions.admin),
     } : undefined;
-    if (permissions?.admin && !isAdminPrincipal(principal)) return send(context, 403, { ok: false, error: 'admin-escalation-denied' });
+    if (permissions?.admin && !(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, error: 'admin-escalation-denied' });
     const entity = await updateEntity(rowKey, { status, ...(permissions ? { permissions: JSON.stringify(permissions) } : {}), approvedBy: status === 'active' ? String(principal.userId || '') : undefined });
     return send(context, 200, { ok: true, user: { rowKey: entity.rowKey, status: entity.status, permissions: parsePermissions(entity) } });
   } catch {

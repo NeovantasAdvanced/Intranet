@@ -1,4 +1,5 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const knowledgeBlob = require('../_shared/knowledge-blob.cjs');
 const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const { buildCurrentManifest, publishCurrentManifest, getStorageErrorDetails } = require('../_shared/knowledge-publish.cjs');
@@ -10,7 +11,7 @@ function send(context, status, body) {
 module.exports = async function knowledgePublish(context, req) {
   const principal = getPrincipalFromRequest(req);
   if (!principal) return send(context, 401, { ok: false, publishStatus: 'authentication-required' });
-  if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, publishStatus: 'admin-access-required' });
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, publishStatus: 'admin-access-required' });
   if (!knowledgeBlob.getKnowledgeConfig().configured || !knowledgeIndex.getIndexStorageConfig().configured || !knowledgeIndex.getIndexReadStorageConfig().configured) {
     return send(context, 503, { ok: false, publishStatus: 'storage-not-configured' });
   }

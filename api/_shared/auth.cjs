@@ -150,10 +150,15 @@ function isCorporatePrincipal(principal) {
   return getPrincipalEmailCandidates(principal).some((email) => email.endsWith('@neovantas.com'));
 }
 
+function isCorporateIdentity(principal) {
+  return Boolean(principal && normalizeRole(principal.identityProvider) === 'aad' && String(principal.userId || '').trim() && getPrincipalEmailCandidates(principal).some((email) => email.endsWith('@neovantas.com')));
+}
+
 module.exports = {
   getPrincipalFromRequest,
   getPrincipalEmailCandidates,
   isAdminPrincipal,
   isCorporatePrincipal,
+  isCorporateIdentity,
   normalizeEmail,
 };
