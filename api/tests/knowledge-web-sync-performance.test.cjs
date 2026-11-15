@@ -17,6 +17,15 @@ const sync = require('../knowledge-web-sync/index.cjs');
     assert.equal(excluded[0].reason, 'english-page'); assert.equal(calls, 13);
     const pending = await sync.processPages(items, { includePaths: [], maxConcurrency: 6, timeoutMs: 1000 }, { disallow: [] }, Date.now() - 1);
     assert.ok(pending.every((item) => item.type === 'pending'));
+    const oldSitemapFetch = web.fetchAllowed;
+    web.fetchAllowed = async (url) => {
+      if (url.endsWith('page-sitemap.xml')) return { body: '<urlset><url><loc>https://www.neovantas.com/servicios</loc></url></urlset>' };
+      if (url.endsWith('post-sitemap.xml')) return { body: `<urlset>${Array.from({ length: 130 }, (_, index) => `<url><loc>https://www.neovantas.com/blog/${index}</loc></url>`).join('')}</urlset>` };
+      return { body: '<urlset></urlset>' };
+    };
+    const discovery = await sync.discoverPages({ includePaths: [], maxDepth: 2, timeoutMs: 1000 }, { sitemaps: ['https://www.neovantas.com/post-sitemap.xml', 'https://www.neovantas.com/page-sitemap.xml', 'https://www.neovantas.com/category-sitemap.xml'] });
+    assert.equal(discovery.items.length, 1); assert.equal(discovery.items[0].url, 'https://www.neovantas.com/servicios'); assert.equal(discovery.preExclusions.length, 130);
+    web.fetchAllowed = oldSitemapFetch;
   } finally { web.validatePublicUrl = oldValidate; web.fetchAllowed = oldFetch; }
   console.log('knowledge-web-sync performance tests passed');
 })().catch((error) => { console.error(error); process.exitCode = 1; });
