@@ -14,8 +14,8 @@ import { APP_VERSION } from '../../config/appVersion';
 import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
-import { canAccessFeature, isAdmin as isConfiguredAdmin } from '../../lib/accessControl';
-import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
+import { canAccessFeature } from '../../lib/accessControl';
+import { canAccessNeo } from '../../lib/neoAccess';
 import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
 import { NeoConversationProvider } from '../../context/NeoConversationContext';
@@ -56,7 +56,7 @@ function PortalNavigation() {
   }, []);
 
   const userEmail = clientPrincipal?.userDetails ?? '';
-  const isAdministrator = Boolean(clientPrincipal && (isConfiguredAdmin(userEmail) || isAdminUser(userEmail) || isOffice365AdminPrincipal(clientPrincipal)));
+  const isAdministrator = canAccessNeo(clientPrincipal);
   const visibleNavigation = navigation.filter((item) =>
     item.href === '#repositorios' ? canAccessFeature('repositories', userEmail) : true,
   );
@@ -69,7 +69,9 @@ function PortalNavigation() {
       <div className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto py-2">
         {[...visibleNavigation, ...(isAdministrator ? [{ label: 'Neo', icon: Sparkles, href: '/neo' }] : [])].map((item) => {
           const Icon = item.icon;
-          const isActive = item.href === '/neo' ? window.location.pathname === item.href : activeHash === item.href;
+          const isActive = item.href === '/neo'
+            ? window.location.pathname === item.href
+            : window.location.pathname === '/neo' ? false : activeHash === item.href;
 
           return (
             <a
