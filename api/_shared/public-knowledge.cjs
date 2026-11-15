@@ -57,10 +57,11 @@ function isAllowedPageUrl(value) {
     return true;
   } catch { return false; }
 }
-function prefilterUrl(value, config = {}) {
+function prefilterUrl(value, config = {}, sourceSitemap = '') {
   try {
     const url = new URL(value); const path = url.pathname.toLowerCase(); const included = (config.includePaths || []).some((prefix) => path.startsWith(prefix.toLowerCase()));
     if (included) return { allowed: true, reason: null };
+    if (/post-sitemap/i.test(sourceSitemap)) return { allowed: false, reason: 'blog-sitemap' };
     if (/(?:^|\/)(?:en|eng)(?:\/|$)/i.test(path)) return { allowed: false, reason: 'english-page' };
     if (/(?:privacy|privacidad|cookie|cookies|legal|terms|terminos|términos|aviso-legal|contact|contacto)/i.test(path)) return { allowed: false, reason: 'legal-page' };
     if (/(?:^|\/)blog(?:\/|$)|\/\d{4}\/\d{2}\//i.test(path)) return { allowed: false, reason: 'blog-page' };
