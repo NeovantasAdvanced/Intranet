@@ -55,7 +55,7 @@ function validateModelAnswer(data, results, expectedType) {
 
 module.exports = async function knowledgeAsk(context, req) {
   const diagnosticId = requestId();
-  let phase = 'authentication'; let resultCount = 0; let validReferenceCount = 0; let openAIStatus = null;
+  let phase = 'authentication'; let resultCount = 0; let contextResultCount = 0; let validReferenceCount = 0; let openAIStatus = null;
   const principal = getPrincipalFromRequest(req);
   if (!principal) return send(context, 401, { ok: false, answerStatus: 'authentication-required' });
   if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, answerStatus: 'admin-access-required' });
@@ -89,6 +89,7 @@ module.exports = async function knowledgeAsk(context, req) {
     }
     if (neoIdentityQuestion) results = [{ document: 'Neovantas · Identidad de Neo', fragmentId: 'neo-identity', text: NEO_IDENTITY_CONTEXT, page: null }];
     const config = getOpenAIConfig();
+    contextResultCount = results.length;
     const contextText = makeDocumentContext(results, config.maxContextChars).text;
     const expectedType = identityQuestion ? 'corporate-identity' : needsDocuments ? 'internal-document' : 'general-knowledge';
     phase = 'generation';
@@ -101,11 +102,11 @@ module.exports = async function knowledgeAsk(context, req) {
       logDiagnostic(context, { requestId: diagnosticId, phase: 'validation', finalStatus: 502, errorCode: 'INVALID_MODEL_RESPONSE', openAIStatus, resultCount, validReferenceCount: 0, validation: 'invalid' });
       return send(context, 502, { ok: false, answerStatus: 'invalid-model-response' });
     }
-    logDiagnostic(context, { requestId: diagnosticId, phase: 'completed', finalStatus: 200, errorCode: null, openAIStatus: openAIStatus, resultCount, validReferenceCount, validation: answer.answerStatus });
+    logDiagnostic(context, { requestId: diagnosticId, phase: 'completed', finalStatus: 200, errorCode: null, openAIStatus: openAIStatus, resultCount, contextResultCount, validReferenceCount, validation: answer.answerStatus });
     return send(context, 200, { ok: true, ...answer });
   } catch (error) {
     const status = error?.code === 'OPENAI_NOT_CONFIGURED' ? 'openai-not-configured' : error?.code === 'TIMEOUT' ? 'openai-timeout' : error?.code === 'RATE_LIMITED' ? 'openai-rate-limited' : error?.code === 'AUTHENTICATION' ? 'openai-authentication-error' : error?.code === 'OPENAI_INCOMPLETE_RESPONSE' ? 'openai-incomplete-response' : error?.code === 'OPENAI_INVALID_RESPONSE' ? 'openai-invalid-response' : error?.code === 'MANIFEST_INVALID' ? 'manifest-invalid' : error?.code === 'SEARCH_INDEX_INVALID' ? 'index-invalid' : 'storage-error';
-    logDiagnostic(context, { requestId: diagnosticId, phase, finalStatus: status === 'storage-error' ? 503 : 502, errorCode: error?.code ?? status, openAIStatus: error?.status ?? openAIStatus, resultCount, validReferenceCount, validation: 'error' });
+    logDiagnostic(context, { requestId: diagnosticId, phase, finalStatus: status === 'storage-error' ? 503 : 502, errorCode: error?.code ?? status, incompleteReason: error?.incompleteReason ?? null, openAIStatus: error?.status ?? openAIStatus, resultCount, contextResultCount, validReferenceCount, validation: 'error' });
     context.log?.(`[knowledge-ask] ${status === 'storage-error' ? JSON.stringify(getStorageErrorDetails(error, 'knowledge-ask-read')) : status}`);
     return send(context, status === 'storage-error' ? 503 : 502, { ok: false, answerStatus: status });
   }

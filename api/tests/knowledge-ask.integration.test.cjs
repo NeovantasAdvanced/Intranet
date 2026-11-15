@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const endpoint = require('../knowledge-ask/index.cjs');
+const { getOpenAIConfig } = require('../_shared/openai-client.cjs');
 
 const document = 'originals/politica-teletrabajo.pdf';
 const indexBlob = 'knowledge-index/documents/teletrabajo.json';
@@ -26,11 +27,16 @@ async function invoke(body, fetchResponse) {
   const originals = { account: process.env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT, container: process.env.KNOWLEDGE_INDEX_CONTAINER, sas: process.env.KNOWLEDGE_INDEX_READ_SAS_TOKEN, client: knowledgeIndex.createIndexReadContainerClient, fetch: global.fetch };
   process.env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT = 'test-account'; process.env.KNOWLEDGE_INDEX_CONTAINER = 'test-container'; process.env.KNOWLEDGE_INDEX_READ_SAS_TOKEN = 'test-sas'; process.env.OPENAI_API_KEY = 'test-key'; process.env.OPENAI_MODEL = 'gpt-4.1-mini';
   try {
+    delete process.env.OPENAI_MAX_OUTPUT_TOKENS; assert.equal(getOpenAIConfig().maxOutputTokens, 1500);
     knowledgeIndex.createIndexReadContainerClient = () => fakeClient({ [ 'knowledge-index/current.json' ]: manifest, [indexBlob]: index });
     const valid = await invoke({ question: '¿Cuáles son las condiciones de teletrabajo?', messages: [] }, { ok: true, json: async () => ({ status: 'completed', output_text: JSON.stringify({ answer: 'La jornada y el horario se acuerdan con el responsable; los gastos se ajustan al convenio colectivo.', references: [{ document, fragmentId: 'conditions', page: 3 }, { document, fragmentId: 'continuation', page: 3 }], answerStatus: 'answered', answerType: 'internal-document' }), usage: {} }) });
     assert.equal(valid.res.status, 200); assert.equal(valid.res.body.answerStatus, 'answered'); assert.equal(valid.res.body.sourceCount, 2); assert.ok(valid.logEntries.some((entry) => entry.includes('"phase":"completed"'))); assert.ok(!valid.logEntries.some((entry) => entry.includes('conditions')));
     const incomplete = await invoke({ question: '¿Cuáles son las condiciones de teletrabajo?', messages: [] }, { ok: true, json: async () => ({ status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' }, output: [] }) });
     assert.equal(incomplete.res.status, 502); assert.equal(incomplete.res.body.answerStatus, 'openai-incomplete-response'); assert.ok(incomplete.logEntries.some((entry) => entry.includes('OPENAI_INCOMPLETE_RESPONSE')));
+    const filtered = await invoke({ question: '¿Cuáles son las condiciones de teletrabajo?', messages: [] }, { ok: true, json: async () => ({ status: 'incomplete', incomplete_details: { reason: 'content_filter' }, output: [] }) });
+    assert.equal(filtered.res.body.answerStatus, 'openai-incomplete-response'); assert.ok(filtered.logEntries.some((entry) => entry.includes('"incompleteReason":"content_filter"')));
+    const unknown = await invoke({ question: '¿Cuáles son las condiciones de teletrabajo?', messages: [] }, { ok: true, json: async () => ({ status: 'incomplete', incomplete_details: {}, output: [] }) });
+    assert.equal(unknown.res.body.answerStatus, 'openai-incomplete-response'); assert.ok(unknown.logEntries.some((entry) => entry.includes('"incompleteReason":"unknown"')));
     const invalidRefs = await invoke({ question: '¿Cuáles son las condiciones de teletrabajo?', messages: [] }, { ok: true, json: async () => ({ status: 'completed', output_text: JSON.stringify({ answer: 'respuesta', references: [{ document: 'originals/otro.pdf', fragmentId: 'fake', page: 1 }], answerStatus: 'answered', answerType: 'internal-document' }) }) });
     assert.equal(invalidRefs.res.status, 200); assert.equal(invalidRefs.res.body.answerStatus, 'insufficient-evidence'); assert.equal(invalidRefs.res.body.sourceCount, 0); assert.ok(invalidRefs.logEntries.some((entry) => entry.includes('"validation":"insufficient-evidence"')));
     const storageError = new Error('storage'); storageError.statusCode = 403; storageError.code = 'AuthorizationPermissionMismatch';
