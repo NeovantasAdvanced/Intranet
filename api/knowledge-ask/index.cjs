@@ -44,7 +44,7 @@ function makeRequestInstructions(expectedType) {
       ? 'Usa exclusivamente los fragmentos web corporativos recibidos para afirmar hechos sobre Neovantas. No completes listas de países, oficinas, cifras, clientes o capacidades con conocimiento previo. Si el contenido solo indica presencia internacional pero no enumera países, dilo expresamente. Distingue hechos documentados de interpretaciones y no afirmes superioridad frente a competidores sin evidencia.'
       : expectedType === 'corporate-identity'
       ? 'Distingue la identidad de Neo de la identidad de Neovantas. No cites la identidad de Neo como prueba de servicios o capacidades corporativas que no aparezcan en el contexto. Si falta información oficial, responde prudentemente sin inventar.'
-      : 'Responde directamente y de forma natural. No añadas advertencias genéricas sobre falta de documentación cuando no sean necesarias. Marca como recomendación o hipótesis solo cuando exista riesgo real de confundirla con un hecho o política interna.';
+      : 'Responde directamente y de forma natural. Para planes de implantación, cubre fases, actividades, entregables y KPIs de forma concisa, priorizando cobertura frente a detalle excesivo. No añadas advertencias genéricas sobre falta de documentación cuando no sean necesarias. Marca como recomendación o hipótesis solo cuando exista riesgo real de confundirla con un hecho o política interna.';
   return `${NEO_SYSTEM_INSTRUCTIONS}\n\nCriterio para esta consulta: ${mode}`;
 }
 function validateModelAnswer(data, results, expectedType) {
@@ -107,7 +107,17 @@ module.exports = async function knowledgeAsk(context, req) {
     const hasPublicEvidence = results.some((result) => result.sourceType === 'corporate-web');
     const expectedType = hasPublicEvidence ? 'corporate-web' : identityQuestion ? 'corporate-identity' : needsDocuments ? 'internal-document' : 'general-knowledge';
     phase = 'generation';
-    const modelResponse = await askOpenAI({ question, context: contextText, instructions: makeRequestInstructions(expectedType), config, log: (entry) => context.log?.(entry), history: makeHistory(history) });
+    const generationStartedAt = Date.now();
+    let modelResponse;
+    try {
+      modelResponse = await askOpenAI({ question, context: contextText, instructions: makeRequestInstructions(expectedType), config, log: (entry) => context.log?.(entry), history: makeHistory(history) });
+    } catch (error) {
+      const remaining = 35000 - (Date.now() - generationStartedAt);
+      if (error?.code !== 'OPENAI_INCOMPLETE_RESPONSE' || error?.incompleteReason !== 'max_output_tokens' || remaining < 5000) throw error;
+      const retryConfig = { ...config, maxOutputTokens: Math.min(config.maxOutputTokens + 1000, 4000), timeoutMs: Math.min(config.timeoutMs, remaining) };
+      logDiagnostic(context, { requestId: diagnosticId, phase: 'generation-retry', finalStatus: null, errorCode: 'OPENAI_INCOMPLETE_RESPONSE', incompleteReason: error.incompleteReason, retry: true, retryMaxOutputTokens: retryConfig.maxOutputTokens });
+      modelResponse = await askOpenAI({ question, context: contextText, instructions: makeRequestInstructions(expectedType), config: retryConfig, log: (entry) => context.log?.(entry), history: makeHistory(history) });
+    }
     openAIStatus = modelResponse?.data?.status ?? 'completed';
     phase = 'validation';
     const answer = validateModelAnswer(modelResponse.data, results, expectedType);

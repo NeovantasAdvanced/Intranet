@@ -1,14 +1,16 @@
 const DEFAULT_TIMEOUT_MS = 20000;
-const DEFAULT_MAX_OUTPUT_TOKENS = 1500;
+const DEFAULT_MAX_OUTPUT_TOKENS = 3000;
+const MAX_OUTPUT_TOKENS = 4000;
 const RESPONSES_URL = 'https://api.openai.com/v1/responses';
 
 function getOpenAIConfig(env = process.env) {
   const apiKey = String(env.OPENAI_API_KEY ?? '').trim();
   const model = String(env.OPENAI_MODEL ?? '').trim();
   const timeoutMs = Number(env.OPENAI_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS);
-  const maxOutputTokens = Number(env.OPENAI_MAX_OUTPUT_TOKENS ?? DEFAULT_MAX_OUTPUT_TOKENS);
+  const configuredOutputTokens = Number(env.OPENAI_MAX_OUTPUT_TOKENS ?? DEFAULT_MAX_OUTPUT_TOKENS);
   const maxContextChars = Number(env.OPENAI_MAX_CONTEXT_CHARS ?? 12000);
-  return { configured: Boolean(apiKey && model), apiKey, model, timeoutMs: Number.isFinite(timeoutMs) ? Math.min(Math.max(timeoutMs, 1000), 30000) : DEFAULT_TIMEOUT_MS, maxOutputTokens: Number.isFinite(maxOutputTokens) ? Math.min(Math.max(maxOutputTokens, 100), 1600) : DEFAULT_MAX_OUTPUT_TOKENS, maxContextChars: Number.isFinite(maxContextChars) ? Math.min(Math.max(maxContextChars, 2000), 16000) : 12000 };
+  const maxOutputTokens = Number.isInteger(configuredOutputTokens) && configuredOutputTokens > 0 ? Math.min(Math.max(configuredOutputTokens, 100), MAX_OUTPUT_TOKENS) : DEFAULT_MAX_OUTPUT_TOKENS;
+  return { configured: Boolean(apiKey && model), apiKey, model, timeoutMs: Number.isFinite(timeoutMs) ? Math.min(Math.max(timeoutMs, 1000), 30000) : DEFAULT_TIMEOUT_MS, maxOutputTokens, maxContextChars: Number.isFinite(maxContextChars) ? Math.min(Math.max(maxContextChars, 2000), 16000) : 12000 };
 }
 
 function diagnosticsEnabled(env = process.env) { return String(env.NODE_ENV ?? '').toLowerCase() === 'development' && String(env.OPENAI_DIAGNOSTICS ?? '').toLowerCase() === 'true'; }
@@ -46,4 +48,4 @@ async function askOpenAI({ question, context, instructions, history = '', config
   } catch (error) { if (error?.name === 'AbortError') error.code = 'TIMEOUT'; log?.(`[knowledge-ask] ${JSON.stringify(safeOpenAIError(error))}`); throw error; } finally { clearTimeout(timeout); }
 }
 
-module.exports = { DEFAULT_TIMEOUT_MS, DEFAULT_MAX_OUTPUT_TOKENS, getOpenAIConfig, safeOpenAIError, classifyIncompleteReason, diagnosticsEnabled, extractOutputText, askOpenAI };
+module.exports = { DEFAULT_TIMEOUT_MS, DEFAULT_MAX_OUTPUT_TOKENS, MAX_OUTPUT_TOKENS, getOpenAIConfig, safeOpenAIError, classifyIncompleteReason, diagnosticsEnabled, extractOutputText, askOpenAI };

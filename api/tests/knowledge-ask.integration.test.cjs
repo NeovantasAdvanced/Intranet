@@ -27,7 +27,7 @@ async function invoke(body, fetchResponse) {
   const originals = { account: process.env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT, container: process.env.KNOWLEDGE_INDEX_CONTAINER, sas: process.env.KNOWLEDGE_INDEX_READ_SAS_TOKEN, client: knowledgeIndex.createIndexReadContainerClient, fetch: global.fetch };
   process.env.KNOWLEDGE_INDEX_STORAGE_ACCOUNT = 'test-account'; process.env.KNOWLEDGE_INDEX_CONTAINER = 'test-container'; process.env.KNOWLEDGE_INDEX_READ_SAS_TOKEN = 'test-sas'; process.env.OPENAI_API_KEY = 'test-key'; process.env.OPENAI_MODEL = 'gpt-4.1-mini';
   try {
-    delete process.env.OPENAI_MAX_OUTPUT_TOKENS; assert.equal(getOpenAIConfig().maxOutputTokens, 1500);
+    delete process.env.OPENAI_MAX_OUTPUT_TOKENS; assert.equal(getOpenAIConfig().maxOutputTokens, 3000);
     knowledgeIndex.createIndexReadContainerClient = () => fakeClient({ [ 'knowledge-index/current.json' ]: manifest, [indexBlob]: index });
     const valid = await invoke({ question: '¿Cuáles son las condiciones de teletrabajo?', messages: [] }, { ok: true, json: async () => ({ status: 'completed', output_text: JSON.stringify({ answer: 'La jornada y el horario se acuerdan con el responsable; los gastos se ajustan al convenio colectivo.', references: [{ document, fragmentId: 'conditions', page: 3 }, { document, fragmentId: 'continuation', page: 3 }], answerStatus: 'answered', answerType: 'internal-document' }), usage: {} }) });
     assert.equal(valid.res.status, 200); assert.equal(valid.res.body.answerStatus, 'answered'); assert.equal(valid.res.body.sourceCount, 2); assert.ok(valid.logEntries.some((entry) => entry.includes('"phase":"completed"'))); assert.ok(!valid.logEntries.some((entry) => entry.includes('conditions')));
