@@ -9,6 +9,7 @@ const ALLOWED_HOSTS = new Set(['www.neovantas.com', 'neovantas.com']);
 const MAX_PAGES = 30;
 const MAX_PAGE_BYTES = 1024 * 1024;
 const MAX_DEPTH = 2;
+const MAX_SITEMAPS = 20;
 
 function getConfig(env = process.env) {
   const rootUrl = String(env.PUBLIC_KNOWLEDGE_ROOT_URL || DEFAULT_ROOT).replace(/\/$/, '');
@@ -36,20 +37,48 @@ function parseRobots(text, rootUrl) {
   return { sitemaps: sitemaps.filter((url) => { try { const parsed = new URL(url); return parsed.protocol === 'https:' && ALLOWED_HOSTS.has(parsed.hostname.toLowerCase()); } catch { return false; } }), disallow };
 }
 function robotsAllows(pathname, robots) { return !robots.disallow.some((rule) => rule && pathname.startsWith(rule.replace(/\*/g, ''))); }
-function parseSitemap(xml) { return [...String(xml).matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)].map((match) => match[1]).filter(Boolean); }
+function parseSitemapDocument(xml) {
+  const value = String(xml);
+  const kind = /<sitemapindex\b/i.test(value) ? 'sitemapindex' : /<urlset\b/i.test(value) ? 'urlset' : 'unknown';
+  const urls = [...value.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)].map((match) => match[1].trim()).filter(Boolean);
+  return { kind, urls };
+}
+function parseSitemap(xml) { return parseSitemapDocument(xml).urls; }
+function isAllowedPageUrl(value) {
+  try {
+    const url = new URL(value);
+    if (!ALLOWED_HOSTS.has(url.hostname.toLowerCase()) || url.protocol !== 'https:') return false;
+    if (/\/wp-content\/uploads\//i.test(url.pathname)) return false;
+    if (/\.(?:png|jpe?g|svg|webp|gif|pdf|xml|zip|css|js|woff2?|ttf|ico)(?:$|\?)/i.test(url.pathname)) return false;
+    return true;
+  } catch { return false; }
+}
+function sitemapPriority(value) {
+  const path = new URL(value).pathname.toLowerCase();
+  if (path.includes('page-sitemap')) return 0;
+  if (path.includes('post-sitemap')) return 2;
+  if (path.includes('category-sitemap')) return 3;
+  return 1;
+}
 function cleanHtml(html) {
   return String(html).replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<noscript[\s\S]*?<\/noscript>|<nav[\s\S]*?<\/nav>|<footer[\s\S]*?<\/footer>|<form[\s\S]*?<\/form>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&#39;/gi, "'").replace(/&quot;/gi, '"').replace(/\s+/g, ' ').trim();
 }
 function extractPage(html, url, syncedAt = new Date().toISOString()) {
-  const title = (String(html).match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || url).replace(/\s+/g, ' ').trim();
+  const title = (String(html).match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '').replace(/\s+/g, ' ').trim();
   const headings = [...String(html).matchAll(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi)].map((match) => cleanHtml(match[1])).filter(Boolean);
   const text = cleanHtml(html);
   return { title, url, headings, text, syncedAt };
+}
+function hasUsefulPageContent(page) {
+  if (!page || !page.title || page.title === page.url || page.text.length < 80) return false;
+  const urlLike = (page.text.match(/https?:\/\/|\/wp-content\/|\.(?:png|jpe?g|svg|webp|gif|xml)\b/gi) || []).length;
+  const words = page.text.split(/\s+/).filter(Boolean).length;
+  return words >= 10 && urlLike < Math.max(3, Math.floor(words / 8));
 }
 function splitText(text, size = 1200, overlap = 150) { const chunks = []; let start = 0; while (start < text.length) { const end = Math.min(start + size, text.length); const value = text.slice(start, end).trim(); if (value) chunks.push({ id: crypto.createHash('sha256').update(`${start}\0${value}`).digest('hex').slice(0, 24), position: start, text: value }); if (end >= text.length) break; start = end - overlap; } return chunks; }
 function buildCandidate(pages, syncedAt = new Date().toISOString()) { return { schemaVersion: PUBLIC_SCHEMA_VERSION, syncedAt, source: 'corporate-web', pageCount: pages.length, pages: pages.map((page) => ({ title: page.title, url: page.url, headings: page.headings, syncedAt: page.syncedAt, chunks: splitText(page.text) })) }; }
 function createBlobClient(config, sas) { let BlobServiceClient; try { ({ BlobServiceClient } = require('@azure/storage-blob')); } catch { throw new Error('BLOB_SDK_UNAVAILABLE'); } const endpoint = `https://${config.account}.blob.core.windows.net`; return new BlobServiceClient(`${endpoint}?${sas.replace(/^\?/, '')}`).getContainerClient(config.container); }
 async function readBlobJson(client, name) { const response = await client.getBlobClient(name).download(); const chunks = []; for await (const chunk of response.readableStreamBody) chunks.push(Buffer.from(chunk)); return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
-async function fetchAllowed(url, config, fetchImpl = globalThis.fetch, lookup = dns.lookup) { let current = await validatePublicUrl(url, config.rootUrl, lookup); for (let attempt = 0; attempt <= 3; attempt += 1) { const response = await fetchImpl(current.href, { redirect: 'manual', signal: AbortSignal.timeout(config.timeoutMs) }); if (response.status >= 300 && response.status < 400 && response.headers?.get('location')) { current = await validatePublicUrl(new URL(response.headers.get('location'), current).href, config.rootUrl, lookup); continue; } if (!response.ok) throw new Error(`PUBLIC_HTTP_${response.status}`); const contentLength = Number(response.headers?.get('content-length') || 0); if (contentLength > config.maxPageBytes) throw new Error('PUBLIC_PAGE_TOO_LARGE'); const body = await response.text(); if (Buffer.byteLength(body, 'utf8') > config.maxPageBytes) throw new Error('PUBLIC_PAGE_TOO_LARGE'); return { url: current.href, body }; } throw new Error('PUBLIC_TOO_MANY_REDIRECTS'); }
+async function fetchAllowed(url, config, fetchImpl = globalThis.fetch, lookup = dns.lookup) { let current = await validatePublicUrl(url, config.rootUrl, lookup); for (let attempt = 0; attempt <= 3; attempt += 1) { const response = await fetchImpl(current.href, { redirect: 'manual', signal: AbortSignal.timeout(config.timeoutMs) }); if (response.status >= 300 && response.status < 400 && response.headers?.get('location')) { current = await validatePublicUrl(new URL(response.headers.get('location'), current).href, config.rootUrl, lookup); continue; } if (!response.ok) throw new Error(`PUBLIC_HTTP_${response.status}`); const contentLength = Number(response.headers?.get('content-length') || 0); if (contentLength > config.maxPageBytes) throw new Error('PUBLIC_PAGE_TOO_LARGE'); const body = await response.text(); if (Buffer.byteLength(body, 'utf8') > config.maxPageBytes) throw new Error('PUBLIC_PAGE_TOO_LARGE'); return { url: current.href, body, contentType: response.headers?.get('content-type') || '' }; } throw new Error('PUBLIC_TOO_MANY_REDIRECTS'); }
 
-module.exports = { PUBLIC_SCHEMA_VERSION, PUBLIC_PREFIX, CURRENT_MANIFEST, MAX_PAGES, MAX_PAGE_BYTES, getConfig, allowedHost, isPrivateAddress, validatePublicUrl, parseRobots, robotsAllows, parseSitemap, cleanHtml, extractPage, splitText, buildCandidate, createBlobClient, readBlobJson, fetchAllowed };
+module.exports = { PUBLIC_SCHEMA_VERSION, PUBLIC_PREFIX, CURRENT_MANIFEST, MAX_PAGES, MAX_PAGE_BYTES, MAX_DEPTH, MAX_SITEMAPS, getConfig, allowedHost, isPrivateAddress, validatePublicUrl, parseRobots, robotsAllows, parseSitemap, parseSitemapDocument, isAllowedPageUrl, sitemapPriority, cleanHtml, extractPage, hasUsefulPageContent, splitText, buildCandidate, createBlobClient, readBlobJson, fetchAllowed };
