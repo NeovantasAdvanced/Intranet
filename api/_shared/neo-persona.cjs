@@ -16,19 +16,29 @@ const EXTERNAL_TERMS = new Set('receta recetas cocinar cocina futbol fútbol dep
 
 function normalize(value) { return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9ñ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
 
-function classifyQuestion(question, results = []) {
+function classifyQuestion(question, results = [], history = []) {
   const tokens = new Set(normalize(question).split(' ').filter(Boolean));
-  if (isIdentityQuestion(question)) return 'corporate-identity';
+  if (isIdentityQuestion(question, history)) return 'corporate-identity';
   const external = [...tokens].some((term) => EXTERNAL_TERMS.has(term));
   const internal = [...tokens].some((term) => INTERNAL_TERMS.has(term));
   const corporate = [...tokens].some((term) => CORPORATE_TERMS.has(term));
   if (external && !corporate && !internal && results.length === 0) return 'out-of-scope';
   if (internal || results.length > 0) return 'internal';
+  if (isCorporateQuestion(question)) return 'corporate-identity';
   return 'general';
 }
 
-function isIdentityQuestion(question) {
-  return isNeoIdentityQuestion(question) || isCorporateIdentityQuestion(question);
+function isCorporateQuestion(question, history = []) {
+  const value = normalize(question);
+  const context = normalize(history.map((message) => message.content || '').join(' '));
+  const explicit = value.includes('neovantas') || value.includes('quienes somos') || value.includes('que hacemos') || value.includes('que servicios') || value.includes('a que se dedica');
+  const corporateTopic = /\b(servicios?|soluciones?|metodolog[ií]a|capacidades?|sectores?|presencia|pa[ií]ses?|oficinas?|opera|aplica|aplicamos|consultora tradicional|diferencia)\b/i.test(value);
+  const contextual = /\b(neovantas|nuestra empresa|la compan[ií]a|servicios|que hacemos)\b/i.test(context);
+  return explicit || (corporateTopic && contextual);
+}
+
+function isIdentityQuestion(question, history = []) {
+  return isNeoIdentityQuestion(question) || isCorporateIdentityQuestion(question) || isCorporateQuestion(question, history);
 }
 
 function isNeoIdentityQuestion(question) {
@@ -43,4 +53,4 @@ function isCorporateIdentityQuestion(question) {
 
 function isFiveCQuestion(question) { return normalize(question).includes('5 c') || (normalize(question).includes('cinco') && normalize(question).includes('c')); }
 
-module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isIdentityQuestion, isNeoIdentityQuestion, isCorporateIdentityQuestion, isFiveCQuestion, normalize };
+module.exports = { NEO_SYSTEM_INSTRUCTIONS, NEO_IDENTITY_CONTEXT, OUT_OF_SCOPE_MESSAGE, classifyQuestion, isCorporateQuestion, isIdentityQuestion, isNeoIdentityQuestion, isCorporateIdentityQuestion, isFiveCQuestion, normalize };
