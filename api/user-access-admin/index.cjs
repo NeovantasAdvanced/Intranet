@@ -51,8 +51,11 @@ module.exports = async function userAccessAdmin(context, req) {
     const entity = await updateEntity(rowKey, { status, ...(permissions ? { permissions: JSON.stringify(permissions) } : {}), ...(status === 'active' ? { approvedBy: String(principal.userId || '') } : {}) });
     await appendAudit({ action: 'update', targetRowKey: rowKey, actorUserId: String(principal.userId || ''), actorEmail: String(principal.userDetails || '').trim().toLowerCase(), changes: JSON.stringify({ status, permissions: nextPermissions }) });
     return send(context, 200, { ok: true, user: { rowKey: entity.rowKey, status: entity.status, permissions: parsePermissions(entity) } });
-  } catch {
-    return send(context, 503, { ok: false, error: 'storage-error' });
+  } catch (error) {
+    const statusCode = Number(error?.statusCode || error?.status || 0);
+    const responseStatus = [400, 401, 403, 404, 409, 412].includes(statusCode) ? statusCode : 503;
+    const errorCode = responseStatus === 409 ? 'conflict' : responseStatus === 412 ? 'concurrency-conflict' : responseStatus === 404 ? 'user-not-found' : responseStatus === 403 ? 'forbidden' : responseStatus === 400 ? 'invalid-request' : 'storage-error';
+    return send(context, responseStatus, { ok: false, error: errorCode });
   }
 };
 

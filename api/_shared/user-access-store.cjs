@@ -149,7 +149,7 @@ function parsePermissions(entity) {
   try { return JSON.parse(entity.permissions || '{}'); } catch { return {}; }
 }
 
-async function listEntities() { return (await collectEntities(await getClient())).filter((entity) => entity.partitionKey === 'users' || !entity.partitionKey); }
+async function listEntities() { return (await collectEntities(await getClient())).filter((entity) => entity.partitionKey === 'users'); }
 
 async function createEntity(entity) {
   const client = await getClient();
