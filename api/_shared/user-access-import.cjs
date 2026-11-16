@@ -43,7 +43,8 @@ async function parseWorkbook(input) {
     if (seen.has(email)) { duplicates.push(email); continue; }
     seen.add(email);
     const jobTitle = first(row, ['title', 'job title', 'jobtitle', 'puesto']);
-    users.push({ email, displayName: first(row, ['display name', 'displayname', 'name', 'nombre']), jobTitle, objectId: first(row, ['object id', 'objectid', 'entra object id']), blocked: ['true', 'yes', '1', 'blocked'].includes(first(row, ['block credential', 'blockcredential', 'blocked', 'bloqueado']).toLowerCase()), proposedPermissions: defaultPermissionsForJobTitle(jobTitle) });
+    const entraObjectId = first(row, ['object id', 'objectid', 'entra object id']);
+    users.push({ email, displayName: first(row, ['display name', 'displayname', 'name', 'nombre']), jobTitle, entraObjectId, objectId: entraObjectId, blocked: ['true', 'yes', '1', 'blocked'].includes(first(row, ['block credential', 'blockcredential', 'blocked', 'bloqueado']).toLowerCase()), proposedPermissions: defaultPermissionsForJobTitle(jobTitle) });
   }
   return { users, duplicates, rowCount: rows.length };
 }
@@ -65,7 +66,7 @@ function compareImport(imported, existing) {
 }
 
 function makeEntity(user, permissions, now = new Date().toISOString()) {
-  return { partitionKey: 'users', rowKey: emailRowKey(user.email), identityProvider: '', staticWebAppsUserId: '', email: user.email, userPrincipalName: user.email, displayName: user.displayName, jobTitle: user.jobTitle, objectId: user.objectId, status: 'active', permissions: JSON.stringify(permissions), importedAt: now, updatedAt: now };
+  return { partitionKey: 'users', rowKey: emailRowKey(user.email), identityProvider: '', staticWebAppsUserId: '', email: user.email, userPrincipalName: user.email, displayName: user.displayName, jobTitle: user.jobTitle, entraObjectId: user.entraObjectId || user.objectId || '', status: 'active', permissions: JSON.stringify(permissions), importedAt: now, updatedAt: now };
 }
 
 module.exports = { MAX_FILE_BYTES, parseWorkbook, compareImport, makeEntity };

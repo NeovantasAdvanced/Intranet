@@ -40,6 +40,7 @@ const invoke = async (body) => { const context = { res: null }; await handler(co
   assert.equal(applied.status, 200); assert.equal(JSON.parse(applied.body).applied[0].status, 'created');
   assert.equal(JSON.parse(applied.body).applied[1].status, 'updated');
   assert.equal(JSON.parse(entities.get('existing-row').permissions).repositories, true);
+  assert.equal([...entities.values()].find((entity) => entity.email === 'new@neovantas.com').entraObjectId, 'oid-1');
   assert.ok([...entities.values()].some((entity) => entity.partitionKey === 'audit' && entity.action === 'import-create'));
   const blockedApply = await invoke({ mode: 'apply', fileBase64, approvals: [{ email: 'blocked@neovantas.com', action: 'create' }] });
   assert.equal(JSON.parse(blockedApply.body).applied[0].status, 'skipped');
