@@ -15,7 +15,8 @@
     "test:news-parser": "node scripts/tests/news-html-parser.mjs",
     "test:news-html": "node scripts/tests/news-html-parser.mjs",
     "test:neo-ui": "node scripts/tests/neo-ui.mjs",
-    "test:neo-scope": "node api/tests/neo-scope.test.cjs"
+    "test:neo-scope": "node api/tests/neo-scope.test.cjs",
+    "test:sharepoint-catalog": "node scripts/tests/sharepoint-catalog.mjs"
   },
   "dependencies": {
     "@azure/data-tables": "^13.3.0",

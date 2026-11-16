@@ -761,7 +761,7 @@ export function HomeDashboard() {
         matchesQuery(searchQuery, [item.title, item.description, item.owner, item.status, item.phone]),
       ),
     }),
-    [searchQuery],
+    [searchQuery, assistants, news, events, documents, sharePointResources, apps, supportAst],
   );
 
   const visibleSharePointResources = useMemo(() => {
@@ -809,7 +809,7 @@ export function HomeDashboard() {
     });
 
     return Array.from(projectNames).sort((left, right) => left.localeCompare(right, 'es', { sensitivity: 'base' }));
-  }, []);
+  }, [sharePointResources]);
 
   const sharePointStats = useMemo(() => {
     const projectResources = sharePointResources.filter((item) => item.scope === 'projects');
@@ -820,7 +820,7 @@ export function HomeDashboard() {
       projectSheets: projectResources.filter((item) => normalizeSearch(item.category).includes('ficha')).length,
       finalDocs: projectResources.filter((item) => normalizeSearch(item.category).includes('documento final')).length,
     };
-  }, []);
+  }, [sharePointResources]);
 
   const homeQuickLinkMatches = searchQuery
     ? homeQuickLinks.filter((item) => matchesQuery(searchQuery, [item.title, item.description])).length
