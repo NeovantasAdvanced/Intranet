@@ -13,7 +13,8 @@ module.exports = async function userAccessAdmin(context, req) {
       const users = await listEntities();
       return send(context, 200, { ok: true, users: users.map((user) => ({ ...user, permissions: parsePermissions(user) })) });
     }
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    let body;
+    try { body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {}); } catch { return send(context, 400, { ok: false, error: 'invalid-request' }); }
     if (body.action === 'create') {
       const email = String(body.email || '').trim().toLowerCase();
       const displayName = String(body.displayName || '').trim();
