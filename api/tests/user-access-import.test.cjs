@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const handler = require('../user-access-import/index.cjs');
 const store = require('../_shared/user-access-store.cjs');
 
@@ -13,17 +13,22 @@ const fake = {
   async *listEntities() { yield* entities.values(); },
 };
 const principal = Buffer.from(JSON.stringify({ identityProvider: 'aad', userId: 'admin-id', userDetails: 'admin@neovantas.com', userRoles: ['admin'] })).toString('base64');
-const workbook = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([
-  { 'Display name': 'Analyst Nuevo', 'User principal name': 'new@neovantas.com', Title: 'Analyst', 'Object Id': 'oid-1', 'Block credential': 'False' },
-  { 'Display name': 'Consultant Nuevo', 'User principal name': 'consultant@neovantas.com', Title: 'Consultant', 'Object Id': 'oid-2', 'Block credential': 'False' },
-  { 'Display name': 'Bloqueada', 'User principal name': 'blocked@neovantas.com', Title: 'Consultant', 'Object Id': 'oid-3', 'Block credential': 'True' },
-  { 'Display name': 'Existente', 'User principal name': 'existing@neovantas.com', Title: 'Consultant', 'Object Id': 'oid-4', 'Block credential': 'False' },
-]), 'Users');
-const fileBase64 = XLSX.write(workbook, { type: 'base64', bookType: 'xlsx' });
 const invoke = async (body) => { const context = { res: null }; await handler(context, { method: 'POST', headers: { 'x-ms-client-principal': principal }, body }); return context.res; };
 
 (async () => {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Users');
+  sheet.columns = [
+    { header: 'Display name', key: 'displayName' }, { header: 'User principal name', key: 'email' },
+    { header: 'Title', key: 'title' }, { header: 'Object Id', key: 'objectId' }, { header: 'Block credential', key: 'blocked' },
+  ];
+  sheet.addRows([
+    ['Analyst Nuevo', 'new@neovantas.com', 'Analyst', 'oid-1', 'False'],
+    ['Consultant Nuevo', 'consultant@neovantas.com', 'Consultant', 'oid-2', 'False'],
+    ['Bloqueada', 'blocked@neovantas.com', 'Consultant', 'oid-3', 'True'],
+    ['Existente', 'existing@neovantas.com', 'Consultant', 'oid-4', 'False'],
+  ]);
+  const fileBase64 = await workbook.xlsx.writeBuffer().then((buffer) => Buffer.from(buffer).toString('base64'));
   store.setUserAccessTableClientForTests(fake);
   entities.set('existing-row', { partitionKey: 'users', rowKey: 'existing-row', email: 'existing@neovantas.com', status: 'active', permissions: JSON.stringify({ intranet: true, repositories: false, neo: false, admin: false }) });
   const simulation = await invoke({ mode: 'simulate', fileBase64 });

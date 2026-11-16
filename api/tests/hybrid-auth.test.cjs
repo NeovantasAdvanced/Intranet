@@ -2,7 +2,9 @@ const assert = require('node:assert/strict');
 const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const store = require('../_shared/user-access-store.cjs');
 const previous = process.env.CORPORATE_ALLOWED_USER_IDS;
+const previousFallback = process.env.USER_ACCESS_LEGACY_FALLBACK;
 process.env.CORPORATE_ALLOWED_USER_IDS = 'legacy-id,suspended-id';
+process.env.USER_ACCESS_LEGACY_FALLBACK = 'true';
 const principal = (id, email = `${id}@neovantas.com`, roles = []) => ({ identityProvider: 'aad', userId: id, userDetails: email, userRoles: roles });
 const entities = new Map();
 const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { const error = new Error('not-found'); error.statusCode = 404; throw error; } return entities.get(key); }, async *listEntities() { yield* entities.values(); }, async updateEntity(entity) { entities.set(entity.rowKey, { ...entity }); } };
@@ -31,5 +33,6 @@ const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { cons
   assert.equal((await authorizePrincipal(principal('legacy-id'), 'intranet')).allowed, false);
   store.resetUserAccessTableClientForTests();
   if (previous === undefined) delete process.env.CORPORATE_ALLOWED_USER_IDS; else process.env.CORPORATE_ALLOWED_USER_IDS = previous;
+  if (previousFallback === undefined) delete process.env.USER_ACCESS_LEGACY_FALLBACK; else process.env.USER_ACCESS_LEGACY_FALLBACK = previousFallback;
   console.log('hybrid auth tests passed');
-})().catch((error) => { store.resetUserAccessTableClientForTests(); if (previous === undefined) delete process.env.CORPORATE_ALLOWED_USER_IDS; else process.env.CORPORATE_ALLOWED_USER_IDS = previous; throw error; });
+})().catch((error) => { store.resetUserAccessTableClientForTests(); if (previous === undefined) delete process.env.CORPORATE_ALLOWED_USER_IDS; else process.env.CORPORATE_ALLOWED_USER_IDS = previous; if (previousFallback === undefined) delete process.env.USER_ACCESS_LEGACY_FALLBACK; else process.env.USER_ACCESS_LEGACY_FALLBACK = previousFallback; throw error; });

@@ -63,7 +63,7 @@ function buildImportedEntity(rosterEntry) {
     userPrincipalName: normalizeEmail(rosterEntry.userPrincipalName || email),
     displayName: rosterEntry.displayName || '',
     status: 'active',
-    permissions: JSON.stringify(initialPermissions(email)),
+    permissions: JSON.stringify(defaultPermissionsForJobTitle(rosterEntry.jobTitle)),
     importedAt: now,
     updatedAt: now,
   };
@@ -81,7 +81,7 @@ function buildPendingEntity(principal, rosterEntry) {
     userPrincipalName: normalizeEmail(rosterEntry.userPrincipalName || email),
     displayName: rosterEntry.displayName || '',
     status: 'pending',
-    permissions: JSON.stringify(initialPermissions(email)),
+    permissions: JSON.stringify(defaultPermissionsForJobTitle(rosterEntry.jobTitle)),
     requestedAt: now,
     updatedAt: now,
   };
@@ -114,7 +114,7 @@ async function getByPrincipal(principal) {
   try { return await client.getEntity('users', rowKey(principal)); } catch (error) {
     if (error.statusCode !== 404) throw error;
     const emailSet = new Set(getPrincipalEmailCandidates(principal).map(normalizeEmail));
-    const matches = (await collectEntities(client)).filter((entity) => emailSet.has(normalizeEmail(entity.email)) || emailSet.has(normalizeEmail(entity.userPrincipalName)));
+    const matches = (await collectEntities(client)).filter((entity) => entity.partitionKey === 'users' && (emailSet.has(normalizeEmail(entity.email)) || emailSet.has(normalizeEmail(entity.userPrincipalName))));
     if (matches.length > 1) { const conflict = new Error('user-access-identity-conflict'); conflict.statusCode = 409; throw conflict; }
     if (matches.length === 1) return matches[0];
     throw error;

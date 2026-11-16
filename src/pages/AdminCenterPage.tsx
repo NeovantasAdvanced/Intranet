@@ -385,7 +385,7 @@ export function AdminCenterPage() {
               {centralUsers.length === 0 ? <p className="text-sm text-neovantas-muted">No hay solicitudes registradas.</p> : centralUsers.map((user) => <div key={user.rowKey} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neovantas-line bg-white px-3 py-3"><div><p className="text-sm font-semibold text-neovantas-navy">{user.displayName || user.email || 'Usuario'}</p><p className="text-xs text-neovantas-muted">{user.email || 'Identidad vinculada'} · {user.status}</p></div><div className="flex flex-wrap gap-2">{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active', permissions: { ...user.permissions, intranet: true, neo: false, admin: false } })} className="rounded-full bg-neovantas-blue px-3 py-1.5 text-xs font-semibold text-white">Aprobar</button> : null}{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'revoked' })} className="rounded-full border border-neovantas-line px-3 py-1.5 text-xs font-semibold text-neovantas-muted">Rechazar</button> : null}{user.status === 'active' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'suspended' })} className="rounded-full border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700">Suspender</button> : null}{user.status === 'suspended' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active' })} className="rounded-full border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700">Reactivar</button> : null}</div></div>) }
             </div>
           </div>
-          <div className="border-b border-neovantas-line bg-[#eef6ff] px-5 py-4">
+          <div className="hidden">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h3 className="text-base font-semibold text-neovantas-navy">Usuarios y permisos</h3>
@@ -401,7 +401,7 @@ export function AdminCenterPage() {
             </div>
           </div>
 
-          <div className="border-b border-neovantas-line bg-white px-5 py-4">
+          <div className="hidden">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <label className="flex items-center gap-2 rounded-full border border-neovantas-line bg-white px-4 py-2 text-sm text-neovantas-muted">
                 <Search className="h-4 w-4 shrink-0 text-neovantas-blue" aria-hidden="true" />
@@ -440,6 +440,7 @@ export function AdminCenterPage() {
             </div>
           </div>
 
+          <div className="hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-neovantas-line">
               <thead className="bg-white">
@@ -488,6 +489,7 @@ export function AdminCenterPage() {
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
 
           <div className="border-t border-neovantas-line bg-[#f7f9fc] p-5">

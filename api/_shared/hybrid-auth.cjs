@@ -32,6 +32,7 @@ async function authorizePrincipal(principal, permission = 'intranet') {
       return decision(permission === 'admin' ? require('./auth.cjs').isAdminPrincipal(principal) : true, 'legacy-test');
     }
     if (error.statusCode !== 404) return decision(false, 'authorization-storage-error');
+    if (process.env.NODE_ENV !== 'test' && String(process.env.USER_ACCESS_LEGACY_FALLBACK || '').toLowerCase() !== 'true') return decision(false, 'not-authorized');
     const ids = String(process.env.CORPORATE_ALLOWED_USER_IDS || '').split(',').map((value) => value.trim()).filter(Boolean);
     const userId = String(principal.userId || '').trim();
     if (!ids.includes(userId)) return decision(false, 'not-authorized');

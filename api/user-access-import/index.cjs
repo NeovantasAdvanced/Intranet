@@ -16,7 +16,7 @@ module.exports = async function userAccessImport(context, req) {
   const file = fileFrom(body);
   if (!file || file.length > MAX_FILE_BYTES) return send(context, 400, { ok: false, error: file?.length > MAX_FILE_BYTES ? 'file-too-large' : 'file-required' });
   try {
-    const imported = parseWorkbook(file);
+    const imported = await parseWorkbook(file);
     const existing = await store.listEntities();
     const report = compareImport(imported, existing);
     if (body.mode === 'simulate') return send(context, 200, { ok: true, mode: 'simulate', ...report });

@@ -1,4 +1,4 @@
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const { normalizeEmail } = require('./auth.cjs');
 const { defaultPermissionsForJobTitle, parsePermissions, emailRowKey } = require('./user-access-store.cjs');
 
@@ -17,16 +17,24 @@ function first(row, names) {
   return key ? text(row[key]) : '';
 }
 
-function parseWorkbook(input) {
+async function parseWorkbook(input) {
   const buffer = Buffer.isBuffer(input) ? input : Buffer.from(input || '');
   if (!buffer.length || buffer.length > MAX_FILE_BYTES) {
     const error = new Error('invalid-import-file'); error.code = buffer.length > MAX_FILE_BYTES ? 'file-too-large' : 'empty-file'; throw error;
   }
-  let workbook;
-  try { workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false }); } catch { const error = new Error('invalid-import-file'); error.code = 'invalid-workbook'; throw error; }
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const workbook = new ExcelJS.Workbook();
+  try { await workbook.xlsx.load(buffer); } catch { const error = new Error('invalid-import-file'); error.code = 'invalid-workbook'; throw error; }
+  const sheet = workbook.worksheets[0];
   if (!sheet) { const error = new Error('invalid-import-file'); error.code = 'missing-sheet'; throw error; }
-  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+  const headerRow = sheet.getRow(1);
+  const headers = headerRow.values.slice(1).map((value) => text(value));
+  const rows = [];
+  sheet.eachRow((row, index) => {
+    if (index === 1) return;
+    const record = {};
+    row.values.slice(1).forEach((value, columnIndex) => { record[headers[columnIndex] || `column${columnIndex + 1}`] = text(value); });
+    rows.push(record);
+  });
   const users = []; const seen = new Set(); const duplicates = [];
   for (const row of rows) {
     const email = normalizeEmail(first(row, ['email', 'user principal name', 'userprincipalname', 'correo']));

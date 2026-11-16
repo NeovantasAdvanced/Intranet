@@ -8,11 +8,13 @@
   "dependencies": {
     "@azure/data-tables": "^13.3.0",
     "@azure/storage-blob": "12.27.0",
+    "exceljs": "^4.4.0",
     "pdf-parse": "1.1.1",
-    "xlsx": "^0.18.5"
+    "uuid": "11.1.1"
   },
   "overrides": {
-    "@azure/abort-controller": "2.1.2"
+    "@azure/abort-controller": "2.1.2",
+    "uuid": "11.1.1"
   },
   "scripts": {
     "test:knowledge-blob": "set NODE_ENV=test&& node tests/corporate-auth.test.cjs && node tests/user-access-store.test.cjs && node tests/user-access-migration.test.cjs && node tests/user-access-admin.test.cjs && node tests/user-access-import.test.cjs && node tests/hybrid-auth.test.cjs && node tests/portal-data-permissions.test.cjs && node tests/knowledge-blob.test.cjs && node tests/knowledge-diagnostics.test.cjs && node tests/knowledge-pdf.test.cjs && node tests/knowledge-extract.test.cjs && node tests/knowledge-index.test.cjs && node tests/knowledge-publish.test.cjs && node tests/knowledge-search.test.cjs && node tests/knowledge-ask.test.cjs && node tests/knowledge-ask-permissions.test.cjs && node tests/knowledge-ask.integration.test.cjs && node tests/knowledge-ask-public-init.test.cjs && node tests/knowledge-debug.test.cjs && node tests/public-knowledge.test.cjs && node tests/knowledge-web-sync-performance.test.cjs && node tests/knowledge-web-partial.test.cjs && node tests/neo-persona.test.cjs && node tests/neo-corporate-routing.test.cjs && node tests/neo-history-evidence.test.cjs && node tests/neo-openai-retry.test.cjs"
