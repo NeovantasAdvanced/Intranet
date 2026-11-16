@@ -44,6 +44,13 @@ function initialPermissions(email) {
   };
 }
 
+function defaultPermissionsForJobTitle(jobTitle) {
+  const title = normalizeEmail(jobTitle);
+  const intern = title.includes('intern');
+  const repositoryByRole = !intern && ['consultant', 'senior consultant', 'lead', 'manager', 'director'].some((role) => title.includes(role));
+  return { intranet: true, repositories: repositoryByRole, neo: false, admin: false };
+}
+
 function buildImportedEntity(rosterEntry) {
   const email = normalizeEmail(rosterEntry.email || rosterEntry.userPrincipalName);
   const now = new Date().toISOString();
@@ -142,7 +149,25 @@ function parsePermissions(entity) {
   try { return JSON.parse(entity.permissions || '{}'); } catch { return {}; }
 }
 
-async function listEntities() { return collectEntities(await getClient()); }
+async function listEntities() { return (await collectEntities(await getClient())).filter((entity) => entity.partitionKey === 'users' || !entity.partitionKey); }
+
+async function createEntity(entity) {
+  const client = await getClient();
+  await client.createEntity({ partitionKey: 'users', ...entity });
+  return entity;
+}
+
+async function appendAudit(entry) {
+  const client = await getClient();
+  const entity = {
+    partitionKey: 'audit',
+    rowKey: `${Date.now()}-${crypto.randomUUID()}`,
+    ...entry,
+    createdAt: new Date().toISOString(),
+  };
+  await client.createEntity(entity);
+  return entity;
+}
 
 async function updateEntity(rowKeyValue, patch) {
   const client = await getClient();
@@ -155,4 +180,4 @@ async function updateEntity(rowKeyValue, patch) {
 function setUserAccessTableClientForTests(client) { testClient = client; }
 function resetUserAccessTableClientForTests() { testClient = undefined; clientPromise = undefined; clientKey = undefined; }
 
-module.exports = { getRosterEntry, initialPermissions, buildPendingEntity, buildImportedEntity, emailRowKey, requestAccess, linkPrincipal, getByPrincipal, listEntities, parsePermissions, updateEntity, getClient, setUserAccessTableClientForTests, resetUserAccessTableClientForTests, rowKey };
+module.exports = { getRosterEntry, initialPermissions, defaultPermissionsForJobTitle, buildPendingEntity, buildImportedEntity, emailRowKey, requestAccess, linkPrincipal, getByPrincipal, listEntities, createEntity, appendAudit, parsePermissions, updateEntity, getClient, setUserAccessTableClientForTests, resetUserAccessTableClientForTests, rowKey };

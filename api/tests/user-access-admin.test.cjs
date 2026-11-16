@@ -6,6 +6,7 @@ const previous = process.env.CORPORATE_ALLOWED_USER_IDS;
 process.env.CORPORATE_ALLOWED_USER_IDS = 'admin-id';
 const entities = new Map();
 const fake = {
+  async createEntity(entity) { if (entities.has(entity.rowKey)) { const error = new Error('exists'); error.statusCode = 409; throw error; } entities.set(entity.rowKey, { ...entity }); },
   async getEntity(partition, key) { if (!entities.has(key)) { const error = new Error('missing'); error.statusCode = 404; throw error; } return { ...entities.get(key), etag: 'e1' }; },
   async updateEntity(entity) { entities.set(entity.rowKey, entity); },
   async *listEntities() { yield* entities.values(); },
@@ -22,6 +23,19 @@ const contextFor = () => ({ res: null });
   await handler(update, { method: 'POST', headers: { 'x-ms-client-principal': admin }, body: { rowKey: target.rowKey, status: 'active', permissions: { intranet: true, neo: false, repositories: true, admin: false } } });
   assert.equal(update.res.status, 200);
   assert.equal(JSON.parse(update.res.body).user.status, 'active');
+  const create = contextFor();
+  await handler(create, { method: 'POST', headers: { 'x-ms-client-principal': admin }, body: { action: 'create', displayName: 'Nuevo Usuario', email: 'nuevo@neovantas.com', jobTitle: 'Consultant' } });
+  assert.equal(create.res.status, 201);
+  const created = JSON.parse(create.res.body).user;
+  assert.equal(created.permissions.intranet, true);
+  assert.equal(created.permissions.repositories, true);
+  assert.equal(entities.get(created.rowKey).partitionKey, 'users');
+  assert.ok([...entities.values()].some((entity) => entity.partitionKey === 'audit' && entity.action === 'create'));
+  const lastAdminRow = { partitionKey: 'users', rowKey: 'last-admin', email: 'last-admin@neovantas.com', status: 'active', permissions: JSON.stringify({ intranet: true, neo: false, repositories: false, admin: true }) };
+  entities.set(lastAdminRow.rowKey, lastAdminRow);
+  const lastAdmin = contextFor();
+  await handler(lastAdmin, { method: 'POST', headers: { 'x-ms-client-principal': admin }, body: { rowKey: lastAdminRow.rowKey, status: 'revoked', permissions: { intranet: true, neo: false, repositories: false, admin: false } } });
+  assert.equal(lastAdmin.res.status, 409);
   const self = contextFor();
   const selfRow = store.rowKey({ identityProvider: 'aad', userId: 'admin-id' });
   await handler(self, { method: 'POST', headers: { 'x-ms-client-principal': admin }, body: { rowKey: selfRow, status: 'revoked' } });

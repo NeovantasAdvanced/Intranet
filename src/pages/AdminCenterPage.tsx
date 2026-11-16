@@ -33,6 +33,7 @@ type CentralAccessUser = {
   rowKey: string;
   displayName?: string;
   email?: string;
+  jobTitle?: string;
   status: 'pending' | 'active' | 'suspended' | 'revoked';
   permissions: { intranet?: boolean; neo?: boolean; repositories?: boolean; admin?: boolean };
 };
@@ -107,6 +108,8 @@ export function AdminCenterPage() {
   } | null>(null);
   const [centralUsers, setCentralUsers] = useState<CentralAccessUser[]>([]);
   const [centralMessage, setCentralMessage] = useState('');
+  const [centralSearch, setCentralSearch] = useState('');
+  const [newUser, setNewUser] = useState({ displayName: '', email: '', jobTitle: '' });
   const adminAllowed = sharedPortalData.profile.isAdmin;
 
   useEffect(() => {
@@ -123,6 +126,7 @@ export function AdminCenterPage() {
   useEffect(() => { if (adminAllowed) loadCentralUsers(); }, [adminAllowed]);
 
   const updateCentralUser = async (user: CentralAccessUser, changes: Partial<Pick<CentralAccessUser, 'status' | 'permissions'>>) => {
+    if (!window.confirm(`¿Confirmas el cambio para ${user.email || user.displayName || 'este usuario'}?`)) return;
     setCentralMessage('Guardando cambios...');
     try {
       const response = await fetch('/api/user-access-admin', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rowKey: user.rowKey, ...changes }) });
@@ -131,6 +135,24 @@ export function AdminCenterPage() {
       setCentralMessage('Cambios guardados.');
     } catch { setCentralMessage('No se pudieron guardar los cambios.'); }
   };
+
+  const createCentralUser = async () => {
+    if (!newUser.displayName || !newUser.email) return setCentralMessage('Nombre y correo son obligatorios.');
+    if (!window.confirm(`¿Crear el usuario ${newUser.email}?`)) return;
+    setCentralMessage('Creando usuario...');
+    try {
+      const response = await fetch('/api/user-access-admin', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'create', ...newUser }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'create-failed');
+      setNewUser({ displayName: '', email: '', jobTitle: '' });
+      await loadCentralUsers();
+      setCentralMessage('Usuario creado con permisos iniciales mínimos.');
+    } catch (error) { setCentralMessage(error instanceof Error && error.message === 'user-already-exists' ? 'El usuario ya existe.' : 'No se pudo crear el usuario.'); }
+  };
+
+  const toggleCentralPermission = (user: CentralAccessUser, permission: 'intranet' | 'repositories' | 'neo' | 'admin') => updateCentralUser(user, { permissions: { ...user.permissions, [permission]: !user.permissions?.[permission] } });
+
+  const filteredCentralUsers = centralUsers.filter((user) => `${user.displayName || ''} ${user.email || ''} ${user.jobTitle || ''} ${user.status}`.toLowerCase().includes(centralSearch.trim().toLowerCase()));
 
   useEffect(() => {
     fetch('/api/portal-data?scope=admin', { credentials: 'same-origin', cache: 'no-store' })
@@ -322,6 +344,19 @@ export function AdminCenterPage() {
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div><h3 className="text-base font-semibold text-neovantas-navy">Solicitudes y autorizaciones centrales</h3><p className="mt-1 text-sm text-neovantas-muted">Las aprobaciones se guardan en Table Storage. La activación efectiva de la intranet sigue pendiente de la migración.</p></div>
               {centralMessage ? <span className="text-sm font-semibold text-neovantas-blue" role="status">{centralMessage}</span> : null}
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <input value={centralSearch} onChange={(event) => setCentralSearch(event.target.value)} placeholder="Buscar usuario central" className="min-w-[240px] flex-1 rounded-full border border-neovantas-line px-4 py-2 text-sm text-neovantas-navy" />
+                <input value={newUser.displayName} onChange={(event) => setNewUser({ ...newUser, displayName: event.target.value })} placeholder="Nombre nuevo usuario" className="rounded-full border border-neovantas-line px-4 py-2 text-sm" />
+                <input value={newUser.email} onChange={(event) => setNewUser({ ...newUser, email: event.target.value })} placeholder="correo@neovantas.com" type="email" className="rounded-full border border-neovantas-line px-4 py-2 text-sm" />
+                <input value={newUser.jobTitle} onChange={(event) => setNewUser({ ...newUser, jobTitle: event.target.value })} placeholder="Puesto" className="rounded-full border border-neovantas-line px-4 py-2 text-sm" />
+                <button type="button" onClick={createCentralUser} className="rounded-full bg-neovantas-blue px-4 py-2 text-sm font-semibold text-white">Añadir usuario</button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-neovantas-line text-left text-sm"><thead><tr className="text-xs uppercase tracking-[0.1em] text-neovantas-muted"><th className="px-3 py-2">Usuario</th><th className="px-3 py-2">Puesto</th><th className="px-3 py-2">Estado</th><th className="px-3 py-2">Permisos</th><th className="px-3 py-2">Acciones</th></tr></thead><tbody className="divide-y divide-neovantas-line">{filteredCentralUsers.map((user) => <tr key={user.rowKey}><td className="px-3 py-3"><div className="font-semibold text-neovantas-navy">{user.displayName || 'Sin nombre'}</div><div className="text-xs text-neovantas-muted">{user.email || 'Sin correo'}</div></td><td className="px-3 py-3 text-neovantas-muted">{user.jobTitle || 'Sin puesto'}</td><td className="px-3 py-3">{user.status}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-1">{(['intranet', 'repositories', 'neo', 'admin'] as const).map((permission) => <button key={permission} type="button" onClick={() => toggleCentralPermission(user, permission)} className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${user.permissions?.[permission] ? 'border-neovantas-blue bg-neovantas-navy text-white' : 'border-neovantas-line text-neovantas-muted'}`}>{permission}</button>)}</div></td><td className="px-3 py-3"><div className="flex flex-wrap gap-2">{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active', permissions: { ...user.permissions, intranet: true } })} className="rounded-full bg-neovantas-blue px-3 py-1 text-xs font-semibold text-white">Aprobar</button> : null}{user.status === 'active' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'suspended' })} className="rounded-full border border-amber-200 px-3 py-1 text-xs text-amber-700">Suspender</button> : null}{user.status === 'suspended' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active' })} className="rounded-full border border-emerald-200 px-3 py-1 text-xs text-emerald-700">Reactivar</button> : null}{user.status !== 'revoked' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'revoked' })} className="rounded-full border border-neovantas-line px-3 py-1 text-xs text-neovantas-muted">Revocar</button> : null}</div></td></tr>)}</tbody></table>
+                {filteredCentralUsers.length === 0 ? <p className="py-4 text-sm text-neovantas-muted">No hay usuarios que coincidan.</p> : null}
+              </div>
             </div>
             <div className="mt-4 space-y-2">
               {centralUsers.length === 0 ? <p className="text-sm text-neovantas-muted">No hay solicitudes registradas.</p> : centralUsers.map((user) => <div key={user.rowKey} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neovantas-line bg-white px-3 py-3"><div><p className="text-sm font-semibold text-neovantas-navy">{user.displayName || user.email || 'Usuario'}</p><p className="text-xs text-neovantas-muted">{user.email || 'Identidad vinculada'} · {user.status}</p></div><div className="flex flex-wrap gap-2">{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active', permissions: { ...user.permissions, intranet: true, neo: false, admin: false } })} className="rounded-full bg-neovantas-blue px-3 py-1.5 text-xs font-semibold text-white">Aprobar</button> : null}{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'revoked' })} className="rounded-full border border-neovantas-line px-3 py-1.5 text-xs font-semibold text-neovantas-muted">Rechazar</button> : null}{user.status === 'active' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'suspended' })} className="rounded-full border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700">Suspender</button> : null}{user.status === 'suspended' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active' })} className="rounded-full border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700">Reactivar</button> : null}</div></div>) }
