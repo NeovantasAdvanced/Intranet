@@ -1,4 +1,4 @@
-const { getPrincipalFromRequest, getPrincipalEmailCandidates } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
 const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 
 const data = {
@@ -21,9 +21,10 @@ const adminData = {
 };
 
 function profileFor(principal, authorization, adminAuthorization) {
-  const emails = new Set(getPrincipalEmailCandidates(principal));
-  const repositoryEmails = new Set(adminData.accessControl.repositories.allowedEmails.map((email) => String(email).trim().toLowerCase()));
-  return { isAdmin: Boolean(adminAuthorization?.allowed), canViewRepositories: authorization.source === 'table' ? authorization.permissions.repositories === true : [...emails].some((email) => repositoryEmails.has(email)) };
+  return {
+    isAdmin: Boolean(adminAuthorization?.allowed),
+    canViewRepositories: authorization.permissions.repositories === true,
+  };
 }
 
 module.exports = async function portalData(context, req) {
