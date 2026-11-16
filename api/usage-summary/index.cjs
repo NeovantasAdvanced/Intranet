@@ -4,7 +4,8 @@ const {
   getStorageMode,
   listUsageEntities,
 } = require('../_shared/usage-store.cjs');
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 
 function getLookbackDays(req) {
   const raw = Number(req.query?.days ?? req.query?.lookbackDays ?? process.env.USAGE_LOOKBACK_DAYS ?? '365');
@@ -19,7 +20,7 @@ function getMonthFilter(req) {
 module.exports = async function usageSummary(context, req) {
   const principal = getPrincipalFromRequest(req);
 
-  if (!isAdminPrincipal(principal)) {
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) {
     context.res = {
       status: 403,
       headers: { 'content-type': 'application/json' },

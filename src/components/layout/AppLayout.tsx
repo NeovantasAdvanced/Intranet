@@ -14,11 +14,11 @@ import { APP_VERSION } from '../../config/appVersion';
 import { AuthSessionProvider } from '../../context/AuthSessionContext';
 import { PortalSearchProvider } from '../../context/PortalSearchContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
-import { canAccessFeature } from '../../lib/accessControl';
-import { canAccessNeo } from '../../lib/neoAccess';
+import { usePortalData } from '../../context/PortalDataContext';
 import { trackUsageEvent } from '../../lib/usageTracking';
 import { Header } from './Header';
 import { NeoConversationProvider } from '../../context/NeoConversationContext';
+import { PortalDataProvider } from '../../context/PortalDataContext';
 import { NeoFloatingAssistant } from '../neo/NeoChat';
 
 type AppLayoutProps = {
@@ -37,7 +37,8 @@ const navigation = [
 ];
 
 function PortalNavigation() {
-  const { clientPrincipal } = useAuthSession();
+  useAuthSession();
+  const { data: portalData } = usePortalData();
   const [activeHash, setActiveHash] = useState(() =>
     typeof window === 'undefined' ? '#inicio' : window.location.hash || '#inicio',
   );
@@ -55,10 +56,9 @@ function PortalNavigation() {
     };
   }, []);
 
-  const userEmail = clientPrincipal?.userDetails ?? '';
-  const isAdministrator = canAccessNeo(clientPrincipal);
+  const canUseNeo = portalData.profile.canUseNeo;
   const visibleNavigation = navigation.filter((item) =>
-    item.href === '#repositorios' ? canAccessFeature('repositories', userEmail) : true,
+    item.href === '#repositorios' ? portalData.profile.canViewRepositories : true,
   );
 
   return (
@@ -67,7 +67,7 @@ function PortalNavigation() {
       aria-label="Navegacion principal"
     >
       <div className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto py-2">
-        {[...visibleNavigation, ...(isAdministrator ? [{ label: 'Neo', icon: Sparkles, href: '/neo' }] : [])].map((item) => {
+        {[...visibleNavigation, ...(canUseNeo ? [{ label: 'Neo', icon: Sparkles, href: '/neo' }] : [])].map((item) => {
           const Icon = item.icon;
           const isActive = item.href === '/neo'
             ? window.location.pathname === item.href
@@ -144,6 +144,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <AuthSessionProvider>
       <NeoConversationProvider>
+      <PortalDataProvider>
       <PortalSearchProvider searchValue={searchValue} setSearchValue={setSearchValue}>
         <div className="min-h-screen bg-[#f7f9fc] text-neovantas-ink">
           <div className="sticky top-0 z-30">
@@ -151,9 +152,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <PortalNavigation />
           </div>
 
-          <main className="min-w-0 bg-transparent px-4 py-7 md:px-8 md:py-10">
-            <div className="mx-auto w-full max-w-[1200px]">{children}</div>
-          </main>
+          <main className="min-w-0 bg-transparent px-4 py-7 md:px-8 md:py-10"><div className="mx-auto w-full max-w-[1200px]">{children}</div></main>
 
           <footer className="px-4 pb-4 md:px-8">
             <div className="mx-auto flex w-full max-w-[1200px] justify-end">
@@ -165,6 +164,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {window.location.pathname !== '/neo' ? <NeoFloatingAssistant /> : null}
         </div>
       </PortalSearchProvider>
+      </PortalDataProvider>
       </NeoConversationProvider>
     </AuthSessionProvider>
   );

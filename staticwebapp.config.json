@@ -11,6 +11,10 @@
       "statusCode": 302
     },
     {
+      "route": "/.auth/login/github",
+      "statusCode": 404
+    },
+    {
       "route": "/*",
       "allowedRoles": ["authenticated"]
     }
@@ -26,10 +30,6 @@
     "401": {
       "statusCode": 302,
       "redirect": "/.auth/login/aad?post_login_redirect_uri=/"
-    },
-    "404": {
-      "rewrite": "/index.html",
-      "statusCode": 200
     }
   }
 }

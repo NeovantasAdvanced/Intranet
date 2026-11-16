@@ -2,10 +2,19 @@ const assert = require('node:assert/strict');
 const persona = require('../_shared/neo-persona.cjs');
 const knowledgeIndex = require('../_shared/knowledge-index.cjs');
 const search = require('../_shared/knowledge-search.cjs');
+const store = require('../_shared/user-access-store.cjs');
 
-const admin = Buffer.from(JSON.stringify({ userDetails: 'admin@neovantas.com', userRoles: ['admin'], claims: [] })).toString('base64');
+const adminPrincipal = { identityProvider: 'aad', userId: 'neo-test-admin', userDetails: 'admin@neovantas.com', userRoles: ['admin'], claims: [] };
+const admin = Buffer.from(JSON.stringify(adminPrincipal)).toString('base64');
 
 async function run() {
+  store.setUserAccessTableClientForTests({
+    async getEntity(_partition, key) {
+      if (key !== store.rowKey(adminPrincipal)) { const error = new Error('missing'); error.statusCode = 404; throw error; }
+      return { rowKey: key, identityProvider: 'aad', staticWebAppsUserId: adminPrincipal.userId, email: adminPrincipal.userDetails, status: 'active', permissions: JSON.stringify({ intranet: true, neo: true, admin: true, repositories: true }) };
+    },
+    async *listEntities() {},
+  });
   assert.equal(persona.classifyScope('¿Cómo se hace una paella?'), 'out-of-scope');
   assert.equal(persona.classifyScope('Recomiéndame una serie para esta noche'), 'out-of-scope');
   assert.equal(persona.classifyScope('¿Cómo puedo arreglar el grifo de mi casa?'), 'out-of-scope');
@@ -51,6 +60,7 @@ async function run() {
   assert.equal(loaded, false, 'out-of-scope queries must not load document indexes');
   knowledgeIndex.getIndexReadStorageConfig = originalConfig;
   search.loadPublishedIndexes = originalLoad;
+  store.resetUserAccessTableClientForTests();
   console.log('neo scope tests passed');
 }
 

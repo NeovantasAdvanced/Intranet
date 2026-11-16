@@ -1,5 +1,3 @@
-import accessControlData from '../data/access-control.json';
-
 type AccessControlData = {
   admins?: {
     allowedEmails?: string[];
@@ -12,7 +10,7 @@ type AccessControlData = {
 
 type FeatureKey = 'admins' | 'repositories';
 
-const accessControl = accessControlData as AccessControlData;
+const accessControl: AccessControlData = {};
 
 function normalizeEmail(value: string) {
   return String(value ?? '').trim().toLowerCase();

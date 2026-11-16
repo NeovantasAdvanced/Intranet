@@ -2,7 +2,7 @@ import { ChevronDown, LoaderCircle, Maximize2, Send, ShieldAlert, X } from 'luci
 import { useState } from 'react';
 import { useNeoConversation, type NeoMessage } from '../../context/NeoConversationContext';
 import { useAuthSession } from '../../context/AuthSessionContext';
-import { canAccessNeo } from '../../lib/neoAccess';
+import { usePortalData } from '../../context/PortalDataContext';
 import { NeoAvatar } from './NeoAvatar';
 import floatingIsotype from '../../assets/neo-floating-isotype-light.png';
 
@@ -51,11 +51,12 @@ function ConversationMessage({ message }: { message: NeoMessage }) {
 }
 
 export function NeoChat({ mode = 'full', onMinimize, onClose }: { mode?: 'full' | 'floating'; onMinimize?: () => void; onClose?: () => void }) {
-  const { authChecked, clientPrincipal } = useAuthSession();
+  const { authChecked } = useAuthSession();
+  const { data: portalData } = usePortalData();
   const { question, setQuestion, messages, loading, error, ask } = useNeoConversation();
   const isFloating = mode === 'floating';
   if (!authChecked) return <div className="p-5 text-sm text-neovantas-muted">Comprobando permisos...</div>;
-  if (!canAccessNeo(clientPrincipal)) return <div className="p-5 text-sm text-neovantas-muted"><ShieldAlert className="mr-2 inline h-4 w-4 text-[#b45309]" />Acceso restringido.</div>;
+  if (!portalData.profile.canUseNeo) return <div className="p-5 text-sm text-neovantas-muted"><ShieldAlert className="mr-2 inline h-4 w-4 text-[#b45309]" />Acceso restringido.</div>;
   return <section className={isFloating ? 'flex h-full min-h-0 flex-col' : 'overflow-hidden rounded-2xl border border-neovantas-line bg-white shadow-panel'} aria-label="Neo, asistente de Neovantas">
     <div className="flex items-start gap-3 border-b border-neovantas-line bg-neovantas-mist px-4 py-3">
       <NeoAvatar size="header" />
@@ -70,9 +71,10 @@ export function NeoChat({ mode = 'full', onMinimize, onClose }: { mode?: 'full' 
 }
 
 export function NeoFloatingAssistant() {
-  const { authChecked, clientPrincipal } = useAuthSession();
+  const { authChecked } = useAuthSession();
+  const { data: portalData } = usePortalData();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  if (!authChecked || !canAccessNeo(clientPrincipal)) return null;
+  if (!authChecked || !portalData.profile.canUseNeo) return null;
   return <div className="fixed bottom-5 right-5 z-40 md:bottom-7 md:right-7"><button type="button" aria-label="Pregúntale a Neo" title="Pregúntale a Neo" onClick={() => { setOpen(true); setMinimized(false); }} className="focus-ring grid h-14 w-14 place-items-center rounded-full bg-neovantas-navy text-white shadow-[0_12px_30px_rgba(10,10,63,0.3)] transition hover:scale-105 hover:bg-neovantas-blue"><img src={floatingIsotype} alt="Neo" className="h-10 w-10 object-contain" /></button>{open && !minimized ? <div className="absolute bottom-[4.5rem] right-0 h-[min(600px,calc(100vh-13rem))] max-h-[calc(100vh-13rem)] w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-neovantas-line bg-white shadow-[0_24px_70px_rgba(10,10,63,0.25)]"><NeoChat mode="floating" onMinimize={() => setMinimized(true)} onClose={() => setOpen(false)} /></div> : null}</div>;
 }

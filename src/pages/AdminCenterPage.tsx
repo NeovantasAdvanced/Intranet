@@ -1,18 +1,11 @@
 import { ArrowLeft, BarChart3, Boxes, LayoutDashboard, RefreshCcw, Search, Users2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { APP_VERSION } from '../config/appVersion';
-import accessControlData from '../data/access-control.json';
-import appsData from '../data/apps.json';
-import documentsData from '../data/documents.json';
-import eventsData from '../data/events.json';
-import newsData from '../data/news.json';
-import organizationUsersData from '../data/organization-users.json';
-import sharePointCatalogData from '../data/sharepointCatalog.json';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { useAuthSession } from '../context/AuthSessionContext';
-import { canAccessStatistics, isAdmin } from '../lib/accessControl';
+import { usePortalData } from '../context/PortalDataContext';
 import { AdminUsagePage } from './AdminUsagePage';
 import { type DocumentItem, type EventItem, type InternalApp, type NewsItem, type SharePointCatalog } from '../types/content';
 
@@ -36,6 +29,14 @@ type AccessControlDraft = {
   };
 };
 
+type CentralAccessUser = {
+  rowKey: string;
+  displayName?: string;
+  email?: string;
+  status: 'pending' | 'active' | 'suspended' | 'revoked';
+  permissions: { intranet?: boolean; neo?: boolean; repositories?: boolean; admin?: boolean };
+};
+
 const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'statistics', label: 'Estadísticas', icon: BarChart3 },
@@ -43,14 +44,6 @@ const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = 
   { id: 'sync', label: 'Sincronizaciones', icon: RefreshCcw },
   { id: 'content', label: 'Contenido', icon: Boxes },
 ];
-
-const organizationUsers = organizationUsersData as OrganizationUserRow[];
-const accessControl = accessControlData as AccessControlDraft;
-const news = newsData as NewsItem[];
-const events = eventsData as EventItem[];
-const sharePointCatalog = sharePointCatalogData as SharePointCatalog;
-const apps = appsData as InternalApp[];
-const documents = documentsData as DocumentItem[];
 
 function getInitialTab() {
   if (typeof window === 'undefined') {
@@ -98,17 +91,61 @@ function SectionPill({ children }: { children: string }) {
 
 export function AdminCenterPage() {
   const { clientPrincipal } = useAuthSession();
+  const { data: sharedPortalData } = usePortalData();
   const userEmail = clientPrincipal?.userDetails ?? '';
   const [activeTab, setActiveTab] = useState<AdminTabId>(getInitialTab);
   const [userSearch, setUserSearch] = useState('');
   const [permissionFilter, setPermissionFilter] = useState<'all' | 'repositories' | 'no-access' | 'admins'>('all');
-  const adminAllowed = isAdmin(userEmail);
+  const [portalData, setPortalData] = useState<{
+    organizationUsers: OrganizationUserRow[];
+    accessControl: AccessControlDraft;
+    news: NewsItem[];
+    events: EventItem[];
+    sharePointCatalog: SharePointCatalog;
+    apps: InternalApp[];
+    documents: DocumentItem[];
+  } | null>(null);
+  const [centralUsers, setCentralUsers] = useState<CentralAccessUser[]>([]);
+  const [centralMessage, setCentralMessage] = useState('');
+  const adminAllowed = sharedPortalData.profile.isAdmin;
 
   useEffect(() => {
     const syncTabFromUrl = () => setActiveTab(getInitialTab());
     window.addEventListener('popstate', syncTabFromUrl);
     return () => window.removeEventListener('popstate', syncTabFromUrl);
   }, []);
+
+  const loadCentralUsers = () => fetch('/api/user-access-admin', { credentials: 'same-origin', cache: 'no-store' })
+    .then(async (response) => { if (!response.ok) throw new Error('central-users-failed'); return response.json(); })
+    .then((payload) => setCentralUsers(payload.users ?? []))
+    .catch(() => setCentralMessage('No se pudo cargar el registro central.'));
+
+  useEffect(() => { if (adminAllowed) loadCentralUsers(); }, [adminAllowed]);
+
+  const updateCentralUser = async (user: CentralAccessUser, changes: Partial<Pick<CentralAccessUser, 'status' | 'permissions'>>) => {
+    setCentralMessage('Guardando cambios...');
+    try {
+      const response = await fetch('/api/user-access-admin', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rowKey: user.rowKey, ...changes }) });
+      if (!response.ok) throw new Error('central-users-update-failed');
+      await loadCentralUsers();
+      setCentralMessage('Cambios guardados.');
+    } catch { setCentralMessage('No se pudieron guardar los cambios.'); }
+  };
+
+  useEffect(() => {
+    fetch('/api/portal-data?scope=admin', { credentials: 'same-origin', cache: 'no-store' })
+      .then(async (response) => { if (!response.ok) throw new Error('admin-data-failed'); return response.json(); })
+      .then((payload) => setPortalData(payload))
+      .catch(() => setPortalData(null));
+  }, []);
+
+  const organizationUsers = portalData?.organizationUsers ?? [];
+  const accessControl = portalData?.accessControl ?? { admins: { allowedEmails: [] }, repositories: { allowedEmails: [], blockedEmails: [] } };
+  const news = portalData?.news ?? [];
+  const events = portalData?.events ?? [];
+  const sharePointCatalog = portalData?.sharePointCatalog ?? { repositories: [], resources: [] };
+  const apps = portalData?.apps ?? [];
+  const documents = portalData?.documents ?? [];
 
   const lastNewsDate = news[0]?.rawMeta?.dateText ?? formatDate(news[0]?.date);
   const lastNewsCount = news.length;
@@ -213,7 +250,7 @@ export function AdminCenterPage() {
     JSON.stringify(repositoryDraftEmails.slice().sort()) !== JSON.stringify(repositoryAllowedEmails.slice().sort()) ||
     Object.keys(repositoryChangeSource).length > 0;
 
-  const adminCanViewStatistics = canAccessStatistics(userEmail);
+  const adminCanViewStatistics = sharedPortalData.profile.isAdmin;
 
   if (!adminAllowed) {
     return <div className="rounded-[24px] border border-neovantas-line bg-white p-8 text-neovantas-navy">No tienes permisos para acceder a esta sección.</div>;
@@ -281,6 +318,15 @@ export function AdminCenterPage() {
 
       {activeTab === 'users' ? (
         <Card className="overflow-hidden border border-neovantas-line bg-white p-0 shadow-[0_8px_24px_rgba(11,27,54,0.04)]">
+          <div className="border-b border-neovantas-line bg-[#fffaf0] px-5 py-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div><h3 className="text-base font-semibold text-neovantas-navy">Solicitudes y autorizaciones centrales</h3><p className="mt-1 text-sm text-neovantas-muted">Las aprobaciones se guardan en Table Storage. La activación efectiva de la intranet sigue pendiente de la migración.</p></div>
+              {centralMessage ? <span className="text-sm font-semibold text-neovantas-blue" role="status">{centralMessage}</span> : null}
+            </div>
+            <div className="mt-4 space-y-2">
+              {centralUsers.length === 0 ? <p className="text-sm text-neovantas-muted">No hay solicitudes registradas.</p> : centralUsers.map((user) => <div key={user.rowKey} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neovantas-line bg-white px-3 py-3"><div><p className="text-sm font-semibold text-neovantas-navy">{user.displayName || user.email || 'Usuario'}</p><p className="text-xs text-neovantas-muted">{user.email || 'Identidad vinculada'} · {user.status}</p></div><div className="flex flex-wrap gap-2">{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active', permissions: { ...user.permissions, intranet: true, neo: false, admin: false } })} className="rounded-full bg-neovantas-blue px-3 py-1.5 text-xs font-semibold text-white">Aprobar</button> : null}{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'revoked' })} className="rounded-full border border-neovantas-line px-3 py-1.5 text-xs font-semibold text-neovantas-muted">Rechazar</button> : null}{user.status === 'active' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'suspended' })} className="rounded-full border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700">Suspender</button> : null}{user.status === 'suspended' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active' })} className="rounded-full border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700">Reactivar</button> : null}</div></div>) }
+            </div>
+          </div>
           <div className="border-b border-neovantas-line bg-[#eef6ff] px-5 py-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>

@@ -1,4 +1,5 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const { getKnowledgeConfig } = require('../_shared/knowledge-blob.cjs');
 const knowledgePdf = require('../_shared/knowledge-pdf.cjs');
 const { TARGET_DOCUMENT } = knowledgePdf;
@@ -13,7 +14,7 @@ module.exports = async function (context, req) {
     send(context, 401, { ok: false, document: TARGET_DOCUMENT, extractionStatus: 'authentication-required' });
     return;
   }
-  if (!isAdminPrincipal(principal)) {
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) {
     send(context, 403, { ok: false, document: TARGET_DOCUMENT, extractionStatus: 'admin-access-required' });
     return;
   }

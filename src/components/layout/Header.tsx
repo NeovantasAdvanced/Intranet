@@ -1,9 +1,7 @@
 import { LogIn, LogOut, Settings2, ShieldCheck, UserRound } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
 import { useAuthSession } from '../../context/AuthSessionContext';
-import { isAdminUser, isOffice365AdminPrincipal } from '../../lib/admin';
-import { isAdmin as isAdminAllowed } from '../../lib/accessControl';
+import neovantasLogo from '../../assets/NEOVANTAS_LOGOTIPO_LIGHT_BLUE.svg';
+import { usePortalData } from '../../context/PortalDataContext';
 
 function getInitials(value: string) {
   return value
@@ -20,18 +18,8 @@ function getLinkProps(href: string) {
 
 export function Header() {
   const { authChecked, clientPrincipal, displayName } = useAuthSession();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    setIsAdmin(
-      Boolean(
-        clientPrincipal &&
-          (isAdminAllowed(clientPrincipal.userDetails) ||
-            isAdminUser(clientPrincipal.userDetails) ||
-            isOffice365AdminPrincipal(clientPrincipal)),
-      ),
-    );
-  }, [clientPrincipal]);
+  const { data: portalData } = usePortalData();
+  const isAdmin = portalData.profile.isAdmin;
 
   const isAuthenticated = Boolean(clientPrincipal);
   const authHref = isAuthenticated ? '/logout' : '/login';

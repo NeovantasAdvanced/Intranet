@@ -1,4 +1,5 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const { getKnowledgeConfig, listKnowledgeDocuments } = require('../_shared/knowledge-blob.cjs');
 
 module.exports = async function knowledgeDiagnostics(context, req) {
@@ -7,7 +8,7 @@ module.exports = async function knowledgeDiagnostics(context, req) {
     context.res = { status: 401, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: false, error: 'Authentication required.' }) };
     return;
   }
-  if (!isAdminPrincipal(principal)) {
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) {
     context.res = { status: 403, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: false, error: 'Forbidden.' }) };
     return;
   }

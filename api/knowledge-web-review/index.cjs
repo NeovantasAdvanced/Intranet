@@ -1,10 +1,11 @@
-const { getPrincipalFromRequest, isAdminPrincipal } = require('../_shared/auth.cjs');
+const { getPrincipalFromRequest } = require('../_shared/auth.cjs');
+const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const web = require('../_shared/public-knowledge.cjs');
 function send(context, status, body) { context.res = { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body }; }
 module.exports = async function knowledgeWebReview(context, req) {
   const principal = getPrincipalFromRequest(req);
   if (!principal) return send(context, 401, { ok: false, reviewStatus: 'authentication-required' });
-  if (!isAdminPrincipal(principal)) return send(context, 403, { ok: false, reviewStatus: 'admin-access-required' });
+  if (!(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, reviewStatus: 'admin-access-required' });
   const candidateId = typeof req?.query?.candidateId === 'string' ? req.query.candidateId.trim() : '';
   if (!/^[a-f0-9]{24}$/.test(candidateId)) return send(context, 400, { ok: false, reviewStatus: 'invalid-candidate' });
   const config = web.getConfig();
