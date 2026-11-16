@@ -37,7 +37,7 @@ const navigation = [
 ];
 
 function PortalNavigation() {
-  const { clientPrincipal } = useAuthSession();
+  useAuthSession();
   const { data: portalData } = usePortalData();
   const [activeHash, setActiveHash] = useState(() =>
     typeof window === 'undefined' ? '#inicio' : window.location.hash || '#inicio',
@@ -56,7 +56,7 @@ function PortalNavigation() {
     };
   }, []);
 
-  const isAdministrator = portalData.profile.isAdmin;
+  const canUseNeo = portalData.profile.canUseNeo;
   const visibleNavigation = navigation.filter((item) =>
     item.href === '#repositorios' ? portalData.profile.canViewRepositories : true,
   );
@@ -67,7 +67,7 @@ function PortalNavigation() {
       aria-label="Navegacion principal"
     >
       <div className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto py-2">
-        {[...visibleNavigation, ...(isAdministrator ? [{ label: 'Neo', icon: Sparkles, href: '/neo' }] : [])].map((item) => {
+        {[...visibleNavigation, ...(canUseNeo ? [{ label: 'Neo', icon: Sparkles, href: '/neo' }] : [])].map((item) => {
           const Icon = item.icon;
           const isActive = item.href === '/neo'
             ? window.location.pathname === item.href

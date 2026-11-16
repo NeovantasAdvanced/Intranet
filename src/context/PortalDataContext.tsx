@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { Assistant, DocumentItem, EventItem, InternalApp, NewsItem, SharePointCatalog, SupportAstItem } from '../types/content';
 
 export type PortalData = {
-  profile: { isAdmin: boolean; canViewRepositories: boolean };
+  profile: { isAdmin: boolean; canUseNeo: boolean; canViewRepositories: boolean };
   assistants: Assistant[];
   news: NewsItem[];
   events: EventItem[];
@@ -13,7 +13,7 @@ export type PortalData = {
   quickLinks: unknown[];
 };
 
-const emptyData: PortalData = { profile: { isAdmin: false, canViewRepositories: false }, assistants: [], news: [], events: [], documents: [], sharePointCatalog: { repositories: [], resources: [] }, apps: [], supportAst: [], quickLinks: [] };
+const emptyData: PortalData = { profile: { isAdmin: false, canUseNeo: false, canViewRepositories: false }, assistants: [], news: [], events: [], documents: [], sharePointCatalog: { repositories: [], resources: [] }, apps: [], supportAst: [], quickLinks: [] };
 const PortalDataContext = createContext<{ data: PortalData; loading: boolean; error: boolean }>({ data: emptyData, loading: true, error: false });
 
 export function PortalDataProvider({ children }: { children: ReactNode }) {

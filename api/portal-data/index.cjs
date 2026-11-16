@@ -23,6 +23,7 @@ const adminData = {
 function profileFor(principal, authorization, adminAuthorization) {
   return {
     isAdmin: Boolean(adminAuthorization?.allowed),
+    canUseNeo: authorization.permissions.neo === true,
     canViewRepositories: authorization.permissions.repositories === true,
   };
 }
@@ -36,7 +37,7 @@ module.exports = async function portalData(context, req) {
   }
 
   const scope = String(req.query?.scope || '').trim().toLowerCase();
-  const adminAuthorization = scope === 'admin' ? await authorizePrincipal(principal, 'admin') : null;
+  const adminAuthorization = await authorizePrincipal(principal, 'admin');
   if (scope === 'admin' && !adminAuthorization.allowed) {
     context.res = { status: 403, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify({ ok: false, error: 'Forbidden' }) };
     return;
