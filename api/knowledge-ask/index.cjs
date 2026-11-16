@@ -68,7 +68,7 @@ module.exports = async function knowledgeAsk(context, req) {
   let phase = 'authentication'; let resultCount = 0; let contextResultCount = 0; let validReferenceCount = 0; let openAIStatus = null;
   const principal = getPrincipalFromRequest(req);
   if (!principal) return send(context, 401, { ok: false, answerStatus: 'authentication-required' });
-  if (!(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, answerStatus: 'admin-access-required' });
+  if (!(await authorizePrincipal(principal, 'neo')).allowed) return send(context, 403, { ok: false, answerStatus: 'neo-access-required' });
   const body = parseBody(req?.body);
   if (!body) return send(context, 400, { ok: false, answerStatus: 'invalid-request' });
   const question = typeof body.question === 'string' ? body.question.trim() : '';

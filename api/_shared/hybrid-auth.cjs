@@ -14,7 +14,7 @@ function entityMatchesPrincipal(entity, principal) {
 async function authorizePrincipal(principal, permission = 'intranet') {
   if (!principal) return decision(false, 'authentication-required');
   if (!isCorporateIdentity(principal) && !(process.env.NODE_ENV === 'test' && require('./auth.cjs').isAdminPrincipal(principal))) return decision(false, 'corporate-identity-required');
-  if (process.env.NODE_ENV === 'test' && !principal.userId && isAdminPrincipal(principal)) return decision(permission === 'admin', 'legacy-test');
+  if (process.env.NODE_ENV === 'test' && !principal.userId && isAdminPrincipal(principal)) return decision(permission === 'admin' || permission === 'neo', 'legacy-test');
   try {
     const linked = await linkPrincipal(principal);
     if (linked.status === 'not-registered' || linked.status === 'not-in-corporate-roster' || (linked.status === 'not-eligible' && process.env.NODE_ENV === 'test' && isAdminPrincipal(principal))) throw Object.assign(new Error('not-found'), { statusCode: 404 });
