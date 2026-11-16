@@ -33,9 +33,11 @@ type CentralAccessUser = {
   rowKey: string;
   displayName?: string;
   email?: string;
+  jobTitle?: string;
   status: 'pending' | 'active' | 'suspended' | 'revoked';
   permissions: { intranet?: boolean; neo?: boolean; repositories?: boolean; admin?: boolean };
 };
+type ImportReport = { counts: { incoming: number; matches: number; additions: number; absences: number; blocked: number; differences: number }; additions: Array<{ email: string; displayName: string; jobTitle: string; proposedPermissions: Record<string, boolean>; selected?: boolean }>; blocked: Array<{ email: string }>; differences: Array<{ email: string; selected?: boolean; incoming?: { displayName: string; jobTitle: string } }> };
 
 const tabs: { id: AdminTabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -107,6 +109,11 @@ export function AdminCenterPage() {
   } | null>(null);
   const [centralUsers, setCentralUsers] = useState<CentralAccessUser[]>([]);
   const [centralMessage, setCentralMessage] = useState('');
+  const [centralSearch, setCentralSearch] = useState('');
+  const [newUser, setNewUser] = useState({ displayName: '', email: '', jobTitle: '' });
+  const [importReport, setImportReport] = useState<ImportReport | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importMessage, setImportMessage] = useState('');
   const adminAllowed = sharedPortalData.profile.isAdmin;
 
   useEffect(() => {
@@ -123,6 +130,7 @@ export function AdminCenterPage() {
   useEffect(() => { if (adminAllowed) loadCentralUsers(); }, [adminAllowed]);
 
   const updateCentralUser = async (user: CentralAccessUser, changes: Partial<Pick<CentralAccessUser, 'status' | 'permissions'>>) => {
+    if (!window.confirm(`¿Confirmas el cambio para ${user.email || user.displayName || 'este usuario'}?`)) return;
     setCentralMessage('Guardando cambios...');
     try {
       const response = await fetch('/api/user-access-admin', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rowKey: user.rowKey, ...changes }) });
@@ -131,6 +139,36 @@ export function AdminCenterPage() {
       setCentralMessage('Cambios guardados.');
     } catch { setCentralMessage('No se pudieron guardar los cambios.'); }
   };
+
+  const createCentralUser = async () => {
+    if (!newUser.displayName || !newUser.email) return setCentralMessage('Nombre y correo son obligatorios.');
+    if (!window.confirm(`¿Crear el usuario ${newUser.email}?`)) return;
+    setCentralMessage('Creando usuario...');
+    try {
+      const response = await fetch('/api/user-access-admin', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'create', ...newUser }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'create-failed');
+      setNewUser({ displayName: '', email: '', jobTitle: '' });
+      await loadCentralUsers();
+      setCentralMessage('Usuario creado con permisos iniciales mínimos.');
+    } catch (error) { setCentralMessage(error instanceof Error && error.message === 'user-already-exists' ? 'El usuario ya existe.' : 'No se pudo crear el usuario.'); }
+  };
+
+  const toggleCentralPermission = (user: CentralAccessUser, permission: 'intranet' | 'repositories' | 'neo' | 'admin') => updateCentralUser(user, { permissions: { ...user.permissions, [permission]: !user.permissions?.[permission] } });
+
+  const readImportFile = (file: File) => new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(',')[1] || ''); reader.onerror = reject; reader.readAsDataURL(file); });
+  const simulateImport = async () => {
+    if (!importFile) return setImportMessage('Selecciona un archivo Excel.');
+    setImportMessage('Analizando archivo...');
+    try { const fileBase64 = await readImportFile(importFile); const response = await fetch('/api/user-access-import', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode: 'simulate', fileBase64 }) }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error); setImportReport({ ...payload, additions: payload.additions.map((user: ImportReport['additions'][number]) => ({ ...user, selected: true })), differences: payload.differences.map((difference: ImportReport['differences'][number]) => ({ ...difference, selected: false })) }); setImportMessage('Simulación completada sin escrituras.'); } catch { setImportMessage('No se pudo analizar el Excel.'); }
+  };
+  const applyImport = async () => {
+    if (!importFile || !importReport) return;
+    if (!window.confirm('¿Aplicar únicamente las altas seleccionadas de esta simulación?')) return;
+    try { const fileBase64 = await readImportFile(importFile); const approvals = [...importReport.additions.filter((user) => user.selected).map((user) => ({ email: user.email, action: 'create', permissions: user.proposedPermissions })), ...importReport.differences.filter((difference) => difference.selected).map((difference) => ({ email: difference.email, action: 'update' }))]; const response = await fetch('/api/user-access-import', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode: 'apply', fileBase64, approvals }) }); if (!response.ok) throw new Error('apply-failed'); await loadCentralUsers(); setImportMessage('Cambios aprobados aplicados.'); } catch { setImportMessage('No se pudieron aplicar los cambios.'); }
+  };
+
+  const filteredCentralUsers = centralUsers.filter((user) => `${user.displayName || ''} ${user.email || ''} ${user.jobTitle || ''} ${user.status}`.toLowerCase().includes(centralSearch.trim().toLowerCase()));
 
   useEffect(() => {
     fetch('/api/portal-data?scope=admin', { credentials: 'same-origin', cache: 'no-store' })
@@ -323,11 +361,31 @@ export function AdminCenterPage() {
               <div><h3 className="text-base font-semibold text-neovantas-navy">Solicitudes y autorizaciones centrales</h3><p className="mt-1 text-sm text-neovantas-muted">Las aprobaciones se guardan en Table Storage. La activación efectiva de la intranet sigue pendiente de la migración.</p></div>
               {centralMessage ? <span className="text-sm font-semibold text-neovantas-blue" role="status">{centralMessage}</span> : null}
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <input value={centralSearch} onChange={(event) => setCentralSearch(event.target.value)} placeholder="Buscar usuario central" className="min-w-[240px] flex-1 rounded-full border border-neovantas-line px-4 py-2 text-sm text-neovantas-navy" />
+                <input value={newUser.displayName} onChange={(event) => setNewUser({ ...newUser, displayName: event.target.value })} placeholder="Nombre nuevo usuario" className="rounded-full border border-neovantas-line px-4 py-2 text-sm" />
+                <input value={newUser.email} onChange={(event) => setNewUser({ ...newUser, email: event.target.value })} placeholder="correo@neovantas.com" type="email" className="rounded-full border border-neovantas-line px-4 py-2 text-sm" />
+                <input value={newUser.jobTitle} onChange={(event) => setNewUser({ ...newUser, jobTitle: event.target.value })} placeholder="Puesto" className="rounded-full border border-neovantas-line px-4 py-2 text-sm" />
+                <button type="button" onClick={createCentralUser} className="rounded-full bg-neovantas-blue px-4 py-2 text-sm font-semibold text-white">Añadir usuario</button>
+                <label className="cursor-pointer rounded-full border border-neovantas-line bg-white px-4 py-2 text-sm font-semibold text-neovantas-blue">Seleccionar Excel<input type="file" accept=".xlsx,.xls" className="hidden" onChange={(event) => setImportFile(event.target.files?.[0] || null)} /></label>
+                <button type="button" onClick={simulateImport} className="rounded-full border border-neovantas-blue px-4 py-2 text-sm font-semibold text-neovantas-blue">Simular importación</button>
+                {importReport ? <button type="button" onClick={applyImport} className="rounded-full bg-neovantas-navy px-4 py-2 text-sm font-semibold text-white">Aplicar altas propuestas</button> : null}
+              </div>
+              {importMessage ? <p className="w-full text-sm text-neovantas-blue" role="status">{importMessage}</p> : null}
+              {importReport ? <div className="w-full rounded-xl border border-neovantas-line bg-[#f7f9fc] p-3 text-xs text-neovantas-muted">{importReport.counts.incoming} filas válidas · {importReport.counts.matches} coincidencias · {importReport.counts.additions} altas · {importReport.counts.absences} ausencias (sin baja automática) · {importReport.counts.blocked} bloqueadas · {importReport.counts.differences} diferencias. Las altas nuevas se crean con permisos efectivos visibles en la simulación.</div> : null}
+              {importReport ? <div className="w-full space-y-2">{importReport.additions.map((user) => <div key={user.email} className="flex flex-wrap items-center gap-2 rounded-lg border border-neovantas-line bg-white p-2 text-xs"><label className="flex items-center gap-2 font-semibold text-neovantas-navy"><input type="checkbox" checked={user.selected !== false} onChange={() => setImportReport({ ...importReport, additions: importReport.additions.map((item) => item.email === user.email ? { ...item, selected: item.selected === false } : item) })} />{user.displayName} · {user.email}</label>{(['repositories', 'neo', 'admin'] as const).map((permission) => <button key={permission} type="button" onClick={() => setImportReport({ ...importReport, additions: importReport.additions.map((item) => item.email === user.email ? { ...item, proposedPermissions: { ...item.proposedPermissions, [permission]: !item.proposedPermissions[permission] } } : item) })} className={`rounded-full border px-2 py-1 ${user.proposedPermissions[permission] ? 'border-neovantas-blue bg-neovantas-navy text-white' : 'border-neovantas-line text-neovantas-muted'}`}>{permission}</button>)}</div>)}</div> : null}
+              {importReport?.differences.length ? <div className="w-full space-y-2"><p className="text-xs font-semibold text-neovantas-navy">Diferencias de datos (no seleccionadas por defecto)</p>{importReport.differences.map((difference) => <label key={difference.email} className="flex items-center gap-2 rounded-lg border border-neovantas-line bg-white p-2 text-xs text-neovantas-muted"><input type="checkbox" checked={difference.selected === true} onChange={() => setImportReport({ ...importReport, differences: importReport.differences.map((item) => item.email === difference.email ? { ...item, selected: !item.selected } : item) })} />Actualizar datos de {difference.email}</label>)}</div> : null}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-neovantas-line text-left text-sm"><thead><tr className="text-xs uppercase tracking-[0.1em] text-neovantas-muted"><th className="px-3 py-2">Usuario</th><th className="px-3 py-2">Puesto</th><th className="px-3 py-2">Estado</th><th className="px-3 py-2">Permisos</th><th className="px-3 py-2">Acciones</th></tr></thead><tbody className="divide-y divide-neovantas-line">{filteredCentralUsers.map((user) => <tr key={user.rowKey}><td className="px-3 py-3"><div className="font-semibold text-neovantas-navy">{user.displayName || 'Sin nombre'}</div><div className="text-xs text-neovantas-muted">{user.email || 'Sin correo'}</div></td><td className="px-3 py-3 text-neovantas-muted">{user.jobTitle || 'Sin puesto'}</td><td className="px-3 py-3">{user.status}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-1">{(['intranet', 'repositories', 'neo', 'admin'] as const).map((permission) => <button key={permission} type="button" onClick={() => toggleCentralPermission(user, permission)} className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${user.permissions?.[permission] ? 'border-neovantas-blue bg-neovantas-navy text-white' : 'border-neovantas-line text-neovantas-muted'}`}>{permission}</button>)}</div></td><td className="px-3 py-3"><div className="flex flex-wrap gap-2">{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active', permissions: { ...user.permissions, intranet: true } })} className="rounded-full bg-neovantas-blue px-3 py-1 text-xs font-semibold text-white">Aprobar</button> : null}{user.status === 'active' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'suspended' })} className="rounded-full border border-amber-200 px-3 py-1 text-xs text-amber-700">Suspender</button> : null}{user.status === 'suspended' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active' })} className="rounded-full border border-emerald-200 px-3 py-1 text-xs text-emerald-700">Reactivar</button> : null}{user.status !== 'revoked' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'revoked' })} className="rounded-full border border-neovantas-line px-3 py-1 text-xs text-neovantas-muted">Revocar</button> : null}</div></td></tr>)}</tbody></table>
+                {filteredCentralUsers.length === 0 ? <p className="py-4 text-sm text-neovantas-muted">No hay usuarios que coincidan.</p> : null}
+              </div>
+            </div>
+            <div className="hidden">
               {centralUsers.length === 0 ? <p className="text-sm text-neovantas-muted">No hay solicitudes registradas.</p> : centralUsers.map((user) => <div key={user.rowKey} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neovantas-line bg-white px-3 py-3"><div><p className="text-sm font-semibold text-neovantas-navy">{user.displayName || user.email || 'Usuario'}</p><p className="text-xs text-neovantas-muted">{user.email || 'Identidad vinculada'} · {user.status}</p></div><div className="flex flex-wrap gap-2">{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active', permissions: { ...user.permissions, intranet: true, neo: false, admin: false } })} className="rounded-full bg-neovantas-blue px-3 py-1.5 text-xs font-semibold text-white">Aprobar</button> : null}{user.status === 'pending' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'revoked' })} className="rounded-full border border-neovantas-line px-3 py-1.5 text-xs font-semibold text-neovantas-muted">Rechazar</button> : null}{user.status === 'active' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'suspended' })} className="rounded-full border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700">Suspender</button> : null}{user.status === 'suspended' ? <button type="button" onClick={() => updateCentralUser(user, { status: 'active' })} className="rounded-full border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700">Reactivar</button> : null}</div></div>) }
             </div>
           </div>
-          <div className="border-b border-neovantas-line bg-[#eef6ff] px-5 py-4">
+          <div className="hidden">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h3 className="text-base font-semibold text-neovantas-navy">Usuarios y permisos</h3>
@@ -343,7 +401,7 @@ export function AdminCenterPage() {
             </div>
           </div>
 
-          <div className="border-b border-neovantas-line bg-white px-5 py-4">
+          <div className="hidden">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <label className="flex items-center gap-2 rounded-full border border-neovantas-line bg-white px-4 py-2 text-sm text-neovantas-muted">
                 <Search className="h-4 w-4 shrink-0 text-neovantas-blue" aria-hidden="true" />
@@ -382,6 +440,7 @@ export function AdminCenterPage() {
             </div>
           </div>
 
+          <div className="hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-neovantas-line">
               <thead className="bg-white">
@@ -430,6 +489,7 @@ export function AdminCenterPage() {
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
 
           <div className="border-t border-neovantas-line bg-[#f7f9fc] p-5">

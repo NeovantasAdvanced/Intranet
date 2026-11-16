@@ -2,7 +2,9 @@ const assert = require('node:assert/strict');
 const { authorizePrincipal } = require('../_shared/hybrid-auth.cjs');
 const store = require('../_shared/user-access-store.cjs');
 const previous = process.env.CORPORATE_ALLOWED_USER_IDS;
+const previousFallback = process.env.USER_ACCESS_LEGACY_FALLBACK;
 process.env.CORPORATE_ALLOWED_USER_IDS = 'legacy-id,suspended-id';
+process.env.USER_ACCESS_LEGACY_FALLBACK = 'true';
 const principal = (id, email = `${id}@neovantas.com`, roles = []) => ({ identityProvider: 'aad', userId: id, userDetails: email, userRoles: roles });
 const entities = new Map();
 const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { const error = new Error('not-found'); error.statusCode = 404; throw error; } return entities.get(key); }, async *listEntities() { yield* entities.values(); }, async updateEntity(entity) { entities.set(entity.rowKey, { ...entity }); } };
@@ -10,8 +12,8 @@ const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { cons
   store.setUserAccessTableClientForTests(fake);
   entities.set(store.rowKey(principal('active-id')), { identityProvider: 'aad', staticWebAppsUserId: 'active-id', email: 'active-id@neovantas.com', userPrincipalName: 'active-id@neovantas.com', status: 'active', permissions: JSON.stringify({ intranet: true, neo: false, repositories: true, admin: false }) });
   entities.set(store.rowKey(principal('pending-id')), { status: 'pending', permissions: JSON.stringify({ intranet: true }) });
-  entities.set(store.rowKey(principal('suspended-id')), { status: 'suspended', permissions: JSON.stringify({ intranet: true }) });
-  entities.set(store.rowKey(principal('revoked-id')), { status: 'revoked', permissions: JSON.stringify({ intranet: true }) });
+  entities.set(store.rowKey(principal('suspended-id')), { identityProvider: 'aad', staticWebAppsUserId: 'suspended-id', email: 'suspended-id@neovantas.com', status: 'suspended', permissions: JSON.stringify({ intranet: true }) });
+  entities.set(store.rowKey(principal('revoked-id')), { identityProvider: 'aad', staticWebAppsUserId: 'revoked-id', email: 'revoked-id@neovantas.com', status: 'revoked', permissions: JSON.stringify({ intranet: true }) });
   assert.equal((await authorizePrincipal(principal('active-id'), 'intranet')).allowed, true);
   assert.equal((await authorizePrincipal(principal('active-id'), 'neo')).allowed, false);
   entities.set(store.rowKey(principal('active-id')), { identityProvider: 'aad', staticWebAppsUserId: 'different-id', email: 'active-id@neovantas.com', status: 'active', permissions: JSON.stringify({ intranet: true }) });
@@ -24,6 +26,8 @@ const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { cons
   assert.equal((await authorizePrincipal(principal('pending-id'), 'intranet')).allowed, false);
   assert.equal((await authorizePrincipal(principal('suspended-id'), 'intranet')).allowed, false);
   assert.equal((await authorizePrincipal(principal('revoked-id'), 'intranet')).allowed, false);
+  assert.equal((await authorizePrincipal(principal('suspended-id'), 'intranet')).reason, 'user-suspended');
+  assert.equal((await authorizePrincipal(principal('revoked-id'), 'intranet')).reason, 'user-revoked');
   assert.equal((await authorizePrincipal(principal('legacy-id'), 'intranet')).allowed, true);
   assert.equal((await authorizePrincipal(principal('unknown-id'), 'intranet')).allowed, false);
   assert.equal((await authorizePrincipal(principal('legacy-id', 'external@example.com'), 'intranet')).allowed, false);
@@ -31,5 +35,6 @@ const fake = { async getEntity(_partition, key) { if (!entities.has(key)) { cons
   assert.equal((await authorizePrincipal(principal('legacy-id'), 'intranet')).allowed, false);
   store.resetUserAccessTableClientForTests();
   if (previous === undefined) delete process.env.CORPORATE_ALLOWED_USER_IDS; else process.env.CORPORATE_ALLOWED_USER_IDS = previous;
+  if (previousFallback === undefined) delete process.env.USER_ACCESS_LEGACY_FALLBACK; else process.env.USER_ACCESS_LEGACY_FALLBACK = previousFallback;
   console.log('hybrid auth tests passed');
-})().catch((error) => { store.resetUserAccessTableClientForTests(); if (previous === undefined) delete process.env.CORPORATE_ALLOWED_USER_IDS; else process.env.CORPORATE_ALLOWED_USER_IDS = previous; throw error; });
+})().catch((error) => { store.resetUserAccessTableClientForTests(); if (previous === undefined) delete process.env.CORPORATE_ALLOWED_USER_IDS; else process.env.CORPORATE_ALLOWED_USER_IDS = previous; if (previousFallback === undefined) delete process.env.USER_ACCESS_LEGACY_FALLBACK; else process.env.USER_ACCESS_LEGACY_FALLBACK = previousFallback; throw error; });
