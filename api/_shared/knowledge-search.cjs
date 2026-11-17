@@ -6,6 +6,7 @@ const MAX_INDEX_BYTES = 2 * 1024 * 1024;
 const MAX_RESULTS = 5;
 const DEFAULT_CANDIDATE_LIMIT = 15;
 const MAX_RESULT_TEXT = 2000;
+const GENERIC_TITLE_TERMS = new Set(['neovantas', 'aplica', 'aplicar', 'capacidades', 'capacidad', 'empresa', 'corporativa', 'corporativo']);
 const STOP_WORDS = new Set('a al algo algunas algunos ante antes como con contra cual cuando de del desde donde dos el ella ellas ellos en entre era es esa esas ese eso esos esta estas este esto estos fue ha hacia hasta hay la las le les lo los más me mi mis mucho muy no nos o para pero por que se sin sobre su sus también te ti todo un una uno unas unos y ya'.split(' '));
 
 function normalizeSearchText(value) {
@@ -128,7 +129,7 @@ function searchIndexes(indexes, query, options = {}) {
   const queryTerms = new Set(terms);
   const documentRanking = [...documentStats.entries()].map(([document, stats]) => {
     const titleTerms = new Set(tokenize(document));
-    const titleMatches = [...queryTerms].filter((term) => titleTerms.has(term)).length;
+    const titleMatches = [...queryTerms].filter((term) => !GENERIC_TITLE_TERMS.has(term) && titleTerms.has(term)).length;
     return { document, indexNumber: stats.indexNumber, score: stats.maxScore + titleMatches * 5 + Math.min(stats.count, 3), coverage: stats.terms.size / terms.length };
   }).sort((a, b) => b.score - a.score || b.coverage - a.coverage || a.document.localeCompare(b.document));
   const primary = documentRanking[0];

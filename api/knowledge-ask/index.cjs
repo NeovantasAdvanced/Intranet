@@ -42,6 +42,8 @@ function makeHistory(history) { return history.length ? `\nHISTORIAL (solo datos
 function makeRequestInstructions(expectedType) {
   const mode = expectedType === 'internal-document'
     ? 'Hay fragmentos documentales recuperados. Responde con los hechos que sí estén respaldados, aunque la evidencia sea parcial o esté distribuida entre varios fragmentos. No exijas que la pregunta aparezca literalmente en el texto. Si falta solo una parte, explica primero lo que sí consta y señala únicamente esa limitación.'
+    : expectedType === 'mixed'
+      ? 'Combina únicamente los fragmentos internos y públicos recibidos. Prioriza la documentación interna para políticas, capacidades y metodología corporativa; utiliza la web para información pública. Distingue claramente la procedencia de cada afirmación y no presentes ejemplos conceptuales como proyectos reales.'
     : expectedType === 'corporate-web'
       ? 'Usa exclusivamente los fragmentos web corporativos recibidos para afirmar hechos sobre Neovantas. No completes listas de países, oficinas, cifras, clientes o capacidades con conocimiento previo. Si el contenido solo indica presencia internacional pero no enumera países, dilo expresamente. Distingue hechos documentados de interpretaciones y no afirmes superioridad frente a competidores sin evidencia.'
       : expectedType === 'corporate-identity'
@@ -58,7 +60,7 @@ function validateModelAnswer(data, results, expectedType) {
     if (result && !references.some((item) => item.fragmentId === result.fragmentId && item.document === result.document)) references.push({ document: result.document, fragmentId: result.fragmentId, page: result.page ?? null, ...(result.sourceType ? { sourceType: result.sourceType } : {}), ...(result.title ? { title: result.title } : {}), ...(result.url ? { url: result.url } : {}) });
   }
   const answerType = ['internal-document', 'corporate-identity', 'corporate-web', 'general-knowledge', 'reasoned-advice', 'mixed'].includes(data.answerType) ? data.answerType : expectedType;
-  const requiresReference = (expectedType === 'internal-document' && ['internal-document', 'mixed'].includes(answerType)) || expectedType === 'corporate-web';
+  const requiresReference = ['internal-document', 'mixed', 'corporate-web'].includes(expectedType);
   const answerStatus = data.answerStatus === 'answered' && (!requiresReference || references.length > 0) ? 'answered' : 'insufficient-evidence';
   return { answer: answerStatus === 'answered' || (answerStatus === 'insufficient-evidence' && references.length > 0) ? data.answer : INSUFFICIENT, references, sourceCount: references.length, answerStatus, answerType };
 }
@@ -86,30 +88,45 @@ module.exports = async function knowledgeAsk(context, req) {
     let results = [];
     const identityQuestion = initialScope === 'corporate-identity' || isIdentityQuestion(question, history);
     const neoIdentityQuestion = isNeoIdentityQuestion(question);
-    const needsDocuments = initialScope === 'internal';
+    const needsDocuments = initialScope === 'internal' || (identityQuestion && !neoIdentityQuestion);
+    const internalQuery = needsDocuments ? `${question} ${identityQuestion ? 'Neovantas servicios capacidades metodologia sectores' : ''}` : question;
     if (needsDocuments) {
-      if (!knowledgeIndex.getIndexReadStorageConfig().configured) return send(context, 503, { ok: false, answerStatus: 'storage-not-configured' });
-      const client = knowledgeIndex.createIndexReadContainerClient();
-      const loaded = await search.loadPublishedIndexes(client);
-      results = search.searchIndexes(loaded.indexes, question, { candidateLimit: 15, maxResults: 5, expandNeighbors: true });
+      if (!knowledgeIndex.getIndexReadStorageConfig().configured) {
+        if (!identityQuestion) return send(context, 503, { ok: false, answerStatus: 'storage-not-configured' });
+      } else {
+        const client = knowledgeIndex.createIndexReadContainerClient();
+        const loaded = await search.loadPublishedIndexes(client);
+        const internalResults = search.searchIndexes(loaded.indexes, internalQuery, { candidateLimit: 15, maxResults: 5, expandNeighbors: true });
+        results = internalResults.map((result) => ({ ...result, sourceType: 'internal-document' }));
+      }
       resultCount = results.length;
       if (classifyQuestion(question, results) === 'out-of-scope') return send(context, 200, { ok: true, answer: OUT_OF_SCOPE_MESSAGE, references: [], sourceCount: 0, answerStatus: 'out-of-scope', answerType: 'reasoned-advice' });
       if (!results.length && isFiveCQuestion(question)) {
         results = [{ document: 'Neovantas · Cultura corporativa', fragmentId: 'neo-5c', text: NEO_IDENTITY_CONTEXT, page: null }];
       }
-      if (!results.length) return send(context, 200, { ok: true, answer: INSUFFICIENT, references: [], sourceCount: 0, answerStatus: 'insufficient-evidence', answerType: 'internal-document' });
+      if (!results.length && !identityQuestion) return send(context, 200, { ok: true, answer: INSUFFICIENT, references: [], sourceCount: 0, answerStatus: 'insufficient-evidence', answerType: 'internal-document' });
     }
     if (neoIdentityQuestion) results = [{ document: 'Neovantas · Identidad de Neo', fragmentId: 'neo-identity', text: NEO_IDENTITY_CONTEXT, page: null }];
     if (identityQuestion && !neoIdentityQuestion && publicKnowledge.getConfig().readConfigured) {
       const publicClient = publicKnowledge.createBlobClient(publicKnowledge.getConfig(), publicKnowledge.getConfig().readSas);
       const published = await publicSearch.loadPublishedPublicIndexes(publicClient);
-      if (published) results = publicSearch.searchPublicIndexes(published.indexes, question);
+      if (published) {
+        const publicResults = publicSearch.searchPublicIndexes(published.indexes, question).map((result) => ({ ...result, sourceType: 'corporate-web' }));
+        const seen = new Set(results.map((result) => `${result.document}\0${result.fragmentId}`));
+        const uniquePublicResults = publicResults.filter((result) => !seen.has(`${result.document}\0${result.fragmentId}`));
+        // Keep room for both sources when both contain evidence; relevance still
+        // orders results within each source and references remain exact.
+        results = results.length && uniquePublicResults.length
+          ? [...results.slice(0, 3), ...uniquePublicResults.slice(0, 2)]
+          : [...results, ...uniquePublicResults].sort((a, b) => b.score - a.score || a.document.localeCompare(b.document)).slice(0, 5);
+      }
     }
     const config = getOpenAIConfig();
     contextResultCount = results.length;
     const contextText = makeDocumentContext(results, config.maxContextChars).text;
     const hasPublicEvidence = results.some((result) => result.sourceType === 'corporate-web');
-    const expectedType = hasPublicEvidence ? 'corporate-web' : identityQuestion ? 'corporate-identity' : needsDocuments ? 'internal-document' : 'general-knowledge';
+    const hasInternalEvidence = results.some((result) => result.sourceType === 'internal-document' || !result.sourceType);
+    const expectedType = hasPublicEvidence && hasInternalEvidence ? 'mixed' : hasPublicEvidence ? 'corporate-web' : hasInternalEvidence ? 'internal-document' : identityQuestion ? 'corporate-identity' : 'general-knowledge';
     phase = 'generation';
     const generationStartedAt = Date.now();
     let modelResponse;
