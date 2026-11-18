@@ -134,10 +134,21 @@ export function AdminCenterPage() {
     setCentralMessage('Guardando cambios...');
     try {
       const response = await fetch('/api/user-access-admin', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rowKey: user.rowKey, ...changes }) });
-      if (!response.ok) throw new Error('central-users-update-failed');
+      if (!response.ok) {
+        let errorCode = '';
+        try { errorCode = String((await response.json()).error || ''); } catch { /* keep generic message */ }
+        throw new Error(errorCode || 'central-users-update-failed');
+      }
       await loadCentralUsers();
       setCentralMessage('Cambios guardados.');
-    } catch { setCentralMessage('No se pudieron guardar los cambios.'); }
+    } catch (error) {
+      const message = error instanceof Error && error.message === 'concurrency-conflict'
+        ? 'El usuario ha cambiado en otra sesión. Recarga la lista e inténtalo de nuevo.'
+        : error instanceof Error && error.message === 'last-admin-protected'
+          ? 'No se puede retirar el último administrador activo.'
+          : 'No se pudieron guardar los cambios.';
+      setCentralMessage(message);
+    }
   };
 
   const createCentralUser = async () => {

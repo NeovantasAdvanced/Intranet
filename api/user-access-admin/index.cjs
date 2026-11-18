@@ -32,8 +32,9 @@ module.exports = async function userAccessAdmin(context, req) {
       return send(context, 201, { ok: true, user: { ...entity, permissions } });
     }
     const rowKey = String(body.rowKey || '').trim();
+    const hasStatus = Object.prototype.hasOwnProperty.call(body, 'status');
     const status = ['pending', 'active', 'suspended', 'revoked'].includes(body.status) ? body.status : null;
-    if (!rowKey || !status || rowKey.length > 128) return send(context, 400, { ok: false, error: 'invalid-request' });
+    if (!rowKey || rowKey.length > 128 || (hasStatus && !status)) return send(context, 400, { ok: false, error: 'invalid-request' });
     if (rowKey === rowKeyForPrincipal(principal)) return send(context, 403, { ok: false, error: 'self-modification-denied' });
     const permissions = body.permissions && typeof body.permissions === 'object' ? {
       intranet: Boolean(body.permissions.intranet),
@@ -44,13 +45,14 @@ module.exports = async function userAccessAdmin(context, req) {
     if (permissions?.admin && !(await authorizePrincipal(principal, 'admin')).allowed) return send(context, 403, { ok: false, error: 'admin-escalation-denied' });
     const current = (await listEntities()).find((item) => item.rowKey === rowKey);
     if (!current) return send(context, 404, { ok: false, error: 'user-not-found' });
+    const nextStatus = hasStatus ? status : current.status;
     const principalEmails = new Set(getPrincipalEmailCandidates(principal).map(normalizeEmail));
     if (rowKey === rowKeyForPrincipal(principal) || (current.email && principalEmails.has(normalizeEmail(current.email))) || (current.staticWebAppsUserId && current.staticWebAppsUserId === principal.userId)) return send(context, 403, { ok: false, error: 'self-modification-denied' });
     const currentPermissions = parsePermissions(current);
     const nextPermissions = permissions || currentPermissions;
-    if ((currentPermissions.admin === true && (status !== 'active' || nextPermissions.admin !== true)) && (await listEntities()).filter((item) => item.rowKey !== rowKey && item.status === 'active' && parsePermissions(item).admin === true).length === 0) return send(context, 409, { ok: false, error: 'last-admin-protected' });
-    const entity = await updateEntity(rowKey, { status, ...(permissions ? { permissions: JSON.stringify(permissions) } : {}), ...(status === 'active' ? { approvedBy: String(principal.userId || '') } : {}) });
-    await appendAudit({ action: 'update', targetRowKey: rowKey, actorUserId: String(principal.userId || ''), actorEmail: String(principal.userDetails || '').trim().toLowerCase(), changes: JSON.stringify({ status, permissions: nextPermissions }) });
+    if ((currentPermissions.admin === true && (nextStatus !== 'active' || nextPermissions.admin !== true)) && (await listEntities()).filter((item) => item.rowKey !== rowKey && item.status === 'active' && parsePermissions(item).admin === true).length === 0) return send(context, 409, { ok: false, error: 'last-admin-protected' });
+    const entity = await updateEntity(rowKey, { ...(hasStatus ? { status: nextStatus } : {}), ...(permissions ? { permissions: JSON.stringify(permissions) } : {}), ...(hasStatus && nextStatus === 'active' ? { approvedBy: String(principal.userId || '') } : {}) });
+    await appendAudit({ action: 'update', targetRowKey: rowKey, actorUserId: String(principal.userId || ''), actorEmail: String(principal.userDetails || '').trim().toLowerCase(), changes: JSON.stringify({ ...(hasStatus ? { status: nextStatus } : {}), ...(permissions ? { permissions: nextPermissions } : {}) }) });
     return send(context, 200, { ok: true, user: { rowKey: entity.rowKey, status: entity.status, permissions: parsePermissions(entity) } });
   } catch (error) {
     const statusCode = Number(error?.statusCode || error?.status || 0);
