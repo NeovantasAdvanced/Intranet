@@ -71,7 +71,7 @@ jobs:
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Skipping Outlook news sync for schedule $EVENT_SCHEDULE with Madrid offset $madrid_offset."
+            echo "::notice::Outlook news sync status=skipped schedule=$EVENT_SCHEDULE madrid_offset=$madrid_offset."
           fi
 
       - name: Setup Node
@@ -113,7 +113,7 @@ jobs:
         run: |
           if [ -z "$NEWS_MAILBOX_USER_ID" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::NEWS_MAILBOX_USER_ID is not configured. Set the secret or pass mailbox_user_id when running manually. Skipping Outlook news sync."
+            echo "::notice::Outlook news sync status=skipped reason=missing-mailbox-configuration. Set the secret or pass mailbox_user_id when running manually."
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
@@ -153,4 +153,4 @@ jobs:
       - name: Commit news changes
         if: steps.madrid-schedule.outputs.should_run == 'true' && steps.news-config.outputs.configured == 'true'
         run: |
-          bash scripts/push-main-with-rebase.sh "chore: sync Outlook news" src/data/news.json
+          bash scripts/push-main-with-rebase.sh "chore: sync Outlook news" api/data/news.json
