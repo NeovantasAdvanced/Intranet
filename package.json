@@ -14,6 +14,7 @@
     "test:folder-normalization": "node scripts/tests/folder-normalization.mjs",
     "test:news-parser": "node scripts/tests/news-html-parser.mjs",
     "test:news-html": "node scripts/tests/news-html-parser.mjs",
+    "test:news-sync": "node scripts/tests/news-sync.mjs",
     "test:neo-ui": "node scripts/tests/neo-ui.mjs",
     "test:neo-scope": "node api/tests/neo-scope.test.cjs",
     "test:sharepoint-catalog": "node scripts/tests/sharepoint-catalog.mjs"

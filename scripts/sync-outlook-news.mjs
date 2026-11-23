@@ -17,7 +17,8 @@ import {
   parseNewsEmailContent,
 } from './news-parser.mjs';
 
-const outputPath = path.resolve('src/data/news.json');
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const outputPath = path.resolve(process.env.NEWS_OUTPUT_PATH ?? path.join(repositoryRoot, 'api/data/news.json'));
 
 const rawFolderReference =
   process.env.NEWS_MAIL_FOLDER_RAW ??
@@ -240,8 +241,18 @@ function parseNewsItemsFromHtml(html, emailDate) {
 }
 
 async function readExistingNews() {
-  const raw = await readFile(outputPath, 'utf8');
-  return JSON.parse(raw);
+  try {
+    const raw = await readFile(outputPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error('Existing news file must contain an array.');
+    return parsed;
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      console.log(`[Outlook news] archivo existente no encontrado; se iniciará sin noticias previas: ${path.relative(repositoryRoot, outputPath)}`);
+      return [];
+    }
+    throw error;
+  }
 }
 
 async function listMessagesFromFolder(accessToken, mailboxUserId, folderId, folderLabel) {
@@ -519,19 +530,23 @@ async function main() {
   const newsToWrite =
     Number.isFinite(newsLimit) && newsLimit > 0 ? mergedNews.slice(0, newsLimit) : mergedNews;
 
+  await mkdir(path.dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(newsToWrite, null, 2)}\n`, 'utf8');
 
   console.log(`[Outlook news] numero de noticias extraidas: ${parsedNews.length}`);
   console.log(`[Outlook news] numero de noticias guardadas: ${newsToWrite.length}`);
   console.log(`Outlook news synced: ${parsedNews.length} mail news, ${newsToWrite.length} total news.`);
+  console.log(`[Outlook news] status=completed output=${path.relative(repositoryRoot, outputPath)}`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
-    console.error(error.message);
+    console.error(`[Outlook news] status=failed error=${error.message}`);
     process.exitCode = 1;
   });
 }
+
+export { main, readExistingNews };
 
 export function selectNewsMessageSubjects(messages, subjectPrefix, sender) {
   const wantedPrefix = normalizeMailSubject(subjectPrefix);
